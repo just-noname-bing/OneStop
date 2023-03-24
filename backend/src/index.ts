@@ -1,9 +1,35 @@
-import "dotenv-safe/config";
-import express from "express";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 
-const PORT = Number(process.env.PORT);
-const app = express();
+// The GraphQL schema
+const typeDefs = `#graphql
+    type Query {
+        get: String
+    }
+    type Mutation {
+        create: String
+        delete: String
+        update: String
+    }
+`;
 
-app.get("/", (_, res) => res.send("test"));
+// A map of functions which return data for the schema.
+const resolvers = {
+	Query: {
+		get: () => "get messages",
+	},
+	Mutation: {
+		create: () => "create message",
+		delete: () => "delete message",
+		update: () => "update message",
+	},
+};
 
-app.listen(PORT, () => console.log("http://localhost:" + PORT));
+const server = new ApolloServer({
+	typeDefs,
+	resolvers,
+});
+
+startStandaloneServer(server).then(({ url }) => {
+	console.log(`🚀 Server ready at ${url}`);
+});
