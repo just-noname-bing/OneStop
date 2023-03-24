@@ -9,3 +9,6 @@
 
 
 Es pārbaudīšu funkcionālas prasības, lejupielādējiet word dokumentu e.rvt.lv, un programmā realizētas sākumā funkcijas (funkciju daļu, nevis visas), un izlabotu/papildinātu ER diagrammu.
+
+
+(figma link)[https://www.figma.com/file/4AD1SibL2VLyyB2FDCepWo/trafi?node-id=0%3A1&t=rlh9m7a1fdpLVovB-1]
