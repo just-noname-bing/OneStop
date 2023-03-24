@@ -6,3 +6,6 @@
 -   [ ] 6. Datu validācija, tiek pārbaudīti lauki uz nepatiesām vērtībām.
 -   [ ] 7. Ir nodrošināta filtrēšana, meklēšana vismaz pēc viena lauka.
 -   [ ] 8. Darbs ir izstrādāts un tā argumentācija radījusi iespaidu, ka ir ievēroti visi kritēriji un to var uzskatīt par kvalifikācijas darbu (izlabota/papildināta ER diagramma).
+
+
+Es pārbaudīšu funkcionālas prasības, lejupielādējiet word dokumentu e.rvt.lv, un programmā realizētas sākumā funkcijas (funkciju daļu, nevis visas), un izlabotu/papildinātu ER diagrammu.
