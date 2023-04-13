@@ -1,52 +1,18 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.prisma = void 0;
 const server_1 = require("@apollo/server");
 const standalone_1 = require("@apollo/server/standalone");
 const client_1 = require("@prisma/client");
-const prisma = new client_1.PrismaClient();
-const typeDefs = `#graphql
-    type Query {
-        get: [User]
-    }
-    type Mutation {
-        create: User
-        delete: String
-        update: String
-    }
-
-    type User {
-        id:String
-        username:String
-    }
-`;
-const resolvers = {
-    Query: {
-        get: async () => {
-            return await prisma.user.findMany();
-        },
-    },
-    Mutation: {
-        create: async () => {
-            try {
-                return await prisma.user.create({
-                    data: {
-                        username: "a",
-                    },
-                });
-            }
-            catch (error) {
-                if (error.code === "P2002") {
-                    console.error("[ERROr] unique");
-                }
-                return null;
-            }
-        },
-        delete: () => "delete message",
-        update: () => "update message",
-    },
-};
+const UserResolver_1 = __importDefault(require("./resolvers/UserResolver"));
+const typeDefs_1 = __importDefault(require("./types/typeDefs"));
+exports.prisma = new client_1.PrismaClient();
+const resolvers = [UserResolver_1.default];
 const server = new server_1.ApolloServer({
-    typeDefs,
+    typeDefs: typeDefs_1.default,
     resolvers,
 });
 (0, standalone_1.startStandaloneServer)(server).then(({ url }) => {

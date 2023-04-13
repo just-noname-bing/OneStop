@@ -12,9 +12,16 @@ datasource db {
 
 // one user many msgs 1-m
 
+enum Roles {
+    DEFAULT
+    MODERATOR
+    ADMIN
+}
+
 model User {
     id         String    @id @default(uuid())
     name       String
+    role       Roles     @default(DEFAULT)
     surname    String
     email      String    @unique
     password   String
