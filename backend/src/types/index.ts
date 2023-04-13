@@ -1,4 +1,4 @@
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
 import { InferType, object, string } from "yup";
 
 export {};
@@ -12,11 +12,27 @@ declare global {
 	}
 }
 
+export enum Roles {
+	DEFAULT,
+	MODERATOR,
+	ADMIN,
+}
+export interface ServerContext {
+	userData: {
+		userId: string;
+		role: Roles;
+	};
+}
+
 // graphql types
 
+export const LoginInputSchema = object({
+	email: string().email().required(),
+	password: string().required(),
+});
+
 export interface LoginInput {
-	email: string;
-	password: string;
+	options: InferType<typeof LoginInputSchema>;
 }
 
 export interface FieldError {

@@ -7,10 +7,6 @@ export default `#graphql
         ADMIN
     }
 
-    type LoginInput {
-        email:String
-        password:String
-    }
 
     type FieldError {
         field: String
@@ -46,9 +42,14 @@ export default `#graphql
         password:String
     }
 
+    input LoginInput {
+        email:String
+        password:String
+    }
+
     # User Mutations
     type Mutation {
-        login: UserResponse
+        login(options: LoginInput): UserResponse
         register(options: RegisterInput): UserResponse
         logout: Boolean
     }

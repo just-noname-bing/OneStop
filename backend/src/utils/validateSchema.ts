@@ -5,7 +5,7 @@ const ValidateSchema = async (schema: ObjectSchema<any>, value: object): Promise
 	try {
 		await schema.validate(value, { abortEarly: false });
 	} catch (error) {
-		console.log(error);
+		// console.log(error);
 		const errors: FieldError[] = [];
 		error.inner.forEach((er: any) => {
 			errors.push({

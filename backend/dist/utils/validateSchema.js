@@ -5,7 +5,6 @@ const ValidateSchema = async (schema, value) => {
         await schema.validate(value, { abortEarly: false });
     }
     catch (error) {
-        console.log(error);
         const errors = [];
         error.inner.forEach((er) => {
             errors.push({

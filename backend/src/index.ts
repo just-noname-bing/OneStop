@@ -6,9 +6,6 @@ import typeDefs from "./types/typeDefs";
 
 export const prisma = new PrismaClient();
 
-// The GraphQL schema
-
-// A map of functions which return data for the schema.
 const resolvers = [UserResolver];
 
 const server = new ApolloServer({
