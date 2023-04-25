@@ -1,4 +1,3 @@
-import type { User } from "@prisma/client";
 import { InferType, object, string } from "yup";
 
 export {};
@@ -12,17 +11,17 @@ declare global {
 	}
 }
 
-export enum Roles {
-	DEFAULT,
-	MODERATOR,
-	ADMIN,
+// resolver context
+// auth -> bearer token
+export interface CustomContext {
+	auth?: string;
 }
-export interface ServerContext {
-	userData: {
-		userId: string;
-		role: Roles;
-	};
-}
+
+// export enum Roles {
+// 	DEFAULT,
+// 	MODERATOR,
+// 	ADMIN,
+// }
 
 // graphql types
 
@@ -35,13 +34,22 @@ export interface LoginInput {
 	options: InferType<typeof LoginInputSchema>;
 }
 
+export interface EmailTokenInput {
+	token: string;
+}
+
 export interface FieldError {
 	field: string;
 	message: string;
 }
 
+export interface Tokens {
+	accessToken: string;
+	refreshToken: string;
+}
+
 export interface UserResponse {
-	data?: Omit<User, "password">;
+	data?: Tokens;
 	errors?: FieldError[];
 }
 
