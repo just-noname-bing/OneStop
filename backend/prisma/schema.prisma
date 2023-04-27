@@ -1,135 +1,149 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model refreshTokens {
-  userId String @id @unique
-  token  String
+    userId String   @id @unique
+    token  String[]
 }
 
 model forgotPasswordTokens {
-  userId String @id @unique
-  token  String
+    userId String @id @unique
+    token  String
 }
 
 model User {
-  id         String    @id @default(uuid())
-  name       String
-  role       Roles     @default(DEFAULT)
-  surname    String
-  email      String    @unique
-  password   String
-  verified   Boolean   @default(false)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  comments   Comment[]
+    id         String    @id @default(uuid())
+    name       String
+    role       Roles     @default(DEFAULT)
+    surname    String
+    email      String    @unique
+    password   String
+    verified   Boolean   @default(false)
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    Post       Post[]
+    Comment    Comment[]
+}
+
+model Post {
+    id         String    @id @default(uuid())
+    author_id  String
+    text       String
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    author     User      @relation(fields: [author_id], references: [id])
+    Comment    Comment[]
 }
 
 model Comment {
-  id         String   @id @default(uuid())
-  author_id  String
-  text       String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  author     User     @relation(fields: [author_id], references: [id])
+    id         String   @id @default(uuid())
+    author_id  String
+    text       String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    author     User     @relation(fields: [author_id], references: [id])
+    Post       Post     @relation(fields: [postId], references: [id])
+    postId     String
 }
 
-model Route {
-  route_id         String  @id
-  route_short_name String
-  route_long_name  String
-  route_desc       String
-  route_type       String
-  route_url        String
-  route_color      String
-  route_text_color String
-  trips            Trips[]
+model Routes {
+    route_id         String  @id
+    route_short_name String
+    route_long_name  String
+    route_desc       String
+    route_type       String
+    route_url        String
+    route_color      String
+    route_text_color String
+    route_sort_order String
+    trips            Trips[]
 }
 
 model Trips {
-  route_id                  String
-  service_id                String
-  trip_id                   String       @id
-  trip_headsign             String
-  direction_id              String
-  block_id                  String
-  shape_id                  String
-  wheelchair_accessible     String
-  shapesShape_id            String?
-  shapesShape_dist_traveled String?
-  stop_times                Stop_times[]
-  route                     Route        @relation(fields: [route_id], references: [route_id])
-  Shapes                    Shapes?      @relation(fields: [shapesShape_id, shapesShape_dist_traveled], references: [shape_id, shape_dist_traveled])
+    route_id                  String
+    service_id                String
+    trip_id                   String       @id
+    trip_headsign             String
+    direction_id              String
+    block_id                  String
+    shape_id                  String
+    wheelchair_accessible     String
+    shapesShape_id            String?
+    shapesShape_dist_traveled String?
+    stop_times                Stop_times[]
+    route                     Routes?      @relation(fields: [route_id], references: [route_id])
+    Shapes                    Shapes?      @relation(fields: [shapesShape_id, shapesShape_dist_traveled], references: [shape_id, shape_dist_traveled])
 }
 
 model Shapes {
-  shape_id            String
-  shape_pt_lat        String
-  shape_pt_lon        String
-  shape_pt_sequence   String
-  shape_dist_traveled String
-  trips               Trips[]
+    shape_id            String
+    shape_pt_lat        String
+    shape_pt_lon        String
+    shape_pt_sequence   String
+    shape_dist_traveled String
+    trips               Trips[]
 
-  @@id([shape_id, shape_dist_traveled])
+    @@id([shape_id, shape_dist_traveled])
 }
 
 model Stops {
-  stop_id        String       @id
-  stop_code      String
-  stop_name      String
-  stop_desc      String
-  stop_lat       String
-  stop_lon       String
-  stop_url       String
-  location_type  String
-  parent_station String
-  stop_times     Stop_times[]
+    stop_id        String       @id
+    stop_code      String
+    stop_name      String
+    stop_desc      String
+    stop_lat       String
+    stop_lon       String
+    stop_url       String
+    location_type  String
+    parent_station String
+    stop_times     Stop_times[]
 }
 
 model Stop_times {
-  trip_id        String
-  arrival_time   String
-  departure_time String
-  stop_id        String
-  stop_sequence  String
-  pickup_type    String
-  drop_off_type  String
-  stops          Stops  @relation(fields: [stop_id], references: [stop_id])
-  trips          Trips  @relation(fields: [trip_id], references: [trip_id])
+    trip_id        String
+    arrival_time   String
+    departure_time String
+    stop_id        String
+    stop_sequence  String
+    pickup_type    String
+    drop_off_type  String
+    stops          Stops? @relation(fields: [stop_id], references: [stop_id])
+    trips          Trips? @relation(fields: [trip_id], references: [trip_id])
 
-  @@id([trip_id, stop_id])
+    @@id([trip_id, stop_id])
 }
 
 model Calendar {
-  service_id     String           @id
-  monday         Boolean
-  tuesday        Boolean
-  wednesday      Boolean
-  thursday       Boolean
-  friday         Boolean
-  saturday       Boolean
-  sunday         Boolean
-  start_date     String
-  end_date       String
-  calendar_dates Calendar_dates[]
+    service_id     String           @id
+    monday         String
+    tuesday        String
+    wednesday      String
+    thursday       String
+    friday         String
+    saturday       String
+    sunday         String
+    start_date     String
+    end_date       String
+    calendar_dates Calendar_dates[]
 }
 
 model Calendar_dates {
-  service_id     String
-  date           String
-  exception_type String
-  Calendar       Calendar @relation(fields: [service_id], references: [service_id])
+    service_id     String
+    date           String
+    exception_type String
+    Calendar       Calendar @relation(fields: [service_id], references: [service_id])
 
-  @@id([service_id, date])
+    @@id([service_id, date])
 }
 
 enum Roles {
-  DEFAULT
-  MODERATOR
-  ADMIN
+    DEFAULT
+    MODERATOR
+    ADMIN
 }

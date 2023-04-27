@@ -10,6 +10,7 @@ const body_parser_1 = require("body-parser");
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const jsonwebtoken_1 = require("jsonwebtoken");
+const BusResolver_1 = require("./resolvers/BusResolver");
 const UserResolver_1 = __importDefault(require("./resolvers/UserResolver"));
 const typeDefs_1 = __importDefault(require("./types/typeDefs"));
 const TokenService_1 = require("./utils/TokenService");
@@ -22,11 +23,15 @@ const constants_1 = require("./utils/constants");
         const { token } = req.body;
         try {
             const { role, userId, verified } = (0, jsonwebtoken_1.verify)(token, constants_1.refreshToken_secret);
-            const oldToken = await constants_1.prisma.refreshTokens.findFirst({
+            const userTokens = await constants_1.prisma.refreshTokens.findFirst({
                 where: { userId },
             });
-            if (!oldToken || oldToken.token !== token)
+            if (!userTokens || !userTokens.token.includes(token))
                 return res.sendStatus(401);
+            await constants_1.prisma.refreshTokens.update({
+                where: { userId },
+                data: { token: userTokens.token.filter((x) => x === token) },
+            });
             return res.json({
                 accessToken: (0, TokenService_1.generateAccessToken)({ role, userId, verified }),
                 refreshToken: await (0, TokenService_1.generateRefreshToken)({ role, userId, verified }),
@@ -39,7 +44,7 @@ const constants_1 = require("./utils/constants");
     });
     const server = new server_1.ApolloServer({
         typeDefs: typeDefs_1.default,
-        resolvers: [UserResolver_1.default],
+        resolvers: [UserResolver_1.default, BusResolver_1.BusResolver],
         plugins: [(0, drainHttpServer_1.ApolloServerPluginDrainHttpServer)({ httpServer })],
     });
     await server.start();

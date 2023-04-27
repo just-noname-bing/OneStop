@@ -11,8 +11,8 @@ const generateRefreshToken = async (payload) => {
     const refreshToken = (0, jsonwebtoken_1.sign)(payload, constants_1.refreshToken_secret, { expiresIn: "5m" });
     await constants_1.prisma.refreshTokens.upsert({
         where: { userId: payload.userId },
-        create: { token: refreshToken, userId: payload.userId },
-        update: { token: refreshToken },
+        create: { token: [refreshToken], userId: payload.userId },
+        update: { token: { push: refreshToken } },
     });
     return refreshToken;
 };
