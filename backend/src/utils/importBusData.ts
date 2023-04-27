@@ -30,4 +30,4 @@ const ImportBusData = (folder: string) => {
 
 export default ImportBusData;
 
-ImportBusData("../../../data/marsrutusaraksti03_2023");
+// ImportBusData("../../../data/marsrutusaraksti03_2023");
