@@ -26,8 +26,8 @@ export interface CustomContext {
 // graphql types
 
 export const LoginInputSchema = object({
-	email: string().email().required(),
-	password: string().required(),
+	email: string().email().required().max(50),
+	password: string().required().max(20),
 });
 
 export interface LoginInput {
