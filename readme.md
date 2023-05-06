@@ -1,5 +1,5 @@
 -   [x] 1. Sistēmas kods ir pieejams github un norādīta saite savā profilā.
--   [ ] 2. Ir veikta datu labošana, dzēšana, pievienošana, atspoguļošana. Atbilstoši minētajām funkcionalitātes prasībām.
+-   [x] 2. Ir veikta datu labošana, dzēšana, pievienošana, atspoguļošana. Atbilstoši minētajām funkcionalitātes prasībām.
 -   [ ] 3. Funkcionalitāte ir atspoguļota vairākos dažādos skatos.
 -   [ ] 4. Ir izveidots sistēmas dizains vairākos dažādos skatos.
 -   [x] 5. Ierāšana videokonferencē (ir obligāta).
