@@ -57,6 +57,49 @@ export default `#graphql
         Post: Post!
     }
 
+    # Post & Comment queries
+    type Query {
+        getPosts: [Post!]!
+        getComments: [Comment!]!
+    }
+
+    input PostInput {
+        text:String!
+    }
+
+    input CommentInput {
+        postId:String!
+        text:String!
+    }
+
+    input updatePostCommentInput {
+        id:String!
+        text:String!
+    }
+
+    type PostResponse {
+        data: Post
+        errors:[FieldError]
+    }
+
+    type CommentResponse {
+        data: Comment
+        errors:[FieldError]
+    }
+
+    # Post mutation
+    type Mutation {
+        createPost(options: PostInput!): PostResponse
+        updatePost(options: updatePostCommentInput!): PostResponse
+        deletePost(id: String!): Boolean
+    }
+    # Comment mutation
+    type Mutation {
+        createComment(options: CommentInput!): CommentResponse
+        updateComment(options: updatePostCommentInput!): CommentResponse
+        deleteComment(id: String!): Boolean
+    }
+
     # User queries
     type Query {
         me: User # user or 401(not authenticated)
@@ -183,4 +226,5 @@ export default `#graphql
         Calendar: [Calendar]!
         Calendar_dates:[Calendar_dates]!
     }
+
 `;

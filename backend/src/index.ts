@@ -10,63 +10,64 @@ import UserResolver from "./resolvers/UserResolver";
 import typeDefs from "./types/typeDefs";
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
 import { prisma, refreshToken_secret, server_port } from "./utils/constants";
+import PostResolver from "./resolvers/PostResolver";
 
 (async () => {
-	const app = express();
-	const httpServer = http.createServer(app);
+    const app = express();
+    const httpServer = http.createServer(app);
 
-	app.use(json());
+    app.use(json());
 
-	app.post("/refresh_token", async (req, res) => {
-		const { token } = req.body;
+    app.post("/refresh_token", async (req, res) => {
+        const { token } = req.body;
 
-		try {
-			const { role, userId, verified } = verify(token, refreshToken_secret) as TokenPayload;
-			const userTokens = await prisma.refreshTokens.findFirst({
-				where: { userId },
-			});
+        try {
+            const { role, userId, verified } = verify(token, refreshToken_secret) as TokenPayload;
+            const userTokens = await prisma.refreshTokens.findFirst({
+                where: { userId },
+            });
 
-			if (!userTokens || !userTokens.token.includes(token)) return res.sendStatus(401);
+            if (!userTokens || !userTokens.token.includes(token)) return res.sendStatus(401);
 
-			// token exists and not expired
-			// delete old token
-			await prisma.refreshTokens.update({
-				where: { userId },
-				data: { token: userTokens.token.filter((x) => x === token) },
-			});
+            // token exists and not expired
+            // delete old token
+            await prisma.refreshTokens.update({
+                where: { userId },
+                data: { token: userTokens.token.filter((x) => x === token) },
+            });
 
-			return res.json({
-				accessToken: generateAccessToken({ role, userId, verified }),
-				refreshToken: await generateRefreshToken({ role, userId, verified }),
-			});
-		} catch (error) {
-			console.log(error);
+            return res.json({
+                accessToken: generateAccessToken({ role, userId, verified }),
+                refreshToken: await generateRefreshToken({ role, userId, verified }),
+            });
+        } catch (error) {
+            console.log(error);
 
-			// delete token if expired
-			// create a worker that will remove expired tokens
-			// if (error.code === "TokenExpiredError") {
-			// }
+            // delete token if expired
+            // create a worker that will remove expired tokens
+            // if (error.code === "TokenExpiredError") {
+            // }
 
-			return res.sendStatus(401);
-		}
-	});
+            return res.sendStatus(401);
+        }
+    });
 
-	const server = new ApolloServer({
-		typeDefs,
-		resolvers: [UserResolver, BusResolver],
-		plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-	});
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers: [UserResolver, BusResolver, PostResolver],
+        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    });
 
-	await server.start();
+    await server.start();
 
-	app.use(
-		"/",
-		expressM(server, {
-			context: async ({ req }) => ({ auth: req.headers.authorization }),
-		})
-	);
+    app.use(
+        "/",
+        expressM(server, {
+            context: async ({ req }) => ({ auth: req.headers.authorization }),
+        })
+    );
 
-	// Modified server startup
-	httpServer.listen({ port: server_port });
-	console.log(`🚀 Server ready at http://localhost:${server_port}/`);
+    // Modified server startup
+    httpServer.listen({ port: server_port });
+    console.log(`🚀 Server ready at http://localhost:${server_port}/`);
 })();
