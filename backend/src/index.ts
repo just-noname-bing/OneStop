@@ -13,6 +13,14 @@ import { prisma, refreshToken_secret, server_port } from "./utils/constants";
 import PostResolver from "./resolvers/PostResolver";
 
 (async () => {
+
+    try {
+        await prisma.$connect()
+        console.log("Connected to the database")
+    } catch (err) {
+        return console.log("Could not connect to the database ", err)
+    }
+
     const app = express();
     const httpServer = http.createServer(app);
 
@@ -33,7 +41,7 @@ import PostResolver from "./resolvers/PostResolver";
             // delete old token
             await prisma.refreshTokens.update({
                 where: { userId },
-                data: { token: userTokens.token.filter((x) => x === token) },
+                data: { token: userTokens.token.filter((x) => x !== token) },
             });
 
             return res.json({

@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { InferType, object, string } from "yup";
+import { InferType, boolean, object, string } from "yup";
 
 export { };
 
@@ -16,7 +16,8 @@ declare global {
 // auth -> bearer token
 export interface CustomContext {
     auth?: string;
-    user?: Omit<User, "password">;
+    // user?: Omit<User, "password">;
+    user: Omit<User, "password">;
 }
 
 // export enum Roles {
@@ -31,6 +32,11 @@ export const LoginInputSchema = object({
     email: string().email().required().max(50),
     password: string().required().max(20),
 });
+
+const UserInfoFields = object({
+    name: string().trim().required(),
+    surname: string().trim().required(),
+})
 
 export interface LoginInput {
     options: InferType<typeof LoginInputSchema>;
@@ -55,17 +61,25 @@ export interface UserResponse {
     errors?: FieldError[];
 }
 
-export const RegisterInputSchema = object({
-    name: string().trim().required(),
-    surname: string().trim().required(),
-    email: string().email().required(),
-    password: string().min(5).required(),
-});
+export interface UpdateUserResponse {
+    data?: User;
+    errors?: FieldError[];
+}
+
+export const RegisterInputSchema = object({}).concat(LoginInputSchema).concat(UserInfoFields);
 
 export interface RegisterInput {
     options: InferType<typeof RegisterInputSchema>;
 }
 
+export const UpdateUserInputSchema = object({
+    verified: boolean().required()
+}).concat(UserInfoFields).concat(LoginInputSchema.omit(['password']));
+
+export interface UpdateUserInput {
+    id: string
+    options: InferType<typeof UpdateUserInputSchema>;
+}
 
 // post and comments
 

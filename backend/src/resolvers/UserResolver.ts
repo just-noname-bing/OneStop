@@ -1,176 +1,269 @@
 import { compare, hash } from "bcrypt";
 import { verify } from "jsonwebtoken";
 import {
-	CustomContext,
-	EmailTokenInput,
-	LoginInput,
-	LoginInputSchema,
-	RegisterInput,
-	RegisterInputSchema,
-	UserResponse,
+    CustomContext,
+    EmailTokenInput,
+    LoginInput,
+    LoginInputSchema,
+    RegisterInput,
+    RegisterInputSchema,
+    UpdateUserInput,
+    UpdateUserInputSchema,
+    UpdateUserResponse,
+    UserResponse,
 } from "../types";
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "../utils/TokenService";
 import {
-	accessToken_secret,
-	emailVerificationToken_secret,
-	prisma,
-	pswSaltRounds,
+    emailVerificationToken_secret,
+    prisma,
+    pswSaltRounds,
+    refreshToken_secret,
 } from "../utils/constants";
 import ValidateEmail, { EmailTokenPayload } from "../utils/validateEmail";
 import ValidateSchema from "../utils/validateSchema";
+import IsAuth from "../utils/isAuth";
+import isAuth from "../utils/isAuth";
 
 const UserResolver = {
-	Query: {
-		async me(_parent: any, _args: any, ctx: CustomContext) {
-			// access token -> bearer token
-			if (!ctx.auth) throw new Error("not authenticated");
+    Query: {
+        me: isAuth((_p: any, _args: any, ctx: CustomContext) => {
+            return ctx.user;
+        }, []),
+        getUsers: isAuth(async (_p: any, _args: any, _ctx: CustomContext) => {
+            return await prisma.user.findMany();
+        }, ["ADMIN", "MODERATOR"])
+    },
 
-			let user = null;
-			try {
-				const { userId } = verify(
-					ctx.auth.split(" ")[1],
-					accessToken_secret
-				) as TokenPayload;
+    Mutation: {
+        async login(_parent: any, { options }: LoginInput): Promise<UserResponse> {
+            const { email, password } = options;
 
-				user = await prisma.user.findFirst({ where: { id: userId } });
-			} catch (error) {
-				throw new Error("not authenticated");
-			}
+            const errors = await ValidateSchema(LoginInputSchema, options);
+            if (errors.length) return { errors };
 
-			if (!user) throw new Error("not authenticated");
+            const user = await prisma.user.findFirst({ where: { email } });
 
-			// if (!user.verified) throw new Error("verify email");
+            if (!user || !(await compare(password, user.password))) {
+                return {
+                    errors: [
+                        { field: "email", message: "incorrect credentials" },
+                        { field: "password", message: "incorrect credentials" },
+                    ],
+                };
+            }
 
-			return user;
-		},
-	},
+            // if user exists and password is valid
+            // generate access token
+            // and refresh token
 
-	Mutation: {
-		async login(_parent: any, { options }: LoginInput): Promise<UserResponse> {
-			const { email, password } = options;
+            // if email is not verified
+            // send error
 
-			const errors = await ValidateSchema(LoginInputSchema, options);
-			if (errors.length) return { errors };
+            if (!user.verified) return { errors: [{ field: "email", message: "Verify email" }] };
 
-			const user = await prisma.user.findFirst({ where: { email } });
+            return {
+                data: {
+                    accessToken: generateAccessToken({
+                        userId: user.id,
+                        role: user.role,
+                        verified: user.verified,
+                    }),
+                    refreshToken: await generateRefreshToken({
+                        userId: user.id,
+                        role: user.role,
+                        verified: user.verified,
+                    }),
+                },
+            };
+        },
+        async register(_paren: any, { options }: RegisterInput): Promise<UserResponse> {
+            const { email, name, password, surname } = options;
+            const errors = await ValidateSchema(RegisterInputSchema, options);
 
-			if (!user || !(await compare(password, user.password))) {
-				return {
-					errors: [
-						{ field: "email", message: "incorrect credentials" },
-						{ field: "password", message: "incorrect credentials" },
-					],
-				};
-			}
+            if (errors.length) return { errors };
 
-			// if user exists and password is valid
-			// generate access token
-			// and refresh token
+            try {
+                const { id } = await prisma.user.create({
+                    data: {
+                        email,
+                        name,
+                        surname,
+                        password: await hash(password, pswSaltRounds),
+                    },
+                });
 
-			// if email is not verified
-			// send error
+                // account created
+                // send verification token to clients email
+                await ValidateEmail(email, id);
 
-			if (!user.verified) return { errors: [{ field: "email", message: "Verify email" }] };
+                //
+                return { errors: [{ field: "email", message: "Verification email sent" }] };
 
-			return {
-				data: {
-					accessToken: generateAccessToken({
-						userId: user.id,
-						role: user.role,
-						verified: user.verified,
-					}),
-					refreshToken: await generateRefreshToken({
-						userId: user.id,
-						role: user.role,
-						verified: user.verified,
-					}),
-				},
-			};
-		},
-		async register(_paren: any, { options }: RegisterInput): Promise<UserResponse> {
-			const { email, name, password, surname } = options;
-			const errors = await ValidateSchema(RegisterInputSchema, options);
+                // create access token and refresh token
+                // return {
+                // 	data: {
+                // 		accessToken: generateAccessToken({ userId: id, role, verified }),
+                // 		refreshToken: await generateRefreshToken({ userId: id, role, verified }),
+                // 	},
+                // };
+            } catch (error) {
+                if (error.code === "P2002") {
+                    return { errors: [{ field: "email", message: "Already exists" }] };
+                }
+                console.log(error);
+                return { errors: [{ field: "email", message: "Something went wrong" }] };
+            }
+        },
 
-			if (errors.length) return { errors };
+        async verifyConformationToken(_parent: any, args: EmailTokenInput): Promise<boolean> {
+            const { token } = args;
+            // to add more security layers we can verify access token too
 
-			try {
-				const { id } = await prisma.user.create({
-					data: {
-						email,
-						name,
-						surname,
-						password: await hash(password, pswSaltRounds),
-					},
-				});
+            if (!token) return false;
 
-				// account created
-				// send verification token to clients email
-				await ValidateEmail(email, id);
+            try {
+                const { userId } = verify(
+                    token,
+                    emailVerificationToken_secret
+                ) as EmailTokenPayload;
 
-				//
-				return { errors: [{ field: "email", message: "Verification email sent" }] };
+                // change verified in database
+                // if no user
+                // this will throw an error
+                await prisma.user.update({
+                    data: {
+                        verified: true,
+                    },
+                    where: {
+                        id: userId,
+                    },
+                });
 
-				// create access token and refresh token
-				// return {
-				// 	data: {
-				// 		accessToken: generateAccessToken({ userId: id, role, verified }),
-				// 		refreshToken: await generateRefreshToken({ userId: id, role, verified }),
-				// 	},
-				// };
-			} catch (error) {
-				if (error.code === "P2002") {
-					return { errors: [{ field: "email", message: "Already exists" }] };
-				}
-				console.log(error);
-				return { errors: [{ field: "email", message: "Something went wrong" }] };
-			}
-		},
+                return true;
 
-		async verifyConformationToken(_parent: any, args: EmailTokenInput): Promise<boolean> {
-			const { token } = args;
-			// to add more security layers we can verify access token too
+                // improve security
 
-			if (!token) return false;
+                // account verified
+                // client have to use login resolver to get tokens and log in
 
-			try {
-				const { userId } = verify(
-					token,
-					emailVerificationToken_secret
-				) as EmailTokenPayload;
+                // return {
+                // 	data: {
+                // 		accessToken: generateAccessToken({ userId, role, verified }),
+                // 		refreshToken: await generateRefreshToken({ userId, role, verified }),
+                // 	},
+                // };
+            } catch (error) {
+                // if (error.code === "TokenExpiredError") {
+                // 	return ;
+                // }
+                return false;
+            }
+        },
 
-				// change verified in database
-				// if no user
-				// this will throw an error
-				await prisma.user.update({
-					data: {
-						verified: true,
-					},
-					where: {
-						id: userId,
-					},
-				});
+        async logout(_p: any, args: any, _ctx: any): Promise<boolean> {
+            const { token } = args as { token: string }
 
-				return true;
+            if (!token) throw new Error("token is required")
 
-				// improve security
+            try {
+                const { userId } = verify(token, refreshToken_secret) as TokenPayload
 
-				// account verified
-				// client have to use login resolver to get tokens and log in
+                const userTokens = await prisma.refreshTokens.findUnique({ where: { userId } })
 
-				// return {
-				// 	data: {
-				// 		accessToken: generateAccessToken({ userId, role, verified }),
-				// 		refreshToken: await generateRefreshToken({ userId, role, verified }),
-				// 	},
-				// };
-			} catch (error) {
-				// if (error.code === "TokenExpiredError") {
-				// 	return ;
-				// }
-				return false;
-			}
-		},
-	},
+                if (!userTokens || !userTokens.token.includes(token)) return false
+
+                //invalidate old refresh token
+                await prisma.refreshTokens.update({
+                    where: { userId },
+                    data: {
+                        token: {
+                            set: userTokens.token.filter(x => x !== token)
+                        }
+                    }
+                })
+
+                return true
+            } catch (err) {
+                //bad token
+                return false
+            }
+        },
+
+        // user update and delete
+        deleteUser: IsAuth(
+            async (_p: any, args: any, ctx: CustomContext): Promise<boolean> => {
+                const { id } = args as { id: string }
+
+                if (!id) {
+                    throw new Error("id is required")
+                }
+
+                const userToDelete = await prisma.user.findFirst({ where: { id } })
+
+                // user doesnt exist
+                if (!userToDelete) return false
+
+
+                if (ctx.user.role === "DEFAULT" && ctx.user.id === id) {
+                    // default can delete only himself
+                } else if (ctx.user.role === "MODERATOR" &&
+                    (ctx.user.id === id || userToDelete.role === "DEFAULT")) {
+                    // moderator can delete only himself and any default user
+                } else if (ctx.user.role === "ADMIN" && userToDelete.role !== "ADMIN"
+                    && ctx.user.id !== id) {
+                    // admin can only delete moderators and default users
+                } else return false
+
+
+                // delete user
+                await prisma.user.delete({ where: { id } })
+
+                return true
+
+            }, []),
+
+        updateUser: isAuth(async (_p: any, { options, id }: UpdateUserInput, ctx: CustomContext): Promise<UpdateUserResponse> => {
+            if (!id) {
+                throw new Error("id is required")
+            }
+
+            const errors = await ValidateSchema(UpdateUserInputSchema, options)
+
+            if (errors.length) {
+                return { errors }
+            }
+
+            const userToUpdate = await prisma.user.findFirst({ where: { id } })
+
+            if (!userToUpdate) {
+                throw new Error("user not found")
+            }
+
+            if (ctx.user.role === "DEFAULT" && ctx.user.id === id) {
+                // default -> only himself
+            } else if (ctx.user.role === "MODERATOR" &&
+                (ctx.user.id === id || userToUpdate.role === "DEFAULT")) {
+                // mod ->  himself, any [default] 
+            } else if (ctx.user.role === "ADMIN" && userToUpdate.role !== "ADMIN"
+                && ctx.user.id !== id) {
+                // admin -> any [default, mod] 
+            } else {
+                throw new Error("not authorized")
+            }
+
+            const updateFields = ({ verified, email, ...defaultFields }: typeof options) => {
+                return ctx.user.id === id ? (defaultFields) : (options)
+            }
+
+            const updatedUser = await prisma.user.update({
+                where: { id },
+                data: updateFields(options)
+            })
+
+            return { data: updatedUser }
+
+        }, [])
+    },
 };
 
 export default UserResolver;

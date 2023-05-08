@@ -24,6 +24,11 @@ export default `#graphql
         errors:[FieldError]
     }
 
+    type updateUserResponse {
+        data: User
+        errors:[FieldError]
+    }
+
     type User {
         id: String!
         name: String!
@@ -103,6 +108,7 @@ export default `#graphql
     # User queries
     type Query {
         me: User # user or 401(not authenticated)
+        getUsers: [User] # only for moderator/admin
     }
 
     input RegisterInput {
@@ -117,11 +123,21 @@ export default `#graphql
         password:String!
     }
 
+
+    input updateUserInput {
+        name:String!
+        surname:String!
+        email:String! # for admin/moderator
+        verified:Boolean! # for admin/moderator
+    }
+
     # User Mutations
     type Mutation {
         login(options: LoginInput!): UserResponse
         register(options: RegisterInput!): UserResponse
-        logout: Boolean
+        logout(token:String!): Boolean
+        deleteUser(id:String!): Boolean
+        updateUser(id:String!, options:updateUserInput!): updateUserResponse 
     }
 
     type Mutation {

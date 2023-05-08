@@ -27,7 +27,7 @@ const PostResolver = {
                 }
 
                 const newPost = await prisma.post.create({
-                    data: { text, author_id: ctx.user!.id }
+                    data: { text, author_id: ctx.user.id }
                 })
 
                 if (!newPost) {
@@ -54,7 +54,7 @@ const PostResolver = {
                     where: {
                         id,
                         // if user has default role it will check authorId. else (ADMIN/MODERATOr) will update any message
-                        ...(ctx.user!.role === "DEFAULT" ? { author_id: ctx.user!.id } : {})
+                        ...(ctx.user.role === "DEFAULT" ? { author_id: ctx.user.id } : {})
                     }
 
                 })
@@ -93,7 +93,7 @@ const PostResolver = {
             const post = await prisma.post.findFirst({
                 where: {
                     id,
-                    ...(ctx.user!.role === "DEFAULT" ? { author_id: ctx.user!.id } : {})
+                    ...(ctx.user.role === "DEFAULT" ? { author_id: ctx.user.id } : {})
                 }
 
             })
@@ -121,7 +121,7 @@ const PostResolver = {
                     data: {
                         text,
                         postId,
-                        author_id: ctx.user!.id
+                        author_id: ctx.user.id
                     }
                 })
 
@@ -148,7 +148,7 @@ const PostResolver = {
                 const comment = await prisma.comment.findFirst({
                     where: {
                         id,
-                        ...(ctx.user!.role === "DEFAULT" ? { author_id: ctx.user!.id } : {})
+                        ...(ctx.user.role === "DEFAULT" ? { author_id: ctx.user.id } : {})
                     }
 
                 })
@@ -181,7 +181,7 @@ const PostResolver = {
                 const comment = await prisma.comment.findFirst({
                     where: {
                         id,
-                        ...(ctx.user!.role === "DEFAULT" ? { author_id: ctx.user!.id } : {})
+                        ...(ctx.user.role === "DEFAULT" ? { author_id: ctx.user.id } : {})
                     }
 
                 })
