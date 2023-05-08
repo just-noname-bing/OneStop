@@ -129,6 +129,7 @@ export default `#graphql
         surname:String!
         email:String! # for admin/moderator
         verified:Boolean! # for admin/moderator
+        role:Roles! # for admin/moderator
     }
 
     # User Mutations

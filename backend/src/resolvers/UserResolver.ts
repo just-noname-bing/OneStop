@@ -251,7 +251,8 @@ const UserResolver = {
                 throw new Error("not authorized")
             }
 
-            const updateFields = ({ verified, email, ...defaultFields }: typeof options) => {
+            const updateFields = ({ verified, email, role, ...defaultFields }: typeof options) => {
+                if (ctx.user.role !== "ADMIN") delete options.role
                 return ctx.user.id === id ? (defaultFields) : (options)
             }
 

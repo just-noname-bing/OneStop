@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
-import { InferType, boolean, object, string } from "yup";
+import { Roles, User } from "@prisma/client";
+import { InferType, boolean, mixed, object, string } from "yup";
 
 export { };
 
@@ -73,8 +73,9 @@ export interface RegisterInput {
 }
 
 export const UpdateUserInputSchema = object({
-    verified: boolean().required()
-}).concat(UserInfoFields).concat(LoginInputSchema.omit(['password']));
+    verified: boolean().required(),
+    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"])
+}).concat(UserInfoFields).concat(LoginInputSchema.omit(["password"]));
 
 export interface UpdateUserInput {
     id: string
