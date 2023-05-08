@@ -252,8 +252,8 @@ const UserResolver = {
             }
 
             const updateFields = ({ verified, email, role, ...defaultFields }: typeof options) => {
-                if (ctx.user.role !== "ADMIN") delete options.role
-                return ctx.user.id === id ? (defaultFields) : (options)
+                return ctx.user.id === id ? (defaultFields) :
+                    (ctx.user.role !== "ADMIN" ? { verified, email, ...defaultFields } : (options)) // test needed
             }
 
             const updatedUser = await prisma.user.update({

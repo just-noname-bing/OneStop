@@ -74,7 +74,7 @@ export interface RegisterInput {
 
 export const UpdateUserInputSchema = object({
     verified: boolean().required(),
-    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"])
+    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"]).required()
 }).concat(UserInfoFields).concat(LoginInputSchema.omit(["password"]));
 
 export interface UpdateUserInput {
