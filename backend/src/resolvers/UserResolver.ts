@@ -2,7 +2,6 @@ import { compare, hash } from "bcrypt";
 import { verify } from "jsonwebtoken";
 import {
     CustomContext,
-    EmailTokenInput,
     LoginInput,
     LoginInputSchema,
     RegisterInput,
@@ -14,12 +13,11 @@ import {
 } from "../types";
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "../utils/TokenService";
 import {
-    emailVerificationToken_secret,
     prisma,
     pswSaltRounds,
     refreshToken_secret,
 } from "../utils/constants";
-import ValidateEmail, { EmailTokenPayload } from "../utils/validateEmail";
+import { sendEmailToken, sendResetPasswordToken } from "../utils/EmailService";
 import ValidateSchema from "../utils/validateSchema";
 import IsAuth from "../utils/isAuth";
 import isAuth from "../utils/isAuth";
@@ -94,7 +92,7 @@ const UserResolver = {
 
                 // account created
                 // send verification token to clients email
-                await ValidateEmail(email, id);
+                await sendEmailToken(email, id)
 
                 //
                 return { errors: [{ field: "email", message: "Verification email sent" }] };
@@ -114,51 +112,8 @@ const UserResolver = {
                 return { errors: [{ field: "email", message: "Something went wrong" }] };
             }
         },
-
-        async verifyConformationToken(_parent: any, args: EmailTokenInput): Promise<boolean> {
-            const { token } = args;
-            // to add more security layers we can verify access token too
-
-            if (!token) return false;
-
-            try {
-                const { userId } = verify(
-                    token,
-                    emailVerificationToken_secret
-                ) as EmailTokenPayload;
-
-                // change verified in database
-                // if no user
-                // this will throw an error
-                await prisma.user.update({
-                    data: {
-                        verified: true,
-                    },
-                    where: {
-                        id: userId,
-                    },
-                });
-
-                return true;
-
-                // improve security
-
-                // account verified
-                // client have to use login resolver to get tokens and log in
-
-                // return {
-                // 	data: {
-                // 		accessToken: generateAccessToken({ userId, role, verified }),
-                // 		refreshToken: await generateRefreshToken({ userId, role, verified }),
-                // 	},
-                // };
-            } catch (error) {
-                // if (error.code === "TokenExpiredError") {
-                // 	return ;
-                // }
-                return false;
-            }
-        },
+        // async verifyConformationToken(_parent: any, args: EmailTokenInput): Promise<boolean> {
+        // },
 
         async logout(_p: any, args: any, _ctx: any): Promise<boolean> {
             const { token } = args as { token: string }
@@ -263,8 +218,21 @@ const UserResolver = {
 
             return { data: updatedUser }
 
-        }, [])
+        }, []),
+        forgotPassword: async (_p: any, args: any, _ctx: any): Promise<boolean> => {
+            const { email } = args as { email: string }
+
+            if (!email) return false
+
+            const user = await prisma.user.findFirst({ where: { email } })
+
+            if (!user) return false
+
+            await sendResetPasswordToken(email, user.id)
+
+            return true
+        }
     },
 };
 
-export default UserResolver;
+export default UserResolver; 

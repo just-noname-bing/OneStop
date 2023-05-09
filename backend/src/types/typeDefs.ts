@@ -139,12 +139,13 @@ export default `#graphql
         logout(token:String!): Boolean
         deleteUser(id:String!): Boolean
         updateUser(id:String!, options:updateUserInput!): updateUserResponse 
+        forgotPassword(email:String!): Boolean 
     }
 
-    type Mutation {
-        verifyConformationToken(token:String!): Boolean
-    }
-
+    # type Mutation {
+    #     verifyConformationToken(token:String!): Boolean
+    #
+    # }
 
 
     # bus Fields

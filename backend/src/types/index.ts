@@ -27,11 +27,13 @@ export interface CustomContext {
 // }
 
 // graphql types
+export const PasswordInputSchema = object({
+    password: string().required().max(20).min(5),
+})
 
 export const LoginInputSchema = object({
     email: string().email().required().max(50),
-    password: string().required().max(20),
-});
+}).concat(PasswordInputSchema);
 
 const UserInfoFields = object({
     name: string().trim().required(),
