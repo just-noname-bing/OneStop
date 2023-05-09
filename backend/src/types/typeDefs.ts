@@ -142,12 +142,6 @@ export default `#graphql
         forgotPassword(email:String!): Boolean 
     }
 
-    # type Mutation {
-    #     verifyConformationToken(token:String!): Boolean
-    #
-    # }
-
-
     # bus Fields
 
     type Routes {

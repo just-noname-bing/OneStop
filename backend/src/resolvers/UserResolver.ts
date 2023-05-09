@@ -112,9 +112,6 @@ const UserResolver = {
                 return { errors: [{ field: "email", message: "Something went wrong" }] };
             }
         },
-        // async verifyConformationToken(_parent: any, args: EmailTokenInput): Promise<boolean> {
-        // },
-
         async logout(_p: any, args: any, _ctx: any): Promise<boolean> {
             const { token } = args as { token: string }
 
@@ -211,12 +208,20 @@ const UserResolver = {
                     (ctx.user.role !== "ADMIN" ? { verified, email, ...defaultFields } : (options)) // test needed
             }
 
-            const updatedUser = await prisma.user.update({
-                where: { id },
-                data: updateFields(options)
-            })
+            // bug fix (if email already exists)
 
-            return { data: updatedUser }
+            try {
+                const updatedUser = await prisma.user.update({
+                    where: { id },
+                    data: updateFields(options)
+                })
+                return { data: updatedUser }
+            } catch (err) {
+                if (err.code === "P2002") {
+                    return { errors: [{ field: "email", message: "Already in use" }] };
+                }
+                return { errors: [] };
+            }
 
         }, []),
         forgotPassword: async (_p: any, args: any, _ctx: any): Promise<boolean> => {
