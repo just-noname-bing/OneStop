@@ -84,6 +84,17 @@ export interface UpdateUserInput {
     options: InferType<typeof UpdateUserInputSchema>;
 }
 
+export interface SearchUserInput {
+    options: {
+        name: string
+        surname: string
+        email: string
+        verified: boolean
+        role: Roles
+        created_at: Date
+    }
+}
+
 // post and comments
 
 export interface MessageResponse<T> {

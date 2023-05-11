@@ -92,17 +92,24 @@ export default `#graphql
         errors:[FieldError]
     }
 
+    input PostInputSearch {
+        text:String
+        created_at:DateTime
+    }
+
     # Post mutation
     type Mutation {
         createPost(options: PostInput!): PostResponse
         updatePost(options: updatePostCommentInput!): PostResponse
         deletePost(id: String!): Boolean
+        postSearch(options: PostInputSearch!): [Post]
     }
     # Comment mutation
     type Mutation {
         createComment(options: CommentInput!): CommentResponse
         updateComment(options: updatePostCommentInput!): CommentResponse
         deleteComment(id: String!): Boolean
+        commentSearch: [Comment]
     }
 
     # User queries
@@ -132,6 +139,16 @@ export default `#graphql
         role:Roles! # for admin/moderator
     }
 
+    input searchUserInput {
+        name:String
+        surname:String
+        email:String 
+        verified:Boolean 
+        role:Roles 
+        created_at:DateTime
+    }
+
+
     # User Mutations
     type Mutation {
         login(options: LoginInput!): UserResponse
@@ -140,6 +157,7 @@ export default `#graphql
         deleteUser(id:String!): Boolean
         updateUser(id:String!, options:updateUserInput!): updateUserResponse 
         forgotPassword(email:String!): Boolean 
+        userSearch(options:searchUserInput!): [User]
     }
 
     # bus Fields
@@ -237,6 +255,10 @@ export default `#graphql
         Stop_times: [Stop_times]!
         Calendar: [Calendar]!
         Calendar_dates:[Calendar_dates]!
+    }
+
+    type Mutation {
+        stopsSearch(stop_name:String!): [Stops]
     }
 
 `;

@@ -108,6 +108,17 @@ const PostResolver = {
 
         }, []),
 
+        // post search
+        postSearch: async (_p: any, { options }: any, _ctx: any) => {
+            const { text, created_at } = options as { text: string, created_at: string }
+            return await prisma.post.findMany({
+                where: {
+                    text: { contains: text, mode: "insensitive" },
+                    created_at: { lte: created_at }
+                }
+            })
+        },
+
         // Comment
         // creation
         createComment: IsAuth(
@@ -194,7 +205,8 @@ const PostResolver = {
 
                 return true
 
-            }, [])
+            }, []),
+
     }
 }
 

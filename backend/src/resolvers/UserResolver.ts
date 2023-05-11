@@ -6,6 +6,7 @@ import {
     LoginInputSchema,
     RegisterInput,
     RegisterInputSchema,
+    SearchUserInput,
     UpdateUserInput,
     UpdateUserInputSchema,
     UpdateUserResponse,
@@ -21,6 +22,7 @@ import { sendEmailToken, sendResetPasswordToken } from "../utils/EmailService";
 import ValidateSchema from "../utils/validateSchema";
 import IsAuth from "../utils/isAuth";
 import isAuth from "../utils/isAuth";
+import { User } from "@prisma/client";
 
 const UserResolver = {
     Query: {
@@ -236,7 +238,22 @@ const UserResolver = {
             await sendResetPasswordToken(email, user.id)
 
             return true
-        }
+        },
+
+        userSearch: isAuth(
+            async (_p: any, { options }: SearchUserInput, _ctx: any): Promise<User[]> => {
+                const { email, name, surname, role, verified, created_at } = options
+                return await prisma.user.findMany({
+                    where: {
+                        email: { contains: email, mode: "insensitive" },
+                        name: { contains: name, mode: "insensitive" },
+                        surname: { contains: surname, mode: "insensitive" },
+                        created_at: { lte: created_at },
+                        role,
+                        verified,
+                    }
+                })
+            }, ["ADMIN", "MODERATOR"])
     },
 };
 
