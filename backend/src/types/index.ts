@@ -36,8 +36,8 @@ export const LoginInputSchema = object({
 }).concat(PasswordInputSchema);
 
 const UserInfoFields = object({
-    name: string().trim().required(),
-    surname: string().trim().required(),
+    name: string().trim().required().max(50),
+    surname: string().trim().required().max(50),
 })
 
 export interface LoginInput {
