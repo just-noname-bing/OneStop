@@ -79,6 +79,8 @@ model Trips {
     stop_times                Stop_times[]
     route                     Routes?      @relation(fields: [route_id], references: [route_id])
     Shapes                    Shapes?      @relation(fields: [shapesShape_id, shapesShape_dist_traveled], references: [shape_id, shape_dist_traveled])
+    Calendar                  Calendar?    @relation(fields: [calendarService_id], references: [service_id])
+    calendarService_id        String?
 }
 
 model Shapes {
@@ -131,6 +133,7 @@ model Calendar {
     start_date     String
     end_date       String
     calendar_dates Calendar_dates[]
+    trips          Trips[]
 }
 
 model Calendar_dates {
