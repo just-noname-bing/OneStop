@@ -109,7 +109,6 @@ export default `#graphql
         createComment(options: CommentInput!): CommentResponse
         updateComment(options: updatePostCommentInput!): CommentResponse
         deleteComment(id: String!): Boolean
-        commentSearch: [Comment]
     }
 
     # User queries
