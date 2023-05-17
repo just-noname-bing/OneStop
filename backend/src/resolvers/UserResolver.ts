@@ -242,12 +242,22 @@ const UserResolver = {
 
         userSearch: isAuth(
             async (_p: any, { options }: SearchUserInput, _ctx: any): Promise<User[]> => {
-                const { email, name, surname, role, verified, created_at } = options
+                // const { email, name, surname, role, verified, created_at } = options
+                const { search_text_field, role, verified, created_at } = options
+                // fix email,name,surname -> search_text_field
+                // search this field in 3 different fields
+                //  OR: [
+                //   { email: { contains: search_text_field } },
+                //   { surname: { contains: search_text_field } },
+                //   { name: { contains: search_text_field } },
+                // ],
                 return await prisma.user.findMany({
                     where: {
-                        email: { contains: email, mode: "insensitive" },
-                        name: { contains: name, mode: "insensitive" },
-                        surname: { contains: surname, mode: "insensitive" },
+                        OR: [
+                            { email: { contains: search_text_field } },
+                            { surname: { contains: search_text_field } },
+                            { name: { contains: search_text_field } },
+                        ],
                         created_at: { lte: created_at },
                         role,
                         verified,

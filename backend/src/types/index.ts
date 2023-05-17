@@ -86,9 +86,10 @@ export interface UpdateUserInput {
 
 export interface SearchUserInput {
     options: {
-        name: string
-        surname: string
-        email: string
+        // name: string
+        // surname: string
+        // email: string
+        search_text_field: string
         verified: boolean
         role: Roles
         created_at: Date

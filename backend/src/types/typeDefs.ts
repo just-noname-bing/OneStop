@@ -109,6 +109,7 @@ export default `#graphql
         createComment(options: CommentInput!): CommentResponse
         updateComment(options: updatePostCommentInput!): CommentResponse
         deleteComment(id: String!): Boolean
+        commentSearch: [Comment]
     }
 
     # User queries
@@ -139,9 +140,10 @@ export default `#graphql
     }
 
     input searchUserInput {
-        name:String
-        surname:String
-        email:String 
+        # name:String
+        # surname:String
+        # email:String 
+        search_text_field:String
         verified:Boolean 
         role:Roles 
         created_at:DateTime
