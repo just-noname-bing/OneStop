@@ -1,14 +1,13 @@
 import { Comment, Post } from "@prisma/client"
+import { COMMENT_INPUT_SCHEMA, CommentInput, CustomContext, MessageResponse, POST_INPUT_SCHEMA, PostInput, SearchPostInput, UPDATE_COMMENT_INPUT_SCHEMA, UPDATE_POST_INPUT_SCHEMA, UpdateCommentInput, UpdatePostInput } from "../types"
 import { prisma } from "../utils/constants"
 import IsAuth from "../utils/isAuth"
-import { CommentInput, CommentInputSchema, CustomContext, MessageResponse, PostInput, updatePostCommentInput, updatePostCommentInputSchema } from "../types"
-import ValidateSchema from "../utils/validateSchema"
-import { PostInputSchema } from "../types"
+import validateSchema from "../utils/validateSchema"
 
 const PostResolver = {
     Query: {
         async getPosts(): Promise<Post[]> {
-            return await prisma.post.findMany({ include: { Comment: true } })
+            return await prisma.post.findMany({ include: { Comment: true, route: true, author: true } })
         },
         async getComments(): Promise<Comment[]> {
             return await prisma.comment.findMany()
@@ -20,15 +19,25 @@ const PostResolver = {
         createPost: IsAuth(
             async (_p: any, { options }: PostInput, ctx: CustomContext): Promise<MessageResponse<Post>> => {
                 const { text, transport_id, title } = options
-                const errors = await ValidateSchema(PostInputSchema, options)
+                const errors = await validateSchema(POST_INPUT_SCHEMA, options)
 
                 if (errors.length) {
                     return { errors }
                 }
 
                 // validate if transport exists
+                const transport_exists = await prisma.routes.findFirst({
+                    where: {
+                        route_id: transport_id
+                    }
+                })
 
-                const newPost = await prisma.post.create({
+                if (!transport_exists) {
+                    return { errors: [{ field: "text", message: "transport not exist" }] }
+                }
+
+
+                const new_post = await prisma.post.create({
                     data: {
                         title,
                         text,
@@ -37,20 +46,20 @@ const PostResolver = {
                     }
                 })
 
-                if (!newPost) {
+                if (!new_post) {
                     return { errors: [{ field: "text", message: "something went wrong" }] }
                 }
 
-                return { data: newPost }
+                return { data: new_post }
 
             }, []),
 
         // update
         updatePost: IsAuth(
-            async (_p: any, { options }: updatePostCommentInput, ctx: CustomContext): Promise<MessageResponse<Post>> => {
+            async (_p: any, { options }: UpdatePostInput, ctx: CustomContext): Promise<MessageResponse<Post>> => {
                 // id, newText
-                const { id, text } = options
-                const errors = await ValidateSchema(updatePostCommentInputSchema, options)
+                const { id, text, transport_id, title } = options
+                const errors = await validateSchema(UPDATE_POST_INPUT_SCHEMA, options)
 
                 if (errors.length) {
                     return { errors }
@@ -73,9 +82,20 @@ const PostResolver = {
                     }
                 }
 
-                const newPost = await prisma.post.update({
+                //validate if transport exists
+                const transport_exists = await prisma.routes.findFirst({
+                    where: {
+                        route_id: transport_id
+                    }
+                })
+
+                if (!transport_exists) {
+                    return { errors: [{ field: "text", message: "transport not exist" }] }
+                }
+
+                const new_post = await prisma.post.update({
                     where: { id: post.id },
-                    data: { text }
+                    data: { text, title, transport_id }
                 })
 
                 // if (!newPost) {
@@ -84,7 +104,7 @@ const PostResolver = {
                 //     }
                 // }
 
-                return { data: newPost }
+                return { data: new_post }
 
             }, []),
 
@@ -116,12 +136,21 @@ const PostResolver = {
         }, []),
 
         // post search
-        postSearch: async (_p: any, { options }: any, _ctx: any) => {
-            const { text, created_at } = options as { text: string, created_at: string }
+        postSearch: async (_p: any, { options }: SearchPostInput, _ctx: any) => {
+            // search_text
+            const { search_text_field, transport_id, created_at } = options
             return await prisma.post.findMany({
                 where: {
-                    text: { contains: text, mode: "insensitive" },
-                    created_at: { lte: created_at }
+                    AND: [
+                        {
+                            OR: [
+                                { title: { contains: search_text_field, mode: "insensitive" } },
+                                { text: { contains: search_text_field, mode: "insensitive" } }
+                            ]
+                        },
+                        { transport_id },
+                        { created_at: { lte: created_at } }
+                    ]
                 }
             })
         },
@@ -131,7 +160,7 @@ const PostResolver = {
         createComment: IsAuth(
             async (_p: any, { options }: CommentInput, ctx: CustomContext): Promise<MessageResponse<Comment>> => {
                 const { text, postId } = options
-                const errors = await ValidateSchema(CommentInputSchema, options)
+                const errors = await validateSchema(COMMENT_INPUT_SCHEMA, options)
 
                 if (errors.length) return { errors }
 
@@ -153,10 +182,10 @@ const PostResolver = {
 
         // update
         updateComment: IsAuth(
-            async (_p: any, { options }: updatePostCommentInput, ctx: CustomContext) => {
+            async (_p: any, { options }: UpdateCommentInput, ctx: CustomContext) => {
 
                 const { id, text } = options
-                const errors = await ValidateSchema(updatePostCommentInputSchema, options)
+                const errors = await validateSchema(UPDATE_COMMENT_INPUT_SCHEMA, options)
 
                 if (errors.length) {
                     return { errors }

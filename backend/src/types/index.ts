@@ -27,21 +27,21 @@ export interface CustomContext {
 // }
 
 // graphql types
-export const PasswordInputSchema = object({
+export const PASSWORD_INPUT_SCHEMA = object({
     password: string().required().max(20).min(5),
 })
 
-export const LoginInputSchema = object({
+export const LOGIN_INPUT_SCHEMA = object({
     email: string().email().required().max(50),
-}).concat(PasswordInputSchema);
+}).concat(PASSWORD_INPUT_SCHEMA);
 
-const UserInfoFields = object({
+const user_info_fields = object({
     name: string().trim().required().max(50),
     surname: string().trim().required().max(50),
 })
 
 export interface LoginInput {
-    options: InferType<typeof LoginInputSchema>;
+    options: InferType<typeof LOGIN_INPUT_SCHEMA>;
 }
 
 export interface EmailTokenInput {
@@ -68,20 +68,20 @@ export interface UpdateUserResponse {
     errors?: FieldError[];
 }
 
-export const RegisterInputSchema = object({}).concat(LoginInputSchema).concat(UserInfoFields);
+export const REGISTER_INPUT_SCHEMA = object({}).concat(LOGIN_INPUT_SCHEMA).concat(user_info_fields);
 
 export interface RegisterInput {
-    options: InferType<typeof RegisterInputSchema>;
+    options: InferType<typeof REGISTER_INPUT_SCHEMA>;
 }
 
-export const UpdateUserInputSchema = object({
+export const UPDATE_USER_INPUT_SCHEMA = object({
     verified: boolean().required(),
     role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"]).required()
-}).concat(UserInfoFields).concat(LoginInputSchema.omit(["password"]));
+}).concat(user_info_fields).concat(LOGIN_INPUT_SCHEMA.omit(["password"]));
 
 export interface UpdateUserInput {
     id: string
-    options: InferType<typeof UpdateUserInputSchema>;
+    options: InferType<typeof UPDATE_USER_INPUT_SCHEMA>;
 }
 
 export interface SearchUserInput {
@@ -96,6 +96,7 @@ export interface SearchUserInput {
     }
 }
 
+
 // post and comments
 
 export interface MessageResponse<T> {
@@ -103,23 +104,38 @@ export interface MessageResponse<T> {
     errors?: FieldError[];
 }
 
-export const PostInputSchema = object({
+export const POST_INPUT_SCHEMA = object({
     text: string().trim().required().max(200),
     title: string().trim().required().max(100),
     transport_id: string().required(),
 });
 
 export interface PostInput {
-    options: InferType<typeof PostInputSchema>;
+    options: InferType<typeof POST_INPUT_SCHEMA>;
 }
 
-export const updatePostCommentInputSchema = object({
+export const UPDATE_POST_INPUT_SCHEMA = object({
+    id: string().required().uuid(),
+}).concat(POST_INPUT_SCHEMA);
+
+export const UPDATE_COMMENT_INPUT_SCHEMA = object({
     id: string().required().uuid(),
     text: string().trim().required().max(200), // new text
 });
 
-export interface updatePostCommentInput {
-    options: InferType<typeof updatePostCommentInputSchema>;
+
+// new update Post args
+// id:String!
+// text:String!
+// title:String!
+// transport_id:String!
+
+export interface UpdatePostInput {
+    options: InferType<typeof UPDATE_POST_INPUT_SCHEMA>;
+}
+
+export interface UpdateCommentInput {
+    options: InferType<typeof UPDATE_COMMENT_INPUT_SCHEMA>;
 }
 
 // export interface withInputSchema<t:ObjectSchema> {
@@ -127,12 +143,29 @@ export interface updatePostCommentInput {
 // }
 
 
-export const CommentInputSchema = object({
+export const COMMENT_INPUT_SCHEMA = object({
     postId: string().required().uuid(),
     text: string().trim().required().max(200),
 });
 
 export interface CommentInput {
-    options: InferType<typeof CommentInputSchema>;
+    options: InferType<typeof COMMENT_INPUT_SCHEMA>;
+}
+
+
+
+// input PostInputSearch {
+//     # title:String
+//     # text:String
+//     search_text_field:String
+//     transport_id:String
+//     created_at:DateTime
+// }
+export interface SearchPostInput {
+    options: {
+        search_text_field: string
+        transport_id: string
+        created_at: Date
+    }
 }
 

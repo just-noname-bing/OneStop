@@ -1,21 +1,21 @@
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware as expressM } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { hash } from "bcrypt";
 import { json } from "body-parser";
 import express from "express";
 import http from "http";
 import { verify } from "jsonwebtoken";
 import { BusResolver } from "./resolvers/BusResolver";
-import UserResolver from "./resolvers/UserResolver";
-import typeDefs from "./types/typeDefs";
-import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
-import { EMAIL_VERIFICATION_TOKEN_SECRET, prisma, PASSWORD_SALT_ROUNDS, REFRESH_TOKEN_SECRET, SERVER_PORT } from "./utils/constants";
 import PostResolver from "./resolvers/PostResolver";
-import ValidateSchema from "./utils/validateSchema";
-import { PasswordInputSchema } from "./types";
+import UserResolver from "./resolvers/UserResolver";
+import { PASSWORD_INPUT_SCHEMA } from "./types";
+import typeDefs from "./types/typeDefs";
 import { EmailTokenPayload } from "./utils/EmailService";
-import { hash } from "bcrypt";
+import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
+import { EMAIL_VERIFICATION_TOKEN_SECRET, PASSWORD_SALT_ROUNDS, REFRESH_TOKEN_SECRET, SERVER_PORT, prisma } from "./utils/constants";
 import defaultAdmin from "./utils/defaultAdmin";
+import validateSchema from "./utils/validateSchema";
 
 (async () => {
 
@@ -29,7 +29,7 @@ import defaultAdmin from "./utils/defaultAdmin";
     await defaultAdmin(); // will create a default admin if not exists
 
     const app = express();
-    const httpServer = http.createServer(app);
+    const http_server = http.createServer(app);
 
     app.use(json());
 
@@ -63,10 +63,10 @@ import defaultAdmin from "./utils/defaultAdmin";
 
         try {
             const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload
-            const usersToken = await prisma.forgotPasswordTokens.findFirst({ where: { userId } })
+            const users_token = await prisma.forgotPasswordTokens.findFirst({ where: { userId } })
 
-            if (usersToken && usersToken.token === token) {
-                const errors = await ValidateSchema(PasswordInputSchema, { password })
+            if (users_token && users_token.token === token) {
+                const errors = await validateSchema(PASSWORD_INPUT_SCHEMA, { password })
 
                 if (errors.length) {
                     res.json({ ok: false, errors })
@@ -98,17 +98,17 @@ import defaultAdmin from "./utils/defaultAdmin";
 
         try {
             const { role, userId, verified } = verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
-            const userTokens = await prisma.refreshTokens.findFirst({
+            const user_tokens = await prisma.refreshTokens.findFirst({
                 where: { userId },
             });
 
-            if (!userTokens || !userTokens.token.includes(token)) return res.sendStatus(401);
+            if (!user_tokens || !user_tokens.token.includes(token)) return res.sendStatus(401);
 
             // token exists and not expired
             // delete old token
             await prisma.refreshTokens.update({
                 where: { userId },
-                data: { token: userTokens.token.filter((x) => x !== token) },
+                data: { token: user_tokens.token.filter((x) => x !== token) },
             });
 
             return res.json({
@@ -130,7 +130,7 @@ import defaultAdmin from "./utils/defaultAdmin";
     const server = new ApolloServer({
         typeDefs,
         resolvers: [UserResolver, BusResolver, PostResolver],
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+        plugins: [ApolloServerPluginDrainHttpServer({ httpServer: http_server })],
     });
 
     await server.start();
@@ -143,6 +143,6 @@ import defaultAdmin from "./utils/defaultAdmin";
     );
 
     // Modified server startup
-    httpServer.listen({ port: SERVER_PORT });
+    http_server.listen({ port: SERVER_PORT });
     console.log(`🚀 Server ready at http://localhost:${SERVER_PORT}/`);
 })();

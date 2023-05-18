@@ -77,7 +77,7 @@ export default `#graphql
         transport_id:String!
     }
 
-    input CommentInput {
+    input commentInput {
         postId:String!
         text:String!
     }
@@ -104,9 +104,10 @@ export default `#graphql
         errors:[FieldError]
     }
 
-    input PostInputSearch {
-        title:String
-        text:String
+    input searchPostInput {
+        # title:String
+        # text:String
+        search_text_field:String
         transport_id:String
         created_at:DateTime
     }
@@ -116,14 +117,14 @@ export default `#graphql
         createPost(options: PostInput!): PostResponse
         updatePost(options: updatePostInput!): PostResponse
         deletePost(id: String!): Boolean
-        postSearch(options: PostInputSearch!): [Post]
+        postSearch(options: searchPostInput!): [Post]
     }
     # Comment mutation
     type Mutation {
-        createComment(options: CommentInput!): CommentResponse
+        createComment(options: commentInput!): CommentResponse
         updateComment(options: updateCommentInput!): CommentResponse
         deleteComment(id: String!): Boolean
-        commentSearch: [Comment]
+        # commentSearch: [Comment] // not used
     }
 
     # User queries
@@ -132,14 +133,14 @@ export default `#graphql
         getUsers: [User] # only for moderator/admin
     }
 
-    input RegisterInput {
+    input registerInput {
         name:String!
         surname:String!
         email:String!
         password:String!
     }
 
-    input LoginInput {
+    input loginInput {
         email:String!
         password:String!
     }
@@ -166,8 +167,8 @@ export default `#graphql
 
     # User Mutations
     type Mutation {
-        login(options: LoginInput!): UserResponse
-        register(options: RegisterInput!): UserResponse
+        login(options: loginInput!): UserResponse
+        register(options: registerInput!): UserResponse
         logout(token:String!): Boolean
         deleteUser(id:String!): Boolean
         updateUser(id:String!, options:updateUserInput!): updateUserResponse 
