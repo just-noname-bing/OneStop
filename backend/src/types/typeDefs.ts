@@ -46,10 +46,13 @@ export default `#graphql
         id: String!
         author_id: String!
         text: String!
+        title: String!
+        transport_id: String!
         created_at: DateTime!
         updated_at: DateTime!
         author: User!
         Comment: [Comment!]!
+        route: Routes! # route / trasport where is accident 
     }
 
     type Comment {
@@ -70,6 +73,8 @@ export default `#graphql
 
     input PostInput {
         text:String!
+        title:String!
+        transport_id:String!
     }
 
     input CommentInput {
@@ -77,7 +82,14 @@ export default `#graphql
         text:String!
     }
 
-    input updatePostCommentInput {
+    input updatePostInput {
+        id:String!
+        text:String!
+        title:String!
+        transport_id:String!
+    }
+
+    input updateCommentInput {
         id:String!
         text:String!
     }
@@ -100,14 +112,14 @@ export default `#graphql
     # Post mutation
     type Mutation {
         createPost(options: PostInput!): PostResponse
-        updatePost(options: updatePostCommentInput!): PostResponse
+        updatePost(options: updatePostInput!): PostResponse
         deletePost(id: String!): Boolean
         postSearch(options: PostInputSearch!): [Post]
     }
     # Comment mutation
     type Mutation {
         createComment(options: CommentInput!): CommentResponse
-        updateComment(options: updatePostCommentInput!): CommentResponse
+        updateComment(options: updateCommentInput!): CommentResponse
         deleteComment(id: String!): Boolean
         commentSearch: [Comment]
     }
@@ -174,6 +186,7 @@ export default `#graphql
         route_text_color: String!
         route_sort_order: String!
         trips: [Trips]!
+        posts:[Post]!
     }
 
     type Trips {

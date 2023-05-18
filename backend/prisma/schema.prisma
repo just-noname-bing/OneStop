@@ -32,13 +32,19 @@ model User {
 }
 
 model Post {
-    id         String    @id @default(uuid())
-    author_id  String
-    text       String
-    created_at DateTime  @default(now())
-    updated_at DateTime  @updatedAt
-    author     User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
-    Comment    Comment[]
+    id           String    @id @default(uuid())
+    author_id    String
+    text         String
+    title        String // Post title
+    // we save route/transport id instead -> then we can get all information about that 
+    // route/ bus (name, number, its route)
+    transport_id String?
+    // location     String // place where something happend (kengarags)
+    created_at   DateTime  @default(now())
+    updated_at   DateTime  @updatedAt
+    author       User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
+    Comment      Comment[]
+    route        Routes?   @relation(fields: [transport_id], references: [route_id])
 }
 
 model Comment {
@@ -53,7 +59,7 @@ model Comment {
 }
 
 model Routes {
-    route_id         String  @id
+    route_id         String  @id // transport name riga_bus_13
     route_short_name String
     route_long_name  String
     route_desc       String
@@ -63,6 +69,7 @@ model Routes {
     route_text_color String
     route_sort_order String
     trips            Trips[]
+    posts            Post[]
 }
 
 model Trips {
