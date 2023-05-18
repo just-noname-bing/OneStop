@@ -1,6 +1,6 @@
 import { Roles } from "@prisma/client";
 import { sign } from "jsonwebtoken";
-import { accessToken_secret, prisma, refreshToken_secret } from "./constants";
+import { ACCESS_TOKEN_SECRET, prisma, REFRESH_TOKEN_SECRET } from "./constants";
 
 export interface TokenPayload {
     userId: string;
@@ -9,13 +9,13 @@ export interface TokenPayload {
 }
 
 export const generateAccessToken = (payload: TokenPayload) => {
-    return sign(payload, accessToken_secret, { expiresIn: "10m" });
+    return sign(payload, ACCESS_TOKEN_SECRET, { expiresIn: "10m" });
 };
 
 export const generateRefreshToken = async (payload: TokenPayload) => {
     // save every new token to database
     // add new token to array
-    const refreshToken = sign(payload, refreshToken_secret, { expiresIn: "50m" });
+    const refreshToken = sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "50m" });
 
     await prisma.refreshTokens.upsert({
         where: { userId: payload.userId },

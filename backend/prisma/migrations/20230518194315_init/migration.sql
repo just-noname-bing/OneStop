@@ -2,6 +2,22 @@
 CREATE TYPE "Roles" AS ENUM ('DEFAULT', 'MODERATOR', 'ADMIN');
 
 -- CreateTable
+CREATE TABLE "refreshTokens" (
+    "userId" TEXT NOT NULL,
+    "token" TEXT[],
+
+    CONSTRAINT "refreshTokens_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "forgotPasswordTokens" (
+    "userId" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+
+    CONSTRAINT "forgotPasswordTokens_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -17,18 +33,32 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "Post" (
+    "id" TEXT NOT NULL,
+    "author_id" TEXT NOT NULL,
+    "text" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "transport_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Comment" (
     "id" TEXT NOT NULL,
     "author_id" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "postId" TEXT NOT NULL,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Route" (
+CREATE TABLE "Routes" (
     "route_id" TEXT NOT NULL,
     "route_short_name" TEXT NOT NULL,
     "route_long_name" TEXT NOT NULL,
@@ -37,8 +67,9 @@ CREATE TABLE "Route" (
     "route_url" TEXT NOT NULL,
     "route_color" TEXT NOT NULL,
     "route_text_color" TEXT NOT NULL,
+    "route_sort_order" TEXT NOT NULL,
 
-    CONSTRAINT "Route_pkey" PRIMARY KEY ("route_id")
+    CONSTRAINT "Routes_pkey" PRIMARY KEY ("route_id")
 );
 
 -- CreateTable
@@ -53,6 +84,7 @@ CREATE TABLE "Trips" (
     "wheelchair_accessible" TEXT NOT NULL,
     "shapesShape_id" TEXT,
     "shapesShape_dist_traveled" TEXT,
+    "calendarService_id" TEXT,
 
     CONSTRAINT "Trips_pkey" PRIMARY KEY ("trip_id")
 );
@@ -99,13 +131,13 @@ CREATE TABLE "Stop_times" (
 -- CreateTable
 CREATE TABLE "Calendar" (
     "service_id" TEXT NOT NULL,
-    "monday" BOOLEAN NOT NULL,
-    "tuesday" BOOLEAN NOT NULL,
-    "wednesday" BOOLEAN NOT NULL,
-    "thursday" BOOLEAN NOT NULL,
-    "friday" BOOLEAN NOT NULL,
-    "saturday" BOOLEAN NOT NULL,
-    "sunday" BOOLEAN NOT NULL,
+    "monday" TEXT NOT NULL,
+    "tuesday" TEXT NOT NULL,
+    "wednesday" TEXT NOT NULL,
+    "thursday" TEXT NOT NULL,
+    "friday" TEXT NOT NULL,
+    "saturday" TEXT NOT NULL,
+    "sunday" TEXT NOT NULL,
     "start_date" TEXT NOT NULL,
     "end_date" TEXT NOT NULL,
 
@@ -122,16 +154,34 @@ CREATE TABLE "Calendar_dates" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "refreshTokens_userId_key" ON "refreshTokens"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "forgotPasswordTokens_userId_key" ON "forgotPasswordTokens"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Post" ADD CONSTRAINT "Post_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Trips" ADD CONSTRAINT "Trips_route_id_fkey" FOREIGN KEY ("route_id") REFERENCES "Route"("route_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Post" ADD CONSTRAINT "Post_transport_id_fkey" FOREIGN KEY ("transport_id") REFERENCES "Routes"("route_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trips" ADD CONSTRAINT "Trips_route_id_fkey" FOREIGN KEY ("route_id") REFERENCES "Routes"("route_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Trips" ADD CONSTRAINT "Trips_shapesShape_id_shapesShape_dist_traveled_fkey" FOREIGN KEY ("shapesShape_id", "shapesShape_dist_traveled") REFERENCES "Shapes"("shape_id", "shape_dist_traveled") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trips" ADD CONSTRAINT "Trips_calendarService_id_fkey" FOREIGN KEY ("calendarService_id") REFERENCES "Calendar"("service_id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Stop_times" ADD CONSTRAINT "Stop_times_stop_id_fkey" FOREIGN KEY ("stop_id") REFERENCES "Stops"("stop_id") ON DELETE RESTRICT ON UPDATE CASCADE;

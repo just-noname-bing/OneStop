@@ -105,7 +105,9 @@ export default `#graphql
     }
 
     input PostInputSearch {
+        title:String
         text:String
+        transport_id:String
         created_at:DateTime
     }
 

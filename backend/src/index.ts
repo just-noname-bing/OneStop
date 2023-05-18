@@ -9,12 +9,13 @@ import { BusResolver } from "./resolvers/BusResolver";
 import UserResolver from "./resolvers/UserResolver";
 import typeDefs from "./types/typeDefs";
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
-import { emailVerificationToken_secret, prisma, pswSaltRounds, refreshToken_secret, server_port } from "./utils/constants";
+import { EMAIL_VERIFICATION_TOKEN_SECRET, prisma, PASSWORD_SALT_ROUNDS, REFRESH_TOKEN_SECRET, SERVER_PORT } from "./utils/constants";
 import PostResolver from "./resolvers/PostResolver";
 import ValidateSchema from "./utils/validateSchema";
 import { PasswordInputSchema } from "./types";
 import { EmailTokenPayload } from "./utils/EmailService";
 import { hash } from "bcrypt";
+import defaultAdmin from "./utils/defaultAdmin";
 
 (async () => {
 
@@ -24,6 +25,8 @@ import { hash } from "bcrypt";
     } catch (err) {
         return console.log("Could not connect to the database ", err)
     }
+
+    await defaultAdmin(); // will create a default admin if not exists
 
     const app = express();
     const httpServer = http.createServer(app);
@@ -37,7 +40,7 @@ import { hash } from "bcrypt";
         if (!token) return res.status(401).json({ ok: false, error: "token required" });;
 
         try {
-            const { userId } = verify(token, emailVerificationToken_secret) as EmailTokenPayload;
+            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload;
             // change verified in database
             // if no user
             // this will throw an error
@@ -59,7 +62,7 @@ import { hash } from "bcrypt";
         const { token, password } = req.body
 
         try {
-            const { userId } = verify(token, emailVerificationToken_secret) as EmailTokenPayload
+            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload
             const usersToken = await prisma.forgotPasswordTokens.findFirst({ where: { userId } })
 
             if (usersToken && usersToken.token === token) {
@@ -74,7 +77,7 @@ import { hash } from "bcrypt";
                 await prisma.$transaction([
                     prisma.user.update({
                         where: { id: userId },
-                        data: { password: await hash(password, pswSaltRounds) }
+                        data: { password: await hash(password, PASSWORD_SALT_ROUNDS) }
                     }),
                     prisma.forgotPasswordTokens.delete({ where: { userId } }),
                     prisma.refreshTokens.delete({ where: { userId } })
@@ -94,7 +97,7 @@ import { hash } from "bcrypt";
         const { token } = req.body;
 
         try {
-            const { role, userId, verified } = verify(token, refreshToken_secret) as TokenPayload;
+            const { role, userId, verified } = verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
             const userTokens = await prisma.refreshTokens.findFirst({
                 where: { userId },
             });
@@ -140,6 +143,6 @@ import { hash } from "bcrypt";
     );
 
     // Modified server startup
-    httpServer.listen({ port: server_port });
-    console.log(`🚀 Server ready at http://localhost:${server_port}/`);
+    httpServer.listen({ port: SERVER_PORT });
+    console.log(`🚀 Server ready at http://localhost:${SERVER_PORT}/`);
 })();

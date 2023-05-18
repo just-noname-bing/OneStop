@@ -1,6 +1,6 @@
 import { sign } from "jsonwebtoken";
 import { createTestAccount, createTransport, getTestMessageUrl } from "nodemailer";
-import { emailVerificationToken_secret, prisma } from "./constants";
+import { EMAIL_VERIFICATION_TOKEN_SECRET, prisma } from "./constants";
 
 export interface EmailTokenPayload {
     email: string;
@@ -8,7 +8,7 @@ export interface EmailTokenPayload {
 }
 
 export const sendEmailToken = async (email: string, userId: string) => {
-    const token = sign({ email, userId }, emailVerificationToken_secret, {
+    const token = sign({ email, userId }, EMAIL_VERIFICATION_TOKEN_SECRET, {
         expiresIn: "1h",
     });
     await sendEmail(email, token, "Email Verification")
@@ -16,7 +16,7 @@ export const sendEmailToken = async (email: string, userId: string) => {
 
 // async..await is not allowed in global scope, must use a wrapper
 export const sendResetPasswordToken = async (email: string, userId: string) => {
-    const token = sign({ email, userId }, emailVerificationToken_secret, {
+    const token = sign({ email, userId }, EMAIL_VERIFICATION_TOKEN_SECRET, {
         expiresIn: "1h",
     });
 

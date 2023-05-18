@@ -1,6 +1,6 @@
 import { Roles } from "@prisma/client"
 import { verify } from "jsonwebtoken"
-import { accessToken_secret, prisma } from "./constants"
+import { ACCESS_TOKEN_SECRET, prisma } from "./constants"
 import { TokenPayload } from "./TokenService"
 
 const IsAuth = (r: any, roles: Roles[]) => {
@@ -9,7 +9,7 @@ const IsAuth = (r: any, roles: Roles[]) => {
         //if not valid throw 401
         let tokenPayload;
         try {
-            tokenPayload = verify(ctx.auth.split(" ")[1], accessToken_secret) as TokenPayload
+            tokenPayload = verify(ctx.auth.split(" ")[1], ACCESS_TOKEN_SECRET) as TokenPayload
         } catch (error) {
             // invalid signature
             throw new Error("not authenticated");

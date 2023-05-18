@@ -19,15 +19,22 @@ const PostResolver = {
         // creation
         createPost: IsAuth(
             async (_p: any, { options }: PostInput, ctx: CustomContext): Promise<MessageResponse<Post>> => {
-                const { text } = options
+                const { text, transport_id, title } = options
                 const errors = await ValidateSchema(PostInputSchema, options)
 
                 if (errors.length) {
                     return { errors }
                 }
 
+                // validate if transport exists
+
                 const newPost = await prisma.post.create({
-                    data: { text, author_id: ctx.user.id }
+                    data: {
+                        title,
+                        text,
+                        transport_id,
+                        author_id: ctx.user.id
+                    }
                 })
 
                 if (!newPost) {

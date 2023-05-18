@@ -38,13 +38,13 @@ model Post {
     title        String // Post title
     // we save route/transport id instead -> then we can get all information about that 
     // route/ bus (name, number, its route)
-    transport_id String?
+    transport_id String
     // location     String // place where something happend (kengarags)
     created_at   DateTime  @default(now())
     updated_at   DateTime  @updatedAt
     author       User      @relation(fields: [author_id], references: [id], onDelete: Cascade)
     Comment      Comment[]
-    route        Routes?   @relation(fields: [transport_id], references: [route_id])
+    route        Routes    @relation(fields: [transport_id], references: [route_id])
 }
 
 model Comment {

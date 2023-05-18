@@ -105,6 +105,8 @@ export interface MessageResponse<T> {
 
 export const PostInputSchema = object({
     text: string().trim().required().max(200),
+    title: string().trim().required().max(100),
+    transport_id: string().required(),
 });
 
 export interface PostInput {

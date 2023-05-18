@@ -15,8 +15,8 @@ import {
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "../utils/TokenService";
 import {
     prisma,
-    pswSaltRounds,
-    refreshToken_secret,
+    PASSWORD_SALT_ROUNDS,
+    REFRESH_TOKEN_SECRET,
 } from "../utils/constants";
 import { sendEmailToken, sendResetPasswordToken } from "../utils/EmailService";
 import ValidateSchema from "../utils/validateSchema";
@@ -88,7 +88,7 @@ const UserResolver = {
                         email,
                         name,
                         surname,
-                        password: await hash(password, pswSaltRounds),
+                        password: await hash(password, PASSWORD_SALT_ROUNDS),
                     },
                 });
 
@@ -120,7 +120,7 @@ const UserResolver = {
             if (!token) throw new Error("token is required")
 
             try {
-                const { userId } = verify(token, refreshToken_secret) as TokenPayload
+                const { userId } = verify(token, REFRESH_TOKEN_SECRET) as TokenPayload
 
                 const userTokens = await prisma.refreshTokens.findUnique({ where: { userId } })
 
