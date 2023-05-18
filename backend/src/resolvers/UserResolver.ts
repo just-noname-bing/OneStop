@@ -3,12 +3,12 @@ import { verify } from "jsonwebtoken";
 import {
     CustomContext,
     LoginInput,
-    LoginInputSchema,
+    LOGIN_INPUT_SCHEMA,
     RegisterInput,
-    RegisterInputSchema,
+    REGISTER_INPUT_SCHEMA,
     SearchUserInput,
     UpdateUserInput,
-    UpdateUserInputSchema,
+    UPDATE_USER_INPUT_SCHEMA,
     UpdateUserResponse,
     UserResponse,
 } from "../types";
@@ -19,7 +19,7 @@ import {
     REFRESH_TOKEN_SECRET,
 } from "../utils/constants";
 import { sendEmailToken, sendResetPasswordToken } from "../utils/EmailService";
-import ValidateSchema from "../utils/validateSchema";
+import validateSchema from "../utils/validateSchema";
 import IsAuth from "../utils/isAuth";
 import isAuth from "../utils/isAuth";
 import { User } from "@prisma/client";
@@ -38,7 +38,7 @@ const UserResolver = {
         async login(_parent: any, { options }: LoginInput): Promise<UserResponse> {
             const { email, password } = options;
 
-            const errors = await ValidateSchema(LoginInputSchema, options);
+            const errors = await validateSchema(LOGIN_INPUT_SCHEMA, options);
             if (errors.length) return { errors };
 
             const user = await prisma.user.findFirst({ where: { email } });
@@ -78,7 +78,7 @@ const UserResolver = {
         },
         async register(_paren: any, { options }: RegisterInput): Promise<UserResponse> {
             const { email, name, password, surname } = options;
-            const errors = await ValidateSchema(RegisterInputSchema, options);
+            const errors = await validateSchema(REGISTER_INPUT_SCHEMA, options);
 
             if (errors.length) return { errors };
 
@@ -181,7 +181,7 @@ const UserResolver = {
                 throw new Error("id is required")
             }
 
-            const errors = await ValidateSchema(UpdateUserInputSchema, options)
+            const errors = await validateSchema(UPDATE_USER_INPUT_SCHEMA, options)
 
             if (errors.length) {
                 return { errors }
@@ -253,14 +253,19 @@ const UserResolver = {
                 // ],
                 return await prisma.user.findMany({
                     where: {
-                        OR: [
-                            { email: { contains: search_text_field } },
-                            { surname: { contains: search_text_field } },
-                            { name: { contains: search_text_field } },
+                        AND: [
+                            {
+
+                                OR: [
+                                    { email: { contains: search_text_field } },
+                                    { surname: { contains: search_text_field } },
+                                    { name: { contains: search_text_field } },
+                                ]
+                            },
+                            { created_at: { lte: created_at } },
+                            { role },
+                            { verified },
                         ],
-                        created_at: { lte: created_at },
-                        role,
-                        verified,
                     }
                 })
             }, ["ADMIN", "MODERATOR"])
