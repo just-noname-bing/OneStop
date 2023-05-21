@@ -1,12 +1,14 @@
 import React from "react"
 import { Text, View, Button } from "react-native";
-import PageContainer from "./PageContainer";
+import { BottomMenu } from "./BottomMenu";
+import { Center } from "./styled/Center";
 
-export function Home({ navigation }: any) {
+export function Home() {
     return (
-        <PageContainer>
-            <Text>helo from home page</Text>
-            <Button title="login" onPress={() => navigation.navigate("Login")} />
-        </PageContainer>
+        <Center>
+            <Center style={{ backgroundColor: "white", width: "100%" }}>
+                <Text>Map</Text>
+            </Center>
+        </Center>
     )
 }
