@@ -1,14 +1,11 @@
-import React from "react"
-import { Text, View, Button } from "react-native";
-import { BottomMenu } from "./BottomMenu";
+import React, { useState } from "react"
 import { Center } from "./styled/Center";
+import MapView from "react-native-maps";
 
 export function Home() {
     return (
         <Center>
-            <Center style={{ backgroundColor: "white", width: "100%" }}>
-                <Text>Map</Text>
-            </Center>
+            <MapView style={{ flex: 1, width: "100%" }} />
         </Center>
     )
 }

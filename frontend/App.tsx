@@ -1,21 +1,41 @@
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Account } from './components/Account';
-import { BottomMenu } from './components/BottomMenu';
 import { Home } from './components/Home';
 import { Posts } from './components/Posts';
 
-const Stack = createNativeStackNavigator()
+//icons
+import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import { COLOR_PALETE } from './utils/colors';
+import { StatusBar } from 'expo-status-bar';
+
+const Tab = createBottomTabNavigator()
 
 export default function App() {
     return (
         <NavigationContainer>
-            <Stack.Navigator>
-                <Stack.Screen name='Home' options={{ header: () => null }} component={Home} />
-                <Stack.Screen name='Account' component={Account} />
-                <Stack.Screen name='Posts' options={{ gestureDirection: "horizontal" }} component={Posts} />
-            </Stack.Navigator>
-            <BottomMenu />
+            <Tab.Navigator screenOptions={{
+                header: () => null,
+                tabBarLabel: () => null,
+                tabBarActiveTintColor: COLOR_PALETE.buttonActive
+            }}>
+                <Tab.Screen
+                    options={{ tabBarIcon: (p) => <Entypo name="chat" {...p} /> }}
+                    name='Posts'
+                    component={Posts}
+                />
+                <Tab.Screen
+                    options={{ tabBarIcon: (p) => <Ionicons name="map-sharp" {...p} /> }}
+                    name='Map'
+                    component={Home}
+                />
+                <Tab.Screen
+                    options={{ tabBarIcon: (p) => <MaterialIcons name="account-circle" {...p} /> }}
+                    name='Account'
+                    component={Account}
+                />
+            </Tab.Navigator>
+            <StatusBar style='auto' />
         </NavigationContainer>
     );
 }
