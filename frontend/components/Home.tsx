@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { Center } from "./styled/Center";
 import MapView from "react-native-maps";
 

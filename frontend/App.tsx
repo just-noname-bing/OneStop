@@ -17,7 +17,7 @@ export default function App() {
             <Tab.Navigator screenOptions={{
                 header: () => null,
                 tabBarLabel: () => null,
-                tabBarActiveTintColor: COLOR_PALETE.buttonActive
+                tabBarActiveTintColor: COLOR_PALETE.buttonActive,
             }}>
                 <Tab.Screen
                     options={{ tabBarIcon: (p) => <Entypo name="chat" {...p} /> }}
