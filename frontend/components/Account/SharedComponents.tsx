@@ -7,7 +7,6 @@ export const LoginWrapper = styled.View({
     paddingHorizontal: 50,
     paddingBottom: 100,
     gap: 60 / 1.5,
-    // backgroundColor: "blue"
 })
 
 export const Title = styled.Text({
@@ -23,13 +22,11 @@ export const TitleWrapper = styled.View({
     alignItems: 'center',
     gap: 21.5,
 
-    // backgroundColor: "yellow"
 })
 
 export const FormWrapper = styled.View({
     flex: 1,
     gap: 60 / 1.5,
-    // backgroundColor: "silver"
 })
 
 export const CustomForm = styled.View({
