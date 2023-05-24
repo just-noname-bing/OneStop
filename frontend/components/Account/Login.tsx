@@ -32,6 +32,7 @@ export function Login({ navigation }: any): JSX.Element {
                                     <InputFieldWrapper>
                                         <InputLabel>E-mail</InputLabel>
                                         <InputField
+                                            keyboardType="email-address"
                                             onChangeText={handleChange('email')}
                                             value={values.email}
                                             style={errors.email ? { borderBottomColor: COLOR_PALETE.tram } : {}}
@@ -41,6 +42,7 @@ export function Login({ navigation }: any): JSX.Element {
                                     <InputFieldWrapper>
                                         <InputLabel>Password</InputLabel>
                                         <InputField
+                                            secureTextEntry
                                             onChangeText={handleChange('password')}
                                             value={values.password}
                                             style={errors.password ? { borderBottomColor: COLOR_PALETE.tram } : {}}

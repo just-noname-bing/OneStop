@@ -5,6 +5,7 @@ export const LoginWrapper = styled.View({
     flex: 1,
     paddingTop: 80,
     paddingHorizontal: 50,
+    paddingBottom: 100,
     gap: 60 / 1.5,
     // backgroundColor: "blue"
 })
