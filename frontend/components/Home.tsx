@@ -1,18 +1,36 @@
 import React, { useEffect, useState } from "react"
 import { Center } from "./styled/Center";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { MapMarker, Marker } from "react-native-maps";
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from "expo-location";
 import { LocationObject } from "expo-location/build/Location.types";
 import { ActivityIndicator } from "react-native";
 import { LinkingContext } from "@react-navigation/native";
+import { gql, useQuery } from "@apollo/client";
 
 const DELTA = {
     lat: 0.0922,
     long: 0.0421
 }
 
+const STOPS_QUERY = gql`
+    query Stops {
+      Stops {
+        stop_lat
+        stop_lon
+        stop_name
+      }
+    }
+`
+
+type Stop = {
+    stop_lat: string
+    stop_lon: string
+    stop_name: string
+}
+
 export function Home() {
     const [location, setLocation] = useState<LocationObject | null>(null);
+    const { data: stops, loading } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY)
 
     useEffect(() => {
         (async () => {
@@ -30,6 +48,7 @@ export function Home() {
         })();
     }, []);
 
+
     return (
         <Center>
             {location ? (
@@ -45,6 +64,15 @@ export function Home() {
                     showsUserLocation
                     showsMyLocationButton
                 >
+                    {(!loading && !!stops) && stops.Stops.map(s => (
+                        <MapMarker
+                            coordinate={{
+                                latitude: Number(s.stop_lat),
+                                longitude: Number(s.stop_lon)
+                            }}
+                            onPress={() => console.log("pressed " + s.stop_name)}
+                        />
+                    ))}
                 </MapView>
             ) : (
                 <ActivityIndicator size="large" color="#0000ff" />
