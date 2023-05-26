@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react"
 import { Center } from "./styled/Center";
-import MapView, { MapMarker, Marker } from "react-native-maps";
+import MapView, { Callout, MapMarker, Marker } from "react-native-maps";
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from "expo-location";
 import { LocationObject } from "expo-location/build/Location.types";
-import { ActivityIndicator } from "react-native";
-import { LinkingContext } from "@react-navigation/native";
+import { ActivityIndicator, Text } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 
 const DELTA = {
@@ -15,6 +14,7 @@ const DELTA = {
 const STOPS_QUERY = gql`
     query Stops {
       Stops {
+        stop_id
         stop_lat
         stop_lon
         stop_name
@@ -23,6 +23,7 @@ const STOPS_QUERY = gql`
 `
 
 type Stop = {
+    stop_id: string
     stop_lat: string
     stop_lon: string
     stop_name: string
@@ -49,34 +50,38 @@ export function Home() {
     }, []);
 
 
+    if (!location) return <Center><ActivityIndicator size="large" color="#0000ff" /></Center>
+
+
     return (
         <Center>
-            {location ? (
-                <MapView
-                    style={{ flex: 1, width: "100%" }}
-                    initialRegion={{
-                        latitude: location?.coords.latitude || 0,
-                        longitude: location?.coords.longitude || 0,
-                        latitudeDelta: DELTA.lat,
-                        longitudeDelta: DELTA.long,
-                    }}
-                    showsCompass
-                    showsUserLocation
-                    showsMyLocationButton
-                >
-                    {(!loading && !!stops) && stops.Stops.map(s => (
-                        <MapMarker
-                            coordinate={{
-                                latitude: Number(s.stop_lat),
-                                longitude: Number(s.stop_lon)
-                            }}
-                            onPress={() => console.log("pressed " + s.stop_name)}
-                        />
-                    ))}
-                </MapView>
-            ) : (
-                <ActivityIndicator size="large" color="#0000ff" />
-            )}
+            <MapView
+                style={{ flex: 1, width: "100%" }}
+                initialRegion={{
+                    latitude: location?.coords.latitude || 0,
+                    longitude: location?.coords.longitude || 0,
+                    latitudeDelta: DELTA.lat,
+                    longitudeDelta: DELTA.long,
+                }}
+                showsCompass
+                showsUserLocation
+                showsMyLocationButton
+
+            >
+                {(!loading && !!stops) && stops.Stops.map(s => (
+                    <MapMarker
+                        coordinate={{
+                            latitude: Number(s.stop_lat),
+                            longitude: Number(s.stop_lon)
+                        }}
+                        onPress={() => console.log("pressed " + s.stop_name)}
+                    >
+                        <Callout>
+                            <Text>{s.stop_name}</Text>
+                        </Callout>
+                    </MapMarker>
+                ))}
+            </MapView>
         </Center>
     )
 }
