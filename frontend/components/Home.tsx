@@ -73,8 +73,6 @@ export function Home() {
                 }}
                 showsCompass
                 showsUserLocation
-                showsMyLocationButton
-
             >
                 {(!loading && !!stops) && stops.Stops.map(s => (
                     <MapMarker
