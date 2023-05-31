@@ -15,6 +15,8 @@
     },
     "scripts": {
         "start": "nodemon --exec ts-node ./src/index.ts",
+        "build": "tsc",
+        "db-setup": "prisma generate; prisma migrate;",
         "prod": "nodemon --exec node ./dist/index.js",
         "syncBusData": "ts-node ./src/utils/syncBusData.ts"
     },

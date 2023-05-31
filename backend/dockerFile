@@ -1,26 +1,31 @@
-FROM node:18 as builder
-
-WORKDIR /usr/src/app
+FROM node:14-alpine AS build
+ 
+ENV DATABASE_URL=postgres://postgres:postgres@db:5432/onestop
+WORKDIR /app
 
 COPY package*.json ./
+COPY tsconfig*.json ./
+COPY prisma ./prisma/
 
-RUN yarn install --frozen-lockfile
-# Bundle app source
+RUN yarn install 
+RUN yarn prisma generate
+RUN yarn prisma migrate dev --name init
+
 COPY . .
 
-RUN npm run build
+RUN yarn build
 
-# Final image
-FROM node:18
+FROM node:14-alpine AS production
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-COPY --from=builder /usr/src/app/package*.json ./
-COPY --from=builder /usr/src/app/dist/ ./dist/
+COPY package*.json ./
+COPY prisma ./prisma/
+RUN yarn install --production --frozen-lockfile
 
-copy .env.example .
+COPY --from=build /app/dist ./dist
 
-RUN yarn install --frozen-lockfile --production
 
-CMD npm run prod
+EXPOSE 4000
+CMD ["node", "dist/index.js"]
 

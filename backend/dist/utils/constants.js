@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pswSaltRounds = exports.emailVerificationToken_secret = exports.refreshToken_secret = exports.accessToken_secret = exports.server_port = exports.prisma = void 0;
+exports.DEFAULT_ADMIN_CREDS = exports.PASSWORD_SALT_ROUNDS = exports.EMAIL_VERIFICATION_TOKEN_SECRET = exports.REFRESH_TOKEN_SECRET = exports.ACCESS_TOKEN_SECRET = exports.SERVER_PORT = exports.prisma = void 0;
 const client_1 = require("@prisma/client");
 exports.prisma = new client_1.PrismaClient();
-exports.server_port = process.env.PORT;
-exports.accessToken_secret = "bombobmbombombombobmobmaaab";
-exports.refreshToken_secret = "wwawawwwweweewweaweweawe";
-exports.emailVerificationToken_secret = "ssbaisoysdbisdobybsdye3095";
-exports.pswSaltRounds = 10;
+exports.SERVER_PORT = process.env.PORT;
+exports.ACCESS_TOKEN_SECRET = "bombobmbombombombobmobmaaab";
+exports.REFRESH_TOKEN_SECRET = "wwawawwwweweewweaweweawe";
+exports.EMAIL_VERIFICATION_TOKEN_SECRET = "ssbaisoysdbisdobybsdye3095";
+exports.PASSWORD_SALT_ROUNDS = 10;
+exports.DEFAULT_ADMIN_CREDS = {
+    email: "admin@admin.com",
+    password: "admin@admin.com"
+};
 //# sourceMappingURL=constants.js.map

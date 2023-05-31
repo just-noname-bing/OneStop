@@ -26,6 +26,11 @@ exports.default = `#graphql
         errors:[FieldError]
     }
 
+    type updateUserResponse {
+        data: User
+        errors:[FieldError]
+    }
+
     type User {
         id: String!
         name: String!
@@ -43,10 +48,13 @@ exports.default = `#graphql
         id: String!
         author_id: String!
         text: String!
+        title: String!
+        transport_id: String!
         created_at: DateTime!
         updated_at: DateTime!
         author: User!
         Comment: [Comment!]!
+        route: Routes! # route / trasport where is accident 
     }
 
     type Comment {
@@ -59,35 +67,116 @@ exports.default = `#graphql
         Post: Post!
     }
 
+    # Post & Comment queries
+    type Query {
+        getPosts: [Post!]!
+        getComments: [Comment!]!
+    }
+
+    input PostInput {
+        text:String!
+        title:String!
+        transport_id:String!
+    }
+
+    input commentInput {
+        postId:String!
+        text:String!
+    }
+
+    input updatePostInput {
+        id:String!
+        text:String!
+        title:String!
+        transport_id:String!
+    }
+
+    input updateCommentInput {
+        id:String!
+        text:String!
+    }
+
+    type PostResponse {
+        data: Post
+        errors:[FieldError]
+    }
+
+    type CommentResponse {
+        data: Comment
+        errors:[FieldError]
+    }
+
+    input searchPostInput {
+        # title:String
+        # text:String
+        search_text_field:String
+        transport_id:String
+        created_at:DateTime
+    }
+
+    # Post mutation
+    type Mutation {
+        createPost(options: PostInput!): PostResponse
+        updatePost(options: updatePostInput!): PostResponse
+        deletePost(id: String!): Boolean
+        postSearch(options: searchPostInput!): [Post]
+    }
+    # Comment mutation
+    type Mutation {
+        createComment(options: commentInput!): CommentResponse
+        updateComment(options: updateCommentInput!): CommentResponse
+        deleteComment(id: String!): Boolean
+        # commentSearch: [Comment] // not used
+    }
+
     # User queries
     type Query {
         me: User # user or 401(not authenticated)
+        getUsers: [User] # only for moderator/admin
     }
 
-    input RegisterInput {
+    input registerInput {
         name:String!
         surname:String!
         email:String!
         password:String!
     }
 
-    input LoginInput {
+    input loginInput {
         email:String!
         password:String!
     }
 
+
+    input updateUserInput {
+        name:String!
+        surname:String!
+        email:String! # for admin/moderator
+        verified:Boolean! # for admin/moderator
+        role:Roles! # for admin/moderator
+    }
+
+    input searchUserInput {
+        # name:String
+        # surname:String
+        # email:String 
+        search_text_field:String
+        verified:Boolean 
+        role:Roles 
+        created_at:DateTime
+    }
+
+
     # User Mutations
     type Mutation {
-        login(options: LoginInput!): UserResponse
-        register(options: RegisterInput!): UserResponse
-        logout: Boolean
+        login(options: loginInput!): UserResponse
+        register(options: registerInput!): UserResponse
+        logout(token:String!): Boolean
+        deleteUser(id:String!): Boolean
+        updateUser(id:String!, options:updateUserInput!): updateUserResponse 
+        forgotPassword(email:String!): Boolean 
+        userSearch(options:searchUserInput!): [User]
     }
-
-    type Mutation {
-        verifyConformationToken(token:String!): Boolean
-    }
-
-
 
     # bus Fields
 
@@ -102,6 +191,7 @@ exports.default = `#graphql
         route_text_color: String!
         route_sort_order: String!
         trips: [Trips]!
+        posts:[Post]!
     }
 
     type Trips {
@@ -185,5 +275,10 @@ exports.default = `#graphql
         Calendar: [Calendar]!
         Calendar_dates:[Calendar_dates]!
     }
+
+    type Mutation {
+        stopsSearch(stop_name:String!): [Stops]
+    }
+
 `;
 //# sourceMappingURL=typeDefs.js.map

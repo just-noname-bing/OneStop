@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ValidateSchema = async (schema, value) => {
+const validateSchema = async (schema, value) => {
     try {
         await schema.validate(value, { abortEarly: false });
     }
@@ -16,5 +16,5 @@ const ValidateSchema = async (schema, value) => {
     }
     return [];
 };
-exports.default = ValidateSchema;
+exports.default = validateSchema;
 //# sourceMappingURL=validateSchema.js.map

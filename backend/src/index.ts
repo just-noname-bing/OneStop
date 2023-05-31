@@ -13,17 +13,24 @@ import { PASSWORD_INPUT_SCHEMA } from "./types";
 import typeDefs from "./types/typeDefs";
 import { EmailTokenPayload } from "./utils/EmailService";
 import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
-import { EMAIL_VERIFICATION_TOKEN_SECRET, PASSWORD_SALT_ROUNDS, REFRESH_TOKEN_SECRET, SERVER_PORT, prisma } from "./utils/constants";
+import {
+    EMAIL_VERIFICATION_TOKEN_SECRET,
+    PASSWORD_SALT_ROUNDS,
+    REFRESH_TOKEN_SECRET,
+    SERVER_PORT,
+    prisma,
+} from "./utils/constants";
 import defaultAdmin from "./utils/defaultAdmin";
 import validateSchema from "./utils/validateSchema";
 
 (async () => {
+    console.log(process.env.DATABASE_URL);
 
     try {
-        await prisma.$connect()
-        console.log("Connected to the database")
+        await prisma.$connect();
+        console.log("Connected to the database");
     } catch (err) {
-        return console.log("Could not connect to the database ", err)
+        return console.log("Could not connect to the database ", err);
     }
 
     await defaultAdmin(); // will create a default admin if not exists
@@ -33,11 +40,10 @@ import validateSchema from "./utils/validateSchema";
 
     app.use(json());
 
-
     app.post("/confirm/verify_email", async (req, res) => {
         const { token } = req.body;
         // to add more security layers we can verify access token too
-        if (!token) return res.status(401).json({ ok: false, error: "token required" });;
+        if (!token) return res.status(401).json({ ok: false, error: "token required" });
 
         try {
             const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload;
@@ -56,20 +62,20 @@ import validateSchema from "./utils/validateSchema";
             // }
             return res.status(401).json({ ok: false, error: "bad token" });
         }
-    })
+    });
 
     app.post("/confirm/forgot_password", async (req, res) => {
-        const { token, password } = req.body
+        const { token, password } = req.body;
 
         try {
-            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload
-            const users_token = await prisma.forgotPasswordTokens.findFirst({ where: { userId } })
+            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload;
+            const users_token = await prisma.forgotPasswordTokens.findFirst({ where: { userId } });
 
             if (users_token && users_token.token === token) {
-                const errors = await validateSchema(PASSWORD_INPUT_SCHEMA, { password })
+                const errors = await validateSchema(PASSWORD_INPUT_SCHEMA, { password });
 
                 if (errors.length) {
-                    res.json({ ok: false, errors })
+                    res.json({ ok: false, errors });
                 }
 
                 // update password -> delete token
@@ -77,21 +83,20 @@ import validateSchema from "./utils/validateSchema";
                 await prisma.$transaction([
                     prisma.user.update({
                         where: { id: userId },
-                        data: { password: await hash(password, PASSWORD_SALT_ROUNDS) }
+                        data: { password: await hash(password, PASSWORD_SALT_ROUNDS) },
                     }),
                     prisma.forgotPasswordTokens.delete({ where: { userId } }),
-                    prisma.refreshTokens.delete({ where: { userId } })
-                ])
+                    prisma.refreshTokens.delete({ where: { userId } }),
+                ]);
 
-                return res.json({ ok: true })
+                return res.json({ ok: true });
             }
-
         } catch (err) { }
         return res.json({
             ok: false,
-            errors: [{ field: "password", message: "bad token" }]
-        })
-    })
+            errors: [{ field: "password", message: "bad token" }],
+        });
+    });
 
     app.post("/refresh_token", async (req, res) => {
         const { token } = req.body;

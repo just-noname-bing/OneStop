@@ -27,5 +27,4 @@ const ImportBusData = (folder) => {
     });
 };
 exports.default = ImportBusData;
-ImportBusData("../../../data/marsrutusaraksti03_2023");
 //# sourceMappingURL=importBusData.js.map
