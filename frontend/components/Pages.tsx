@@ -20,7 +20,7 @@ export default function Pages() {
                 header: () => null,
                 tabBarLabel: () => null,
                 tabBarActiveTintColor: COLOR_PALETE.buttonActive,
-            }} initialRouteName="Map">
+            }} initialRouteName="Posts">
                 <Tab.Screen
                     options={{ tabBarIcon: (p) => <Entypo name="chat" {...p} /> }}
                     name='Posts'

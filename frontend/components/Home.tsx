@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { Center } from "./styled/Center";
-import MapView, { Callout, MapMarker, Marker } from "react-native-maps";
+import MapView, { Callout, MapMarker } from "react-native-maps";
 import { Accuracy, getCurrentPositionAsync, requestForegroundPermissionsAsync } from "expo-location";
 import { LocationObject } from "expo-location/build/Location.types";
 import { ActivityIndicator, Text, View } from "react-native";
@@ -76,6 +76,7 @@ export function Home() {
             >
                 {(!loading && !!stops) && stops.Stops.map(s => (
                     <MapMarker
+                        key={s.stop_id}
                         coordinate={{
                             latitude: Number(s.stop_lat),
                             longitude: Number(s.stop_lon)
