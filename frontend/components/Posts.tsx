@@ -1,75 +1,67 @@
-import React from "react"
-import { Center } from "./styled/Center"
-import { ActivityIndicator, ScrollView, Text, TextInput, View } from 'react-native'
-import { useQuery } from "@apollo/client/react"
-import { gql } from "@apollo/client/core"
-import { TouchableOpacity } from "react-native-gesture-handler"
-import styled from "@emotion/native"
-import { COLOR_PALETE } from "../utils/colors"
+import React from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useQuery } from "@apollo/client/react";
+import { gql } from "@apollo/client/core";
+import styled from "@emotion/native";
+import { PostItem } from "./Posts/PostItem";
+import { COLOR_PALETE } from "../utils/colors";
 
-interface Props { }
+interface Props {}
 
 export const POSTS_QUERY = gql`
     query GetPosts {
-      getPosts {
-        id
-        text
-        title
-        transport_id
-        created_at
-        updated_at
-      }
-}`
+        getPosts {
+            id
+            text
+            title
+            transport_id
+            created_at
+            updated_at
+        }
+    }
+`;
 
 type POST = {
-    id: string
-    text: string
-    title: string
-    transport_id: string
-    created_at: Date
-    updated_at: Date
-}
+    id: string;
+    text: string;
+    title: string;
+    transport_id: string;
+    created_at: Date;
+    updated_at: Date;
+};
 
 export function Posts(_: Props): JSX.Element {
-    const { data: posts, loading, error } = useQuery<{ getPosts: POST[] }>(POSTS_QUERY)
+    const {
+        data: posts,
+        loading,
+        error,
+    } = useQuery<{ getPosts: POST[] }>(POSTS_QUERY);
 
     return (
         <PostsWrapper>
             {!loading ? (
-                <View>
-                    <View>
-                        <Text>Last updates</Text>
-                        <TouchableOpacity>
-                            <Text>new post</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TextInput placeholder="Search" />
+                <View style={{ gap: 9 }}>
+                    <TitleWrapper>
+                        <Title>Last updates</Title>
+                        <CreatePostButton>
+                            <CreatePostButtonText>
+                                New post
+                            </CreatePostButtonText>
+                        </CreatePostButton>
+                    </TitleWrapper>
+                    <SearchWrapper>
+                        <SearchField placeholder="Search" />
                         <View>
                             <Text>sort by:</Text>
                             <Text>Popular</Text>
                         </View>
-                    </View>
-                    <ScrollView>
+                    </SearchWrapper>
+                    <ScrollView showsVerticalScrollIndicator={false}>
                         <PostsList>
-                            {posts?.getPosts.map(post => (
-                                <PostsItem key={post.id}>
-                                    <View style={{ flexDirection: 'row', justifyContent: "space-between" }}>
-                                        <Text>{post.transport_id}</Text>
-                                        <View>
-                                            <Text>{post.title}</Text>
-                                            <Text>Vodila daun</Text>
-                                        </View>
-                                        <Text>4 min ago</Text>
-                                    </View>
-                                    <View style={{ paddingHorizontal: 30 }}>
-                                        <Text>Lorem ipsum dolor sit amet, officia excepteur ex fugiat reprehenderit enim labore culpa sint ad nisi Lorem pariatur mollit ex esse exercitation amet. Nisi anim cupidatat excepteur officia. Reprehenderit nostrud nostrud ipsum Lorem est aliquip amet voluptate voluptate dolor minim nulla est proident. Nostrud officia pariatur ut officia. Sit irure elit esse ea nulla sunt ex occaecat reprehenderit commodo officia dolor Lorem duis laboris cupidatat officia voluptate. Culpa proident adipisicing id nulla nisi laboris ex in Lorem sunt duis officia eiusmod. Aliqua reprehenderit commodo ex non excepteur duis sunt velit enim. Voluptate laboris sint cupidatat ullamco ut ea consectetur et est culpa et culpa duis.</Text>
-                                    </View>
-                                </PostsItem>
+                            {posts?.getPosts.map((post) => (
+                                <PostItem key={post.id} post={post} />
                             ))}
-                            <Text>
-                                {JSON.stringify(error, null, 2)}
-                            </Text>
+                            <Text>{JSON.stringify(error, null, 2)}</Text>
                         </PostsList>
                     </ScrollView>
                 </View>
@@ -77,28 +69,73 @@ export function Posts(_: Props): JSX.Element {
                 <ActivityIndicator size="large" color="#0000ff" />
             )}
         </PostsWrapper>
-    )
+    );
 }
 
-
 const PostsWrapper = styled.View({
-    paddingHorizontal: 50 / 1.5,
+    paddingHorizontal: 20 / 1.5,
     paddingVertical: 100 / 1.5,
     width: "100%",
-})
+
+    backgroundColor:"white"
+});
 
 const PostsList = styled.View({
     gap: 15,
-    marginBottom: 100
-})
+    marginBottom: 100,
+});
 
-const PostsItem = styled.View({
-    borderRadius: 10,
+const TitleWrapper = styled.View({
+    flexDirection: "row",
+    justifyContent: "space-between",
+});
+
+const Title = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 48 / 1.5,
+    lineHeight: 62 / 1.5,
+    color: COLOR_PALETE.text,
+});
+
+const CreatePostButton = styled.TouchableOpacity({
+    width: 172 / 1.5,
+    height: 63 / 1.5,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    backgroundColor: COLOR_PALETE.tram,
+
+    borderRadius: 10 / 1.5,
+});
+
+const CreatePostButtonText = styled.Text({
+    color: "white",
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 32 / 1.5,
+    lineHeight: 42 / 1.5,
+});
+
+const SearchWrapper = styled.View({
+    flexDirection: "row",
+    gap: 16 / 1.5,
+});
+
+const SearchField = styled.TextInput({
+    width: "100%",
+    maxWidth: 362 / 1.5,
+    minHeight: 56 / 1.5,
+
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: COLOR_PALETE.stroke,
 
-    gap: 20,
+    paddingHorizontal: 10,
 
-    paddingHorizontal: 7,
-    paddingVertical: 15,
-})
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 20 / 1.5,
+    lineHeight: 26 / 1.5,
+});
