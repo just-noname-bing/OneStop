@@ -51,10 +51,10 @@ export function Posts(_: Props): JSX.Element {
                     </TitleWrapper>
                     <SearchWrapper>
                         <SearchField placeholder="Search" />
-                        <View>
-                            <Text>sort by:</Text>
+                        <SortByWrapper>
+                            <SortByWrapperTitle>Sort by:</SortByWrapperTitle>
                             <Text>Popular</Text>
-                        </View>
+                        </SortByWrapper>
                     </SearchWrapper>
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <PostsList>
@@ -76,8 +76,6 @@ const PostsWrapper = styled.View({
     paddingHorizontal: 20 / 1.5,
     paddingVertical: 100 / 1.5,
     width: "100%",
-
-    backgroundColor:"white"
 });
 
 const PostsList = styled.View({
@@ -138,4 +136,18 @@ const SearchField = styled.TextInput({
     fontWeight: "400",
     fontSize: 20 / 1.5,
     lineHeight: 26 / 1.5,
+});
+
+const SortByWrapper = styled.View({
+    flexDirection: "row",
+    alignItems: "center",
+
+    gap:4
+});
+
+const SortByWrapperTitle = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 18 / 1.5,
+    lineHeight: 23 / 1.5,
 });
