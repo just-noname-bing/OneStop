@@ -1,3 +1,4 @@
+import { gql, useMutation } from "@apollo/client";
 import { Formik } from "formik";
 import React from "react";
 import { KeyboardAvoidingView, ScrollView, Text } from "react-native";
@@ -14,9 +15,26 @@ import {
     Description,
     CustomForm,
     CustomInputField,
+    FieldError,
 } from "./SharedComponents";
 
+const REGISTER_MUTATION = gql`
+    mutation Register($options: registerInput!) {
+        register(options: $options) {
+            data {
+                accessToken
+                refreshToken
+            }
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
+
 export function Register({ navigation }: any): JSX.Element {
+    const [Register] = useMutation(REGISTER_MUTATION);
     return (
         <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
             <ScrollView>
@@ -44,9 +62,31 @@ export function Register({ navigation }: any): JSX.Element {
                             surname: "",
                             password: "",
                         }}
-                        onSubmit={(values) =>
-                            console.log("handle login", values)
-                        }
+                        onSubmit={async (values, actions) => {
+                            console.log("handle Register", values);
+                            const response = await Register({
+                                variables: {
+                                    options: values,
+                                },
+                            });
+
+                            const { errors } = response.data?.register;
+                            const SUCCESS_REGISTER =
+                                errors &&
+                                errors[0].message === "Verification email sent";
+
+                            if (SUCCESS_REGISTER) {
+                                // Show Verification Email sent Screen
+                                console.log("Success Account Created")
+                            } else if (errors && errors.length) {
+                                errors.forEach((error: FieldError) => {
+                                    actions.setFieldError(
+                                        error.field,
+                                        error.message
+                                    );
+                                });
+                            }
+                        }}
                         validationSchema={REGISTER_INPUT_SCHEMA}
                         validateOnBlur={false}
                         validateOnChange={true}
