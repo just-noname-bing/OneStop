@@ -77,7 +77,9 @@ export function Register({ navigation }: any): JSX.Element {
 
                             if (SUCCESS_REGISTER) {
                                 // Show Verification Email sent Screen
-                                console.log("Success Account Created")
+                                actions.resetForm()
+                                navigation.navigate("EmailSent")
+                                console.log("Success Account Created");
                             } else if (errors && errors.length) {
                                 errors.forEach((error: FieldError) => {
                                     actions.setFieldError(
