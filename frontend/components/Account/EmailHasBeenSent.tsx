@@ -6,6 +6,9 @@ import { COLOR_PALETE } from "../../utils/colors";
 import { Center } from "../styled/Center";
 
 export function EmailSent(): JSX.Element {
+    //timer
+    //redirect to login
+
     return (
         <Center>
             <Wrapper style={{ gap: 125 / 1.5 }}>
