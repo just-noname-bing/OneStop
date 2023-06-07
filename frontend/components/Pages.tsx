@@ -30,7 +30,7 @@ export default function Pages() {
                     tabBarLabel: () => null,
                     tabBarActiveTintColor: COLOR_PALETE.buttonActive,
                 }}
-                initialRouteName="Account"
+                initialRouteName="Map"
             >
                 <Tab.Screen
                     options={{
