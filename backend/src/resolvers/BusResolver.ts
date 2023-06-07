@@ -5,7 +5,7 @@ import {
     Shapes,
     Stop_times,
     Stops,
-    Trips
+    Trips,
 } from "@prisma/client";
 import { prisma } from "../utils/constants";
 
@@ -15,9 +15,9 @@ export const BusResolver = {
             return await prisma.routes.findMany({
                 include: {
                     trips: true,
-                    posts: true
-                }
-            })
+                    posts: true,
+                },
+            });
         },
 
         Trips: async (): Promise<Trips[]> => {
@@ -26,15 +26,15 @@ export const BusResolver = {
                     Shapes: true,
                     stop_times: true,
                     Calendar: true,
-                    route: true
-                }
-            })
+                    route: true,
+                },
+            });
         },
 
         Shapes: async (): Promise<Shapes[]> => {
             return await prisma.shapes.findMany({
-                include: { trips: true }
-            })
+                include: { trips: true },
+            });
         },
 
         Stops: async (): Promise<Stops[]> => {
@@ -46,46 +46,78 @@ export const BusResolver = {
                                 include: {
                                     Shapes: true,
                                     route: true,
-                                    Calendar: true
-                                }
-                            }
-                        }
-                    }
-                }
-            })
+                                    Calendar: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
         },
 
         Stop_times: async (): Promise<Stop_times[]> => {
             return await prisma.stop_times.findMany({
-                include: { trips: true, stops: true }
-            })
+                include: { trips: true, stops: true },
+            });
         },
 
         Calendar: async (): Promise<Calendar[]> => {
             return await prisma.calendar.findMany({
                 include: {
                     trips: true,
-                    calendar_dates: true
-                }
-            })
+                    calendar_dates: true,
+                },
+            });
         },
 
         Calendar_dates: async (): Promise<Calendar_dates[]> =>
             await prisma.calendar_dates.findMany({
                 include: {
                     Calendar: true,
-                }
+                },
             }),
     },
 
     Mutation: {
+        getTransportSchedule: async (_p: any, args: any, _ctx: any) => {
+            const { stop_id, transport_id } = args as {
+                stop_id: string;
+                transport_id: string;
+            };
+            return await prisma.stop_times.findMany({
+                where: {
+                    AND: [{ stop_id }, { trips: { route_id: transport_id } }],
+                },
+                include: { trips: { include: { Calendar: true } } },
+                orderBy: [
+                    { trips: { service_id: "asc" } },
+                    { arrival_time: "asc" },
+                ],
+            });
+        },
+        getRoutesForStop: async (_p: any, args: any, _ctx: any) => {
+            const { stop_id } = args as { stop_id: string };
+
+            return await prisma.routes.findMany({
+                where: {
+                    trips: {
+                        some: {
+                            stop_times: {
+                                some: { stop_id },
+                            },
+                        },
+                    },
+                },
+            });
+        },
         stopsSearch: async (_p: any, args: any, _ctx: any) => {
-            const { stop_name } = args as { stop_name: string }
+            const { stop_name } = args as { stop_name: string };
             return await prisma.stops.findMany({
                 where: {
                     stop_name: {
-                        contains: stop_name, mode: "insensitive"
-                    }
+                        contains: stop_name,
+                        mode: "insensitive",
+                    },
                 },
                 include: {
                     stop_times: {
@@ -94,13 +126,13 @@ export const BusResolver = {
                                 include: {
                                     Shapes: true,
                                     Calendar: true,
-                                    route: true
-                                }
-                            }
-                        }
-                    }
-                }
-            })
-        }
-    }
+                                    route: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        },
+    },
 };

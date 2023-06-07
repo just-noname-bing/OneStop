@@ -206,6 +206,7 @@ export default `#graphql
         stop_times: [Stop_times]!
         route: Routes!
         Shapes: Shapes!
+        Calendar: Calendar!
     }
 
     type Shapes {
@@ -276,6 +277,8 @@ export default `#graphql
 
     type Mutation {
         stopsSearch(stop_name:String!): [Stops]
+        getRoutesForStop(stop_id:String!): [Routes]
+        getTransportSchedule(stop_id:String!, transport_id:String!): [Stop_times]
     }
 
 `;
