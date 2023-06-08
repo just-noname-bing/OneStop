@@ -5,7 +5,7 @@ import {
     requestForegroundPermissionsAsync,
 } from "expo-location";
 import { LocationObject } from "expo-location/build/Location.types";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, Dimensions } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 import { Center } from "../styled/Center";
 import Svg, { Path, Rect } from "react-native-svg";
@@ -13,11 +13,15 @@ import styled from "@emotion/native";
 import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
 import MapView from "react-native-map-clustering";
+import SmallSchedule from "./StopSmallSchedule";
 
 export const DELTA = {
     lat: 0.0922,
     long: 0.0421,
 };
+
+const mapHeight = Dimensions.get("window").height
+const swipeMenuHeight = mapHeight  /  1.65
 
 const STOPS_QUERY = gql`
     query Stops {
@@ -67,10 +71,10 @@ export function Home() {
         );
 
     return (
-        <Center>
+        <View style={{flex:1}}>
             <MapView
                 ref={mapRef}
-                style={{ flex: 1, width: "100%" }}
+                style={{ flex: 1, width: "100%", maxHeight: mapHeight - swipeMenuHeight + 50}}
                 initialRegion={{
                     latitude: location!.coords.latitude,
                     longitude: location!.coords.longitude,
@@ -127,10 +131,11 @@ export function Home() {
                     <BottomMenuLine />
                     <View>
                         <SearchInput placeholder="Search..." />
+                        <SmallSchedule />
                     </View>
                 </BottomMenu>
             </BottomMenuWrapper>
-        </Center>
+        </View>
     );
 }
 
@@ -138,7 +143,7 @@ const BottomMenuWrapper = styled.View({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: "15%", // 65 if input focused
+    height: swipeMenuHeight, // 1.5 if input focused else 7
 
     gap: 44 / 1.5,
 });
