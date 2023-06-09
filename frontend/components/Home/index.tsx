@@ -4,7 +4,7 @@ import {
     getCurrentPositionAsync,
     requestForegroundPermissionsAsync,
 } from "expo-location";
-import { LocationObject } from "expo-location/build/Location.types";
+import { LocationObject, watchPositionAsync } from "expo-location";
 import {
     ActivityIndicator,
     View,
@@ -12,6 +12,7 @@ import {
     Pressable,
     TextInput,
     Text,
+    ScrollView,
 } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 import { Center } from "../styled/Center";
@@ -21,6 +22,7 @@ import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
 import MapView from "react-native-map-clustering";
 import Animated, {
+    color,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
@@ -116,6 +118,7 @@ export function Home() {
         transform: [{ translateY: translateY.value }],
     }));
 
+
     useEffect(() => {
         (async () => {
             const { status } = await requestForegroundPermissionsAsync();
@@ -130,6 +133,15 @@ export function Home() {
             });
 
             setLocation(currentLocation);
+
+            let subscription = await watchPositionAsync(
+                { distanceInterval: 10 },
+                (location) => {
+                    setLocation(location);
+                }
+            );
+
+            return () => subscription.remove();
         })();
     }, []);
 
@@ -180,6 +192,11 @@ export function Home() {
                     </MapMarker>
                 ))}
             </MapView>
+            <CreatePostButton style={rBottomSheetStyle}>
+                <Pressable>
+                    <CreatePostIcon />
+                </Pressable>
+            </CreatePostButton>
             <GpsButton style={rBottomSheetStyle}>
                 <Pressable
                     onPress={() =>
@@ -222,44 +239,16 @@ export function Home() {
                             </CategoryBtn>
                         </CategoryBtnWrapper>
 
-                        <View>
-                            <Text>Pirskapopas iela</Text>
-                            <View>
-                                <Text>to Kipsala norverg</Text>
-                                <View>
-                                    <Text>5min</Text>
-                                </View>
+                        <ScrollView showsVerticalScrollIndicator={false}>
+                            <View style={{gap:30, paddingBottom:250 }}>
+                                <NearStopConstructor />
+                                <NearStopConstructor />
+                                <NearStopConstructor />
+                                <NearStopConstructor />
+                                <NearStopConstructor />
+                                <NearStopConstructor />
                             </View>
-                            <View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                            </View>
-                            <View>
-                                <View>
-                                    <Text>12</Text>
-                                </View>
-                                <View>
-                                    <Text>Keista iela</Text>
-                                    <Text>to Prechu iela</Text>
-                                </View>
-                            </View>
-                        </View>
+                        </ScrollView>
                     </BottomMenuContent>
                 </BottomMenu>
             </GestureDetector>
@@ -274,7 +263,7 @@ const BottomMenu = styled(Animated.View)({
 
     position: "absolute",
     top: WINDOW_HEIGHT / 1.2,
-    // top: WINDOW_HEIGHT / 2,
+    // top: 0,
 
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
@@ -282,6 +271,21 @@ const BottomMenu = styled(Animated.View)({
     paddingHorizontal: 54 / 2.5,
     paddingVertical: 23 / 1.5,
     gap: 48,
+
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 13,
+    elevation: 5,
+});
+
+const CreatePostButton = styled(Animated.View)({
+    position: "absolute",
+    right: 20,
+    top: WINDOW_HEIGHT / 1.2 - 80 * 1.75,
 });
 
 const GpsButton = styled(Animated.View)({
@@ -342,6 +346,119 @@ const CategoryBtnText = styled.Text({
     color: "#FFFFFF",
 });
 
+const NearTransportStopWrapper = styled.View({
+    borderWidth: 1,
+    borderColor: "#D0D0D0",
+    borderRadius: 15,
+    padding: 12,
+
+    gap: 10,
+});
+
+const NearTransportTitle = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 24,
+    lineHeight: 31,
+    color: COLOR_PALETE.text,
+});
+
+const NearTransportDescWrapper = styled.View({
+    flexDirection: "row",
+    alignItems: "center",
+
+    gap: 24,
+});
+
+const NearTransportDescription = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 20 / 1.5,
+    lineHeight: 26 / 1.5,
+    color: COLOR_PALETE.additionalText,
+});
+
+const NearTransportCodeWrapper = styled.View({
+    height: 24,
+    width: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLOR_PALETE.tram,
+    borderRadius: 5,
+});
+
+const NearTransportCode = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 12,
+    lineHeight: 16,
+    color: "white",
+});
+
+const SoonTransport = styled.View({
+    flexDirection: "row",
+    gap: 10,
+    paddingVertical: 8,
+
+    borderBottomColor: COLOR_PALETE.stroke,
+    borderBottomWidth: 1,
+});
+
+const SoonTransportCodeWrapper = styled.View({
+    width: 35,
+    height: 37,
+    backgroundColor: COLOR_PALETE.bus,
+    borderRadius: 10,
+
+    justifyContent: "center",
+    alignItems: "center",
+});
+
+const SoonTransportCode = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 18,
+    lineHeight: 23,
+
+    color: "#FFFFFF",
+});
+
+const SoonTransportDesc = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 18 / 1.2,
+    lineHeight: 23 / 1.2,
+});
+
+const SoonTransportTimeWrapper = styled.View({
+    flexDirection: "row",
+    gap: 30,
+});
+
+const SoonTransportTime = styled.View({
+    gap: 4,
+    justifyContent: "center",
+    alignItems: "center",
+});
+
+const SoonTransportTimeTitle = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 24 / 1.5,
+    lineHeight: 31 / 1.5,
+
+    color: "#000000",
+});
+
+const SoonTransportTimeMin = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 18 / 1.5,
+    lineHeight: 23 / 1.5,
+
+    color: COLOR_PALETE.text,
+});
+
 function TransportStopMarker() {
     return (
         <Svg width={31 / 1.5} height={35 / 1.5} viewBox="0 0 31 35" fill="none">
@@ -373,5 +490,93 @@ function BusIcon() {
                 fill="white"
             />
         </Svg>
+    );
+}
+
+function CreatePostIcon() {
+    return (
+        <Svg width={70 / 1.5} height={70 / 1.5} viewBox="0 0 70 70" fill="none">
+            <Path
+                d="M38.5 38.5H31.5V17.5H38.5M38.5 52.5H31.5V45.5H38.5M35 0C30.4037 0 25.8525 0.905302 21.6061 2.66422C17.3597 4.42313 13.5013 7.00121 10.2513 10.2513C3.68749 16.815 0 25.7174 0 35C0 44.2826 3.68749 53.185 10.2513 59.7487C13.5013 62.9988 17.3597 65.5769 21.6061 67.3358C25.8525 69.0947 30.4037 70 35 70C44.2826 70 53.185 66.3125 59.7487 59.7487C66.3125 53.185 70 44.2826 70 35C70 30.4037 69.0947 25.8525 67.3358 21.6061C65.5769 17.3597 62.9988 13.5013 59.7487 10.2513C56.4987 7.00121 52.6403 4.42313 48.3939 2.66422C44.1475 0.905302 39.5963 0 35 0Z"
+                fill="#FF3838"
+            />
+        </Svg>
+    );
+}
+
+function SoonTransportCostructor() {
+    return (
+        <SoonTransport>
+            <SoonTransportCodeWrapper>
+                <SoonTransportCode>12</SoonTransportCode>
+            </SoonTransportCodeWrapper>
+            <View
+                style={{
+                    justifyContent: "space-between",
+                    flexGrow: 1,
+                }}
+            >
+                <SoonTransportDesc>Keista iela</SoonTransportDesc>
+                <SoonTransportDesc
+                    style={{
+                        color: COLOR_PALETE.additionalText,
+                    }}
+                >
+                    to Prechu iela
+                </SoonTransportDesc>
+            </View>
+            <SoonTransportTimeWrapper>
+                <SoonTransportTime>
+                    <SoonTransportTimeTitle>Now</SoonTransportTimeTitle>
+                    <SoonTransportTimeMin>min</SoonTransportTimeMin>
+                </SoonTransportTime>
+                <SoonTransportTime>
+                    <SoonTransportTimeTitle>43</SoonTransportTimeTitle>
+                    <SoonTransportTimeMin>min</SoonTransportTimeMin>
+                </SoonTransportTime>
+            </SoonTransportTimeWrapper>
+        </SoonTransport>
+    );
+}
+
+function NearStopConstructor() {
+    return (
+        <NearTransportStopWrapper>
+            <View>
+                <NearTransportTitle>Pirskapopas iela</NearTransportTitle>
+                <NearTransportDescWrapper>
+                    <NearTransportDescription>
+                        to Kipsala norverg
+                    </NearTransportDescription>
+                    <View>
+                        <NearTransportDescription>
+                            5min
+                        </NearTransportDescription>
+                    </View>
+                </NearTransportDescWrapper>
+            </View>
+            <View
+                style={{
+                    flexDirection: "row",
+                    gap: 5,
+                    flexWrap: "wrap",
+                }}
+            >
+                {Array.from(new Array(25), () => 12).map((_, i) => (
+                    <NearTransportCodeWrapper key={i}>
+                        <NearTransportCode>12</NearTransportCode>
+                    </NearTransportCodeWrapper>
+                ))}
+            </View>
+
+            <View>
+                <SoonTransportCostructor />
+                <SoonTransportCostructor />
+                <SoonTransportCostructor />
+                <SoonTransportCostructor />
+                <SoonTransportCostructor />
+                <SoonTransportCostructor />
+            </View>
+        </NearTransportStopWrapper>
     );
 }
