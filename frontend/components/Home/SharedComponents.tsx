@@ -95,3 +95,54 @@ export const transportTypes = [
     { title: "Trolley", color: COLOR_PALETE.troleybus, icon: BusIcon },
     { title: "Bus", color: COLOR_PALETE.bus, icon: BusIcon },
 ];
+
+export const StopTitle = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 46 / 1.5,
+    lineHeight: 60 / 1.5,
+
+    color: COLOR_PALETE.text,
+
+    flex: 1,
+    flexWrap: "wrap",
+});
+
+export const ScheduleTypeBtn = styled.Pressable(
+    ({ isPrimary }: { isPrimary?: boolean }) => ({
+        minHeight: 43,
+        flex: 1,
+        backgroundColor: isPrimary ? COLOR_PALETE.tram : "white",
+        borderRadius: 15,
+
+        borderWidth: !isPrimary ? 1 : 0,
+        borderColor: COLOR_PALETE.stroke,
+
+        justifyContent: "center",
+        alignItems: "center",
+    })
+);
+
+export const ScheduleTypeText = styled.Text(
+    ({ isPrimary }: { isPrimary?: boolean }) => ({
+        fontStyle: "normal",
+        fontWeight: "400",
+        fontSize: 18 / 1.5,
+        lineHeight: 23 / 1.5,
+
+        color: isPrimary ? "white" : "black",
+    })
+);
+
+export const TimeTableTitle = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 32 / 1.5,
+    lineHeight: 42 / 1.5,
+});
+
+export function isWorkingDay(): boolean {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    return dayOfWeek >= 1 && dayOfWeek <= 5;
+}

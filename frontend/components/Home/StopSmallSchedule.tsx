@@ -14,6 +14,11 @@ import {
     TransportRowBtn,
     TransportRowText,
     Wrapper,
+    ScheduleTypeBtn,
+    ScheduleTypeText,
+    StopTitle,
+    TimeTableTitle,
+    isWorkingDay,
 } from "./SharedComponents";
 
 // test data riga_bus_41
@@ -48,6 +53,7 @@ type getTransportSchedule = {
 
 export function SmallSchedule({ route, navigation }: any): JSX.Element {
     const { stop } = route.params;
+
     const [getInformation, { data, loading }] =
         useMutation<getTransportSchedule>(GET_TRANSPORT_SCHEDULE, {
             variables: {
@@ -95,67 +101,42 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                 <View style={{ gap: 30 / 1.5 }}>
                     <StopTitle>{stop.stop_name}</StopTitle>
                     <View style={{ flexDirection: "row", gap: 30 }}>
-                        <ScheduleTypeBtn isPrimary>
-                            <ScheduleTypeText isPrimary>
+                        <ScheduleTypeBtn isPrimary={isWorkingDay()}>
+                            <ScheduleTypeText isPrimary={isWorkingDay()}>
                                 Working days
                             </ScheduleTypeText>
                         </ScheduleTypeBtn>
-                        <ScheduleTypeBtn>
-                            <ScheduleTypeText>Holidays</ScheduleTypeText>
+                        <ScheduleTypeBtn isPrimary={!isWorkingDay()}>
+                            <ScheduleTypeText isPrimary={!isWorkingDay()}>
+                                Holidays
+                            </ScheduleTypeText>
                         </ScheduleTypeBtn>
                     </View>
                     <View style={{ gap: 16 / 1.5 }}>
-                        <TransportRow>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                        </TransportRow>
-                        <TransportRow>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                        </TransportRow>
-                        <TransportRow>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                            <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                <TransportRowText>12</TransportRowText>
-                            </TransportRowBtn>
-                        </TransportRow>
+                        {transportTypes.map((type, idx) => (
+                            <TransportRow key={idx}>
+                                {Array.from(
+                                    new Array(10 + idx + 1),
+                                    () => 1
+                                ).map((_, i) => (
+                                    <TransportRowBtn
+                                        key={`${idx}@${i}`}
+                                        bg={type.color}
+                                        onPress={() =>
+                                            navigation.navigate("BigSchedule", {
+                                                stop,
+                                                transport: {
+                                                    color: type.color,
+                                                    code: 12,
+                                                },
+                                            })
+                                        }
+                                    >
+                                        <TransportRowText>12</TransportRowText>
+                                    </TransportRowBtn>
+                                ))}
+                            </TransportRow>
+                        ))}
                     </View>
 
                     <View style={{ gap: 15 / 1.5 }}>
@@ -204,48 +185,6 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
         </ScrollView>
     );
 }
-
-const StopTitle = styled.Text({
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 46 / 1.5,
-    lineHeight: 60 / 1.5,
-
-    color: COLOR_PALETE.text,
-});
-
-const ScheduleTypeBtn = styled.Pressable(
-    ({ isPrimary }: { isPrimary?: boolean }) => ({
-        minHeight: 43,
-        flex: 1,
-        backgroundColor: isPrimary ? COLOR_PALETE.tram : "white",
-        borderRadius: 15,
-
-        borderWidth: !isPrimary ? 1 : 0,
-        borderColor: COLOR_PALETE.stroke,
-
-        justifyContent: "center",
-        alignItems: "center",
-    })
-);
-
-const ScheduleTypeText = styled.Text(
-    ({ isPrimary }: { isPrimary?: boolean }) => ({
-        fontStyle: "normal",
-        fontWeight: "400",
-        fontSize: 18 / 1.5,
-        lineHeight: 23 / 1.5,
-
-        color: isPrimary ? "white" : "black",
-    })
-);
-
-const TimeTableTitle = styled.Text({
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 32 / 1.5,
-    lineHeight: 42 / 1.5,
-});
 
 const TimeTableRow = styled.View({
     flexDirection: "row",

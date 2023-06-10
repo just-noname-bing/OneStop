@@ -40,11 +40,19 @@ export function ListOfTransport({ route, navigation }: any) {
                 </CategoryBtnWrapper>
             </View>
             <TransportRow style={{ columnGap: 10 / 1.5, rowGap: 25 / 2 }}>
-                {Array.from(new Array(15 + transportType + 1), () => 1).map((_, i) => (
-                    <TransportRowBtn key={i} bg={itemsColor}>
-                        <TransportRowText>12</TransportRowText>
-                    </TransportRowBtn>
-                ))}
+                {Array.from(new Array(15 + transportType + 1), () => 1).map(
+                    (_, i) => (
+                        <TransportRowBtn
+                            key={i}
+                            bg={itemsColor}
+                            onPress={() =>
+                                navigation.navigate("TransportStopsSelect")
+                            }
+                        >
+                            <TransportRowText>12</TransportRowText>
+                        </TransportRowBtn>
+                    )
+                )}
             </TransportRow>
         </Wrapper>
     );
