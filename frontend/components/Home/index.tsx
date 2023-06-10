@@ -10,9 +10,7 @@ import {
     View,
     Dimensions,
     Pressable,
-    TextInput,
-    Text,
-    ScrollView,
+    Keyboard,
 } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 import { Center } from "../styled/Center";
@@ -22,7 +20,7 @@ import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
 import MapView from "react-native-map-clustering";
 import Animated, {
-    color,
+    runOnJS,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
@@ -31,6 +29,7 @@ import {
     Gesture,
     GestureDetector,
     GestureHandlerRootView,
+    ScrollView
 } from "react-native-gesture-handler";
 
 export const DELTA = {
@@ -60,7 +59,11 @@ export type Stop = {
 
 export function Home() {
     const [location, setLocation] = useState<LocationObject | null>(null);
-    const { data: stops, loading } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY);
+    const {
+        data: stops,
+        loading,
+        error,
+    } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY);
     const mapRef = useRef<MapView>(null);
 
     const translateY = useSharedValue(0);
@@ -110,6 +113,7 @@ export function Home() {
             } else if (BGR_THN_DEFAULT && BGR_THN_PREV && BGR_THN_MIDDLE) {
                 translateY.value = withSpring(FULL_STATE, config);
             } else {
+                runOnJS(Keyboard.dismiss)();
                 translateY.value = withSpring(DEFAULT_STATE, config);
             }
         });
@@ -117,7 +121,6 @@ export function Home() {
     const rBottomSheetStyle = useAnimatedStyle(() => ({
         transform: [{ translateY: translateY.value }],
     }));
-
 
     useEffect(() => {
         (async () => {
@@ -145,6 +148,8 @@ export function Home() {
         })();
     }, []);
 
+    console.log(loading, location, !!stops, error);
+
     if (!location || !stops || loading)
         return (
             <Center>
@@ -164,6 +169,7 @@ export function Home() {
                     longitudeDelta: DELTA.long,
                 }}
                 showsCompass
+                showsMyLocationButton={false}
                 showsUserLocation
                 extent={200}
                 minPoints={4}
@@ -240,7 +246,7 @@ export function Home() {
                         </CategoryBtnWrapper>
 
                         <ScrollView showsVerticalScrollIndicator={false}>
-                            <View style={{gap:30, paddingBottom:250 }}>
+                            <View style={{ gap: 30, paddingBottom: 250 }}>
                                 <NearStopConstructor />
                                 <NearStopConstructor />
                                 <NearStopConstructor />
