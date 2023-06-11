@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { COLOR_PALETE } from "../../utils/colors";
+import { Stop } from "./MainMapScreen";
 import {
     CategoryBtn,
     CategoryBtnText,
@@ -24,43 +25,39 @@ import {
 // test data riga_bus_41
 // test data 1086
 
-const GET_TRANSPORT_SCHEDULE = gql`
+const GET_ROUTES_FOR_STOP = gql`
     mutation GetRoutesForStop($stopId: String!) {
         getRoutesForStop(stop_id: $stopId) {
             route_id
             route_long_name
+            route_short_name
             route_type
         }
     }
 `;
 
-type getTransportSchedule = {
-    getRoutesForStop: [
-        { route_id: string; route_long_name: string; route_type: string }
-    ];
-    getTransportSchedule: [
-        {
-            arrival_time: string;
-            drop_off_type: string;
-            departure_time: string;
-            pickup_type: string;
-            stop_id: string;
-            stop_sequence: string;
-            trips: { Calendar: { monday: string; saturday: string } };
-        }
-    ];
+export type Route = {
+    route_id: string;
+    route_long_name: string;
+    route_short_name: string;
+    route_type: string;
+};
+
+type getRoutesForStop = {
+    getRoutesForStop: Route[];
 };
 
 export function SmallSchedule({ route, navigation }: any): JSX.Element {
-    const { stop } = route.params;
+    const stop = route.params.stop as Stop;
 
-    const [getInformation, { data, loading }] =
-        useMutation<getTransportSchedule>(GET_TRANSPORT_SCHEDULE, {
+    const [getInformation, { data, loading }] = useMutation<getRoutesForStop>(
+        GET_ROUTES_FOR_STOP,
+        {
             variables: {
-                stopId: "1086",
-                transportId: "riga_bus_41",
+                stopId: stop.stop_id,
             },
-        });
+        }
+    );
 
     useEffect(() => {
         getInformation().catch(console.log);
@@ -86,7 +83,7 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                             <CategoryBtn
                                 onPress={() =>
                                     navigation.navigate("ListOfTransport", {
-                                        transportType: idx,
+                                        transportType: Type.id,
                                     })
                                 }
                                 key={idx}
@@ -115,26 +112,27 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                     <View style={{ gap: 16 / 1.5 }}>
                         {transportTypes.map((type, idx) => (
                             <TransportRow key={idx}>
-                                {Array.from(
-                                    new Array(10 + idx + 1),
-                                    () => 1
-                                ).map((_, i) => (
-                                    <TransportRowBtn
-                                        key={`${idx}@${i}`}
-                                        bg={type.color}
-                                        onPress={() =>
-                                            navigation.navigate("BigSchedule", {
-                                                stop,
-                                                transport: {
-                                                    color: type.color,
-                                                    code: 12,
-                                                },
-                                            })
-                                        }
-                                    >
-                                        <TransportRowText>12</TransportRowText>
-                                    </TransportRowBtn>
-                                ))}
+                                {data.getRoutesForStop
+                                    .filter((x) => x.route_type === type.id)
+                                    .map((t, i) => (
+                                        <TransportRowBtn
+                                            key={`${idx}@${i}`}
+                                            bg={type.color}
+                                            onPress={() =>
+                                                navigation.navigate(
+                                                    "BigSchedule",
+                                                    {
+                                                        stop,
+                                                        transport: t,
+                                                    }
+                                                )
+                                            }
+                                        >
+                                            <TransportRowText>
+                                                {t.route_short_name}
+                                            </TransportRowText>
+                                        </TransportRowBtn>
+                                    ))}
                             </TransportRow>
                         ))}
                     </View>

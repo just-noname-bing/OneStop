@@ -71,6 +71,7 @@ export function MainMap({ navigation }: any): JSX.Element {
         data: stops,
         loading,
         error,
+        refetch,
     } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY);
     const mapRef = useRef<MapView>(null);
 
@@ -166,6 +167,10 @@ export function MainMap({ navigation }: any): JSX.Element {
 
     console.log(loading, location, !!stops, error);
 
+    if (error) {
+        refetch();
+    }
+
     if (!location || !stops || loading)
         return (
             <Center>
@@ -246,7 +251,7 @@ export function MainMap({ navigation }: any): JSX.Element {
                                 <CategoryBtn
                                     onPress={() =>
                                         navigation.navigate("ListOfTransport", {
-                                            transportType: idx,
+                                            transportType: Type.id,
                                         })
                                     }
                                     key={idx}
@@ -263,7 +268,10 @@ export function MainMap({ navigation }: any): JSX.Element {
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={{ gap: 30, paddingBottom: 250 }}>
                                 {closesStops.map((closestS, i) => (
-                                    <NearStopConstructor key={i} stop={closestS} />
+                                    <NearStopConstructor
+                                        key={i}
+                                        stop={closestS}
+                                    />
                                 ))}
                             </View>
                         </ScrollView>

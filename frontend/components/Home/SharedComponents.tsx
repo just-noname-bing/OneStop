@@ -91,10 +91,15 @@ export const TransportRowText = styled.Text({
     color: "white",
 });
 export const transportTypes = [
-    { title: "Tram", color: COLOR_PALETE.tram, icon: BusIcon },
-    { title: "Trolley", color: COLOR_PALETE.troleybus, icon: BusIcon },
-    { title: "Bus", color: COLOR_PALETE.bus, icon: BusIcon },
-];
+    { id: "900", title: "Tram", color: COLOR_PALETE.tram, icon: BusIcon },
+    {
+        id: "800" ,
+        title: "Trolley",
+        color: COLOR_PALETE.troleybus,
+        icon: BusIcon,
+    },
+    { id: "3",  title: "Bus", color: COLOR_PALETE.bus, icon: BusIcon },
+] ;
 
 export const StopTitle = styled.Text({
     fontStyle: "normal",
