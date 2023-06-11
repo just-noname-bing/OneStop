@@ -52,6 +52,7 @@ export function ListOfTransport({ route, navigation }: any) {
             const f = routes.Routes.filter(
                 (rout) => rout.route_type === transportType
             );
+            f.sort((a,b)=> Number(a.route_sort_order) - Number(b.route_sort_order))
             setFilteredRoutes(f);
         }
     }, [routes, loading, route]);

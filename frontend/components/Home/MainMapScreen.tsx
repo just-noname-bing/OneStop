@@ -12,7 +12,7 @@ import {
     Pressable,
     Keyboard,
 } from "react-native";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { Center } from "../styled/Center";
 import Svg, { Path, Rect } from "react-native-svg";
 import styled from "@emotion/native";
@@ -38,6 +38,7 @@ import {
     SearchInput,
     transportTypes,
 } from "./SharedComponents";
+import { getRoutesForStop, GET_ROUTES_FOR_STOP } from "./StopSmallSchedule";
 
 export const DELTA = {
     lat: 0.0922,
@@ -67,6 +68,7 @@ export type Stop = {
 export function MainMap({ navigation }: any): JSX.Element {
     const [location, setLocation] = useState<LocationObject | null>(null);
     const [closesStops, setClosestStops] = useState<Stop[]>([]);
+
     const {
         data: stops,
         loading,
@@ -223,7 +225,13 @@ export function MainMap({ navigation }: any): JSX.Element {
                 ))}
             </MapView>
             <CreatePostButton style={rBottomSheetStyle}>
-                <Pressable>
+                <Pressable
+                    onPress={() =>
+                        navigation.navigate("Posts", {
+                            screen: "CreateNewPost",
+                        })
+                    }
+                >
                     <CreatePostIcon />
                 </Pressable>
             </CreatePostButton>
@@ -370,14 +378,14 @@ const NearTransportDescription = styled.Text({
     color: COLOR_PALETE.additionalText,
 });
 
-const NearTransportCodeWrapper = styled.View({
+const NearTransportCodeWrapper = styled.View(({ bg }: { bg: string }) => ({
     height: 24,
     width: 24,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLOR_PALETE.tram,
+    backgroundColor: bg,
     borderRadius: 5,
-});
+}));
 
 const NearTransportCode = styled.Text({
     fontStyle: "normal",
@@ -521,6 +529,27 @@ function SoonTransportCostructor() {
 }
 
 function NearStopConstructor(props: { stop: Stop }) {
+    const [fetchRoutes, { loading, data }] = useMutation<getRoutesForStop>(
+        GET_ROUTES_FOR_STOP,
+        {
+            variables: {
+                stopId: props.stop.stop_id,
+            },
+        }
+    );
+
+    useEffect(() => {
+        fetchRoutes().catch(console.log);
+    }, []);
+
+    if (!data || loading) {
+        return (
+            <Center style={{ flexGrow: 1 }}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </Center>
+        );
+    }
+
     return (
         <NearTransportStopWrapper>
             <View>
@@ -543,18 +572,23 @@ function NearStopConstructor(props: { stop: Stop }) {
                     flexWrap: "wrap",
                 }}
             >
-                {Array.from(new Array(25), () => 12).map((_, i) => (
-                    <NearTransportCodeWrapper key={i}>
-                        <NearTransportCode>12</NearTransportCode>
+                {data.getRoutesForStop.map((route, i) => (
+                    <NearTransportCodeWrapper
+                        bg={
+                            transportTypes.filter(
+                                (x) => route.route_type === x.id
+                            )[0].color
+                        }
+                        key={i}
+                    >
+                        <NearTransportCode>
+                            {route.route_short_name}
+                        </NearTransportCode>
                     </NearTransportCodeWrapper>
                 ))}
             </View>
 
             <View>
-                <SoonTransportCostructor />
-                <SoonTransportCostructor />
-                <SoonTransportCostructor />
-                <SoonTransportCostructor />
                 <SoonTransportCostructor />
                 <SoonTransportCostructor />
             </View>
@@ -601,5 +635,5 @@ async function getClosestMarkers(
                 userLocation.coords.longitude
             )
     );
-    return sortedMarkers.slice(0, 5);
+    return sortedMarkers.slice(0, 3);
 }

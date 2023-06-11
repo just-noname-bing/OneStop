@@ -10,7 +10,7 @@ interface Props {}
 
 const HomeStack = createNativeStackNavigator();
 
-export function Home(_: Props): JSX.Element {
+export default function Home(_: Props): JSX.Element {
     return (
         <HomeStack.Navigator
             screenOptions={{

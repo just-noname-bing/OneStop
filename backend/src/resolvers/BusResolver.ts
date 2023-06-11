@@ -85,6 +85,16 @@ export const BusResolver = {
                 transport_id: string;
             };
 
+            // const directions = await prisma.trips.findMany({
+            //     where: {
+            //         route_id: transport_id,
+            //     },
+            //     distinct: ["shape_id"],
+            //     include: { route: true },
+            // });
+            //
+            // console.log(directions)
+            //
             const raw2 = await prisma.trips.findFirst({
                 where: {
                     route_id: transport_id,
@@ -98,7 +108,7 @@ export const BusResolver = {
                     trip_id: raw2?.trip_id,
                 },
                 orderBy: { stop_sequence: "asc" },
-                include: { stops: { select: { stop_name: true } } },
+                include: { stops: true },
             });
 
             raw3.sort((a, b) => {
@@ -111,8 +121,6 @@ export const BusResolver = {
                 }
                 return 0;
             });
-
-            console.dir(raw2, { depth: null });
 
             return raw3;
         },

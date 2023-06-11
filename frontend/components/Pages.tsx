@@ -1,13 +1,12 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
-import React from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { COLOR_PALETE } from "../utils/colors";
-import { Account } from "./Account";
-import { Home } from "./Home";
-import { Posts } from "./Posts";
+import Account from "./Account";
+import Home from "./Home";
+import Posts from "./Posts";
 
 import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useApolloClient } from "@apollo/client";
 
 const Tab = createBottomTabNavigator();
 
@@ -20,8 +19,6 @@ const MyTheme = {
 };
 
 export default function Pages() {
-    const client = useApolloClient();
-
     return (
         <NavigationContainer theme={MyTheme}>
             <Tab.Navigator
@@ -30,7 +27,7 @@ export default function Pages() {
                     tabBarLabel: () => null,
                     tabBarActiveTintColor: COLOR_PALETE.buttonActive,
                 }}
-                initialRouteName="Map"
+                initialRouteName="Posts"
             >
                 <Tab.Screen
                     options={{
@@ -38,14 +35,6 @@ export default function Pages() {
                     }}
                     name="Posts"
                     component={Posts}
-                    listeners={{
-                        tabPress: async () => {
-                            const r = await client.refetchQueries({
-                                include: "active",
-                            });
-                            console.log(r);
-                        },
-                    }}
                 />
                 <Tab.Screen
                     options={{

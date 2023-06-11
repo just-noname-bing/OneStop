@@ -60,7 +60,7 @@ type Times = {
 export function BigSchedule({ route, navigation }: any) {
     const stop = route.params.stop as Stop;
     const transport = route.params.transport as Route;
-    const scheduleType = route.params?.scheduleType || Number(isWorkingDay());
+    const scheduleType = route.params?.scheduleType ?? Number(isWorkingDay());
     const [schedule, setSchedule] = useState<getTransportSchedule[]>([]);
     const [times, setTimes] = useState<Times[]>([]);
 
@@ -73,6 +73,9 @@ export function BigSchedule({ route, navigation }: any) {
         },
     });
 
+    console.log(stop, transport);
+    console.log(schedule);
+
     useMemo(() => {
         setTimes(
             schedule.reduce((acc: any, value) => {
@@ -81,7 +84,9 @@ export function BigSchedule({ route, navigation }: any) {
                 const minutes = splitted[1];
 
                 if (acc.hasOwnProperty(hour)) {
-                    acc[hour].push(minutes);
+                    if (!acc[hour].includes(minutes)) {
+                        acc[hour].push(minutes);
+                    }
                 } else {
                     acc[hour] = [minutes];
                 }
@@ -97,9 +102,9 @@ export function BigSchedule({ route, navigation }: any) {
             // const newWorkingDays: getTransportSchedule[] = [];
             const newSchedule: getTransportSchedule[] = [];
             data.getTransportSchedule.forEach((sched) => {
+                console.log(sched.trips.Calendar.friday, scheduleType);
                 const IS_CORRECT_SCHEDULE =
                     sched.trips.Calendar.friday == scheduleType;
-                console.log(IS_CORRECT_SCHEDULE);
                 if (IS_CORRECT_SCHEDULE) {
                     newSchedule.push(sched);
                 }
@@ -172,8 +177,9 @@ export function BigSchedule({ route, navigation }: any) {
                         </Center>
                     ) : (
                         <View>
-                            {Object.entries(times).sort().map(
-                                ([hour, minutes]: any, i) => (
+                            {Object.entries(times)
+                                .sort()
+                                .map(([hour, minutes]: any, i) => (
                                     <TableRow key={i}>
                                         <TableHourRow index={i}>
                                             <TableHourRowText>
@@ -181,13 +187,16 @@ export function BigSchedule({ route, navigation }: any) {
                                             </TableHourRowText>
                                         </TableHourRow>
                                         <TableMinRow index={i}>
-                                            {minutes.map((minute: string, j:number) => (
-                                                <Text key={`${i}@${j}`}>{minute}</Text>
-                                            ))}
+                                            {minutes.map(
+                                                (minute: string, j: number) => (
+                                                    <Text key={`${i}@${j}`}>
+                                                        {minute}
+                                                    </Text>
+                                                )
+                                            )}
                                         </TableMinRow>
                                     </TableRow>
-                                )
-                            )}
+                                ))}
                         </View>
                     )}
                 </View>

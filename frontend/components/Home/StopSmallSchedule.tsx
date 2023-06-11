@@ -25,7 +25,7 @@ import {
 // test data riga_bus_41
 // test data 1086
 
-const GET_ROUTES_FOR_STOP = gql`
+export const GET_ROUTES_FOR_STOP = gql`
     mutation GetRoutesForStop($stopId: String!) {
         getRoutesForStop(stop_id: $stopId) {
             route_id
@@ -43,7 +43,7 @@ export type Route = {
     route_type: string;
 };
 
-type getRoutesForStop = {
+export type getRoutesForStop = {
     getRoutesForStop: Route[];
 };
 
