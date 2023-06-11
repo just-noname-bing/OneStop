@@ -1,14 +1,1 @@
--   [x] 1. Sistēmas kods ir pieejams github un norādīta saite savā profilā.
--   [x] 2. Ir veikta datu labošana, dzēšana, pievienošana, atspoguļošana. Atbilstoši minētajām funkcionalitātes prasībām.
--   [x] 3. Funkcionalitāte ir atspoguļota vairākos dažādos skatos.
--   [x] 4. Ir izveidots sistēmas dizains vairākos dažādos skatos.
--   [x] 5. Ierāšana videokonferencē (ir obligāta).
--   [x] 6. Datu validācija, tiek pārbaudīti lauki uz nepatiesām vērtībām.
--   [x] 7. Ir nodrošināta filtrēšana, meklēšana vismaz pēc viena lauka.
--   [x] 8. Darbs ir izstrādāts un tā argumentācija radījusi iespaidu, ka ir ievēroti visi kritēriji un to var uzskatīt par kvalifikācijas darbu (izlabota/papildināta ER diagramma).
 
-
-Es pārbaudīšu funkcionālas prasības, lejupielādējiet word dokumentu e.rvt.lv, un programmā realizētas sākumā funkcijas (funkciju daļu, nevis visas), un izlabotu/papildinātu ER diagrammu.
-
-
-[figma link](https://www.figma.com/file/4AD1SibL2VLyyB2FDCepWo/OneStop?t=jZZduEnJnEaNMUKp-1)
