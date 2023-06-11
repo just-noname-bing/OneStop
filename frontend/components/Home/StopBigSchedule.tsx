@@ -1,8 +1,9 @@
 import { gql, useMutation } from "@apollo/client";
 import styled from "@emotion/native";
-import { useEffect, useState } from "react";
-import { View, Text, ScrollView } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { COLOR_PALETE } from "../../utils/colors";
+import { Center } from "../styled/Center";
 import { Stop } from "./MainMapScreen";
 import {
     isWorkingDay,
@@ -51,13 +52,19 @@ type getTransportSchedule = {
     };
 };
 
+type Times = {
+    hour: string;
+    minutes: string[];
+};
+
 export function BigSchedule({ route, navigation }: any) {
     const stop = route.params.stop as Stop;
     const transport = route.params.transport as Route;
     const scheduleType = route.params?.scheduleType || Number(isWorkingDay());
     const [schedule, setSchedule] = useState<getTransportSchedule[]>([]);
+    const [times, setTimes] = useState<Times[]>([]);
 
-    const [fetchData, { data }] = useMutation<{
+    const [fetchData, { data, loading }] = useMutation<{
         getTransportSchedule: getTransportSchedule[];
     }>(GET_TRANSPORT_SCHEDULE, {
         variables: {
@@ -66,7 +73,25 @@ export function BigSchedule({ route, navigation }: any) {
         },
     });
 
-    const filterSchedules = () => {
+    useMemo(() => {
+        setTimes(
+            schedule.reduce((acc: any, value) => {
+                const splitted = value.arrival_time.split(":");
+                const hour = splitted[0];
+                const minutes = splitted[1];
+
+                if (acc.hasOwnProperty(hour)) {
+                    acc[hour].push(minutes);
+                } else {
+                    acc[hour] = [minutes];
+                }
+
+                return acc;
+            }, {})
+        );
+    }, [schedule]);
+
+    useMemo(() => {
         if (data?.getTransportSchedule) {
             // const newHolidays: getTransportSchedule[] = [];
             // const newWorkingDays: getTransportSchedule[] = [];
@@ -82,21 +107,16 @@ export function BigSchedule({ route, navigation }: any) {
 
             setSchedule(newSchedule);
         }
-    };
+    }, [data, route, scheduleType]);
 
-    const transportColor = transportTypes.filter(
-        (x) => transport.route_type === x.id
-    )[0].color;
+    const transportColor = useMemo(() => {
+        return transportTypes.filter((x) => transport.route_type === x.id)[0]
+            .color;
+    }, [transport, route]);
 
     useEffect(() => {
         fetchData().catch(console.log);
     }, []);
-
-    useEffect(() => {
-        filterSchedules();
-    }, [data, route]);
-
-    console.log(scheduleType)
 
     return (
         <ScrollView
@@ -146,24 +166,30 @@ export function BigSchedule({ route, navigation }: any) {
                 </View>
                 <View style={{ gap: 23 / 1.5 }}>
                     <TimeTableTitle>Timetable</TimeTableTitle>
-                    <View>
-                        {Array.from(new Array(23), () => 1).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableHourRow index={i}>
-                                    <TableHourRowText>{i}</TableHourRowText>
-                                </TableHourRow>
-                                <TableMinRow index={i}>
-                                    <Text>{schedule.length}</Text>
-                                    <Text>55</Text>
-                                    <Text>55</Text>
-                                    <Text>55</Text>
-                                    <Text>55</Text>
-                                    <Text>55</Text>
-                                    <Text>55</Text>
-                                </TableMinRow>
-                            </TableRow>
-                        ))}
-                    </View>
+                    {!data || loading ? (
+                        <Center>
+                            <ActivityIndicator size="large" color="#0000ff" />
+                        </Center>
+                    ) : (
+                        <View>
+                            {Object.entries(times).sort().map(
+                                ([hour, minutes]: any, i) => (
+                                    <TableRow key={i}>
+                                        <TableHourRow index={i}>
+                                            <TableHourRowText>
+                                                {hour}
+                                            </TableHourRowText>
+                                        </TableHourRow>
+                                        <TableMinRow index={i}>
+                                            {minutes.map((minute: string, j:number) => (
+                                                <Text key={`${i}@${j}`}>{minute}</Text>
+                                            ))}
+                                        </TableMinRow>
+                                    </TableRow>
+                                )
+                            )}
+                        </View>
+                    )}
                 </View>
             </Wrapper>
         </ScrollView>
