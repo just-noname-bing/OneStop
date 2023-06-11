@@ -81,11 +81,10 @@ model Trips {
     block_id                  String
     shape_id                  String
     wheelchair_accessible     String
-    shapesShape_id            String?
     shapesShape_dist_traveled String?
     stop_times                Stop_times[]
     route                     Routes?      @relation(fields: [route_id], references: [route_id])
-    Shapes                    Shapes?      @relation(fields: [shapesShape_id, shapesShape_dist_traveled], references: [shape_id, shape_dist_traveled])
+    Shapes                    Shapes?      @relation(fields: [shape_id, shapesShape_dist_traveled], references: [shape_id, shape_dist_traveled])
     Calendar                  Calendar?    @relation(fields: [service_id], references: [service_id])
 }
 

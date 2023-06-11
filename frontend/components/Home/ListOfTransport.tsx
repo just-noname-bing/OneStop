@@ -1,8 +1,9 @@
 import { gql, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { COLOR_PALETE } from "../../utils/colors";
+import { Center } from "../styled/Center";
 import {
     BusIcon,
     CategoryBtn,
@@ -28,7 +29,7 @@ const ROUTES_QUERY = gql`
     }
 `;
 
-type Routes = {
+export type Routes = {
     route_id: string;
     route_long_name: string;
     route_short_name: string;
@@ -46,7 +47,6 @@ export function ListOfTransport({ route, navigation }: any) {
     const itemsColor = transportTypes.filter((x) => x.id === transportType)[0]
         .color;
 
-
     useEffect(() => {
         if (routes && routes.Routes) {
             const f = routes.Routes.filter(
@@ -55,6 +55,14 @@ export function ListOfTransport({ route, navigation }: any) {
             setFilteredRoutes(f);
         }
     }, [routes, loading, route]);
+
+    if (!routes || loading) {
+        return (
+            <Center>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </Center>
+        );
+    }
 
     return (
         <ScrollView
@@ -89,7 +97,7 @@ export function ListOfTransport({ route, navigation }: any) {
                             bg={itemsColor}
                             onPress={() =>
                                 navigation.navigate("TransportStopsSelect", {
-                                    route,
+                                    transport: r,
                                 })
                             }
                         >

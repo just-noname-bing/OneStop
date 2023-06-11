@@ -1,23 +1,48 @@
 import { COLOR_PALETE } from "../../utils/colors";
-import React, { useState } from "react";
-import { TransportRowBtn, TransportRowText, Wrapper } from "./SharedComponents";
+import React, { useMemo, useState } from "react";
+import {
+    TransportRowBtn,
+    TransportRowText,
+    transportTypes,
+    Wrapper,
+} from "./SharedComponents";
 import { View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import styled from "@emotion/native";
 import { ScrollView } from "react-native-gesture-handler";
+import { Routes } from "./ListOfTransport";
+import { gql, useMutation } from "@apollo/client";
 
-export function TransportStopsSelect() {
+const GET_TRANSPORT_DIRECTION_STOPS = gql`
+    mutation GetTransportDirectionStops(
+        $transportId: String!
+        $order: String!
+    ) {
+        getTransportDirectionStops(transport_id: $transportId, order: $order) {
+            stop_name
+        }
+    }
+`;
+
+export function TransportStopsSelect({ route }: any) {
+    const transport = route.params.transport as Routes;
     const [open, setOpen] = useState(false);
     const [items, setItems] = useState([
-        { label: "Kleista iela - Pizdenka mami", value: 0 },
-        { label: "Pizdenka mami - Kleista iela", value: 1 },
+        { label: transport.route_long_name, value: 0 },
     ]);
     const [value, setValue] = useState(items[0].value);
+
+    const transportColor = transportTypes.filter(
+        (x) => x.id === transport.route_type
+    )[0].color;
+
     return (
         <Wrapper style={{ gap: 40 / 1.5 }}>
             <View style={{ flexDirection: "row", gap: 18 / 1.5 }}>
-                <TransportRowBtn bg={COLOR_PALETE.bus}>
-                    <TransportRowText>12</TransportRowText>
+                <TransportRowBtn bg={transportColor}>
+                    <TransportRowText>
+                        {transport.route_short_name}
+                    </TransportRowText>
                 </TransportRowBtn>
                 <View style={{ flex: 1 }}>
                     <DropDownPicker

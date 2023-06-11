@@ -279,6 +279,7 @@ export default `#graphql
         stopsSearch(stop_name:String!): [Stops]
         getRoutesForStop(stop_id:String!): [Routes]
         getTransportSchedule(stop_id:String!, transport_id:String!): [Stop_times]
+        getTransportDirectionStops(transport_id:String!, order:String!): [Stop_times]
     }
 
 `;
