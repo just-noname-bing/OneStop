@@ -36,7 +36,7 @@ import {
     CategoryBtnText,
     CategoryBtnWrapper,
     SearchInput,
-    transportTypes
+    transportTypes,
 } from "./SharedComponents";
 
 export const DELTA = {
@@ -66,6 +66,7 @@ export type Stop = {
 
 export function MainMap({ navigation }: any): JSX.Element {
     const [location, setLocation] = useState<LocationObject | null>(null);
+    const [closesStops, setClosestStops] = useState<Stop[]>([]);
     const {
         data: stops,
         loading,
@@ -154,6 +155,14 @@ export function MainMap({ navigation }: any): JSX.Element {
             return () => subscription.remove();
         })();
     }, []);
+
+    useEffect(() => {
+        if (stops && stops.Stops && location) {
+            getClosestMarkers(stops.Stops, location).then((closest) =>
+                setClosestStops(closest)
+            );
+        }
+    }, [stops, location]);
 
     console.log(loading, location, !!stops, error);
 
@@ -253,12 +262,9 @@ export function MainMap({ navigation }: any): JSX.Element {
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={{ gap: 30, paddingBottom: 250 }}>
-                                <NearStopConstructor />
-                                <NearStopConstructor />
-                                <NearStopConstructor />
-                                <NearStopConstructor />
-                                <NearStopConstructor />
-                                <NearStopConstructor />
+                                {closesStops.map((closestS, i) => (
+                                    <NearStopConstructor key={i} stop={closestS} />
+                                ))}
                             </View>
                         </ScrollView>
                     </BottomMenuContent>
@@ -506,11 +512,11 @@ function SoonTransportCostructor() {
     );
 }
 
-function NearStopConstructor() {
+function NearStopConstructor(props: { stop: Stop }) {
     return (
         <NearTransportStopWrapper>
             <View>
-                <NearTransportTitle>Pirskapopas iela</NearTransportTitle>
+                <NearTransportTitle>{props.stop.stop_name}</NearTransportTitle>
                 <NearTransportDescWrapper>
                     <NearTransportDescription>
                         to Kipsala norverg
@@ -546,4 +552,46 @@ function NearStopConstructor() {
             </View>
         </NearTransportStopWrapper>
     );
+}
+
+function calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+) {
+    const R = 6371; // Earth's radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) *
+            Math.cos(lat2 * (Math.PI / 180)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+async function getClosestMarkers(
+    markers: Stop[],
+    userLocation: LocationObject
+) {
+    const temp = [...markers];
+    const sortedMarkers = temp.sort(
+        (a, b) =>
+            calculateDistance(
+                Number(a.stop_lat),
+                Number(a.stop_lon),
+                userLocation.coords.latitude,
+                userLocation.coords.longitude
+            ) -
+            calculateDistance(
+                Number(b.stop_lat),
+                Number(b.stop_lon),
+                userLocation.coords.latitude,
+                userLocation.coords.longitude
+            )
+    );
+    return sortedMarkers.slice(0, 5);
 }

@@ -1,7 +1,7 @@
 import { COLOR_PALETE } from "../../utils/colors";
 import React, { useState } from "react";
 import { TransportRowBtn, TransportRowText, Wrapper } from "./SharedComponents";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import styled from "@emotion/native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -14,7 +14,7 @@ export function TransportStopsSelect() {
     ]);
     const [value, setValue] = useState(items[0].value);
     return (
-        <Wrapper>
+        <Wrapper style={{ gap: 40 / 1.5 }}>
             <View style={{ flexDirection: "row", gap: 18 / 1.5 }}>
                 <TransportRowBtn bg={COLOR_PALETE.bus}>
                     <TransportRowText>12</TransportRowText>
