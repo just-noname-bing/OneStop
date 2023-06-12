@@ -2,10 +2,8 @@ import { gql, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { COLOR_PALETE } from "../../utils/colors";
 import { Center } from "../styled/Center";
 import {
-    BusIcon,
     CategoryBtn,
     CategoryBtnText,
     CategoryBtnWrapper,

@@ -1,13 +1,12 @@
 import { gql, useMutation } from "@apollo/client";
-import { CommonActions } from "@react-navigation/native";
 import { Formik } from "formik";
 import React, { useContext } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
+import { TokenContext } from "../../utils/context";
 import { setAccessToken, setRefreshToken } from "../../utils/tokens";
 import { LOGIN_INPUT_SCHEMA } from "../../utils/validationSchema";
-import { TokenContext } from "../Pages";
 import {
     LoginWrapper,
     TitleWrapper,

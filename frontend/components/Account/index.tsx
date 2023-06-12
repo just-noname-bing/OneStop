@@ -1,7 +1,4 @@
 import React, {
-    createContext,
-    Dispatch,
-    SetStateAction,
     useContext,
     useEffect,
     useState,
@@ -13,9 +10,7 @@ import { EmailSent } from "./EmailHasBeenSent";
 import EmailVerificated from "./EmailVerificated";
 import { getAccessToken, getRefreshToken } from "../../utils/tokens";
 import Profile from "./Profile";
-import { TokenContext } from "../Pages";
-
-interface Props {}
+import { TokenContext } from "../../utils/context";
 
 const Stack = createNativeStackNavigator();
 

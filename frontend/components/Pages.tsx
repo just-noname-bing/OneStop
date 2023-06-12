@@ -1,16 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import {
-    DefaultTheme,
-    NavigationContainer,
-    useNavigation,
-} from "@react-navigation/native";
-import React, {
-    createContext,
-    Dispatch,
-    SetStateAction,
-    useEffect,
-    useState,
-} from "react";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import { COLOR_PALETE } from "../utils/colors";
 import Account from "./Account";
 import Home from "./Home";
@@ -22,26 +12,18 @@ const Tab = createBottomTabNavigator();
 
 import * as Linking from "expo-linking";
 import { getAccessToken, getRefreshToken } from "../utils/tokens";
+import { TokenContext, Tokens } from "../utils/context";
 // Listen for incoming URLs
 
 // Function to parse the URL and extract the screen name and parameter
-function parseScreen(url: any) {
-    const { path, queryParams } = Linking.parse(url);
-    return {
-        screenName: queryParams?.screenName,
-        parameter: queryParams?.parameter,
-        path,
-    };
-}
-
-export type Tokens = {
-    accessToken: string;
-    refreshToken: string;
-};
-
-export const TokenContext = createContext<
-    [Tokens | null, Dispatch<SetStateAction<Tokens | null>>]
->([] as any);
+// function parseScreen(url: any) {
+//     const { path, queryParams } = Linking.parse(url);
+//     return {
+//         screenName: queryParams?.screenName,
+//         parameter: queryParams?.parameter,
+//         path,
+//     };
+// }
 
 export default function Pages({ route }: any) {
     const navigation = useNavigation() as any;
@@ -94,7 +76,7 @@ export default function Pages({ route }: any) {
                     tabBarLabel: () => null,
                     tabBarActiveTintColor: COLOR_PALETE.buttonActive,
                 }}
-                initialRouteName="Posts"
+                initialRouteName="Map"
             >
                 <Tab.Screen
                     options={{

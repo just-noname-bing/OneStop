@@ -1,4 +1,6 @@
 import styled from "@emotion/native";
+import { CommonActions } from "@react-navigation/native";
+import { useContext, useEffect } from "react";
 import {
     Keyboard,
     ScrollView,
@@ -8,11 +10,29 @@ import {
 } from "react-native";
 import { Path, Svg } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
+import { TokenContext } from "../../utils/context";
 import { transportTypes, Wrapper } from "../Home/SharedComponents";
 import { Route } from "../Home/StopSmallSchedule";
 import { TransportBtn, TransportText } from "./CreateNewPost";
 
 export default function ({ route, navigation }: any) {
+    const [tokens] = useContext(TokenContext);
+
+    useEffect(() => {
+        if (!tokens) {
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "Account" }],
+                })
+            );
+        }
+    }, []);
+
+    if (tokens === null) {
+        return <></>;
+    }
+
     const transport = route.params.transport as Route;
     const color = transportTypes.filter((r) => r.id === transport.route_type)[0]
         .color;

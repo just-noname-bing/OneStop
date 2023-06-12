@@ -1,15 +1,10 @@
 import { gql, useMutation } from "@apollo/client";
 import { CommonActions } from "@react-navigation/native";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { Text } from "react-native";
 import { Pressable } from "react-native";
-import {
-    getAccessToken,
-    getRefreshToken,
-    setAccessToken,
-    TokensLogout,
-} from "../../utils/tokens";
-import { TokenContext } from "../Pages";
+import { TokenContext } from "../../utils/context";
+import { TokensLogout } from "../../utils/tokens";
 import { Center } from "../styled/Center";
 
 const LOGOUT_MUTATION = gql`
@@ -18,7 +13,7 @@ const LOGOUT_MUTATION = gql`
     }
 `;
 
-export default function ({ route, navigation }: any) {
+export default function ({}: any) {
     const [logout] = useMutation(LOGOUT_MUTATION);
     const [tokens, setToken] = useContext(TokenContext);
 

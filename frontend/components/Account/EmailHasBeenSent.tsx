@@ -1,5 +1,4 @@
 import styled from "@emotion/native";
-import { useFocusEffect } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Path, Svg } from "react-native-svg";

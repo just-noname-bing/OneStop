@@ -1,6 +1,6 @@
 import { gql, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
-import { CommonActions, useNavigation } from "@react-navigation/native";
+import { CommonActions } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator, ScrollView } from "react-native";
 import { Path, Svg } from "react-native-svg";
@@ -76,7 +76,7 @@ export default function ({ navigation }: any) {
         }
     }, [data, loading, value]);
 
-    if (!isAuth) return
+    if (!isAuth) return <></>
 
     if (!data || loading)
         return (
