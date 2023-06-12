@@ -1,13 +1,25 @@
 import styled from "@emotion/native";
-import React from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Path, Svg } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
 import { Center } from "../styled/Center";
 
-export function EmailSent(): JSX.Element {
+export function EmailSent({ navigation }: any): JSX.Element {
     //timer
-    //redirect to login
+    const [counter, setCounter] = useState(5);
+
+    useEffect(() => {
+        let timeout: any;
+        if (counter > 0) {
+            setTimeout(() => setCounter(counter - 1), 1000);
+        } else {
+            navigation.navigate("Account", { screen: "Login" });
+        }
+
+        return () => clearTimeout(timeout);
+    }, [counter]);
 
     return (
         <Center>
@@ -32,7 +44,7 @@ export function EmailSent(): JSX.Element {
                     paddingVertical: 101 / 1.5,
                 }}
             >
-                <Description>Return to menu in 3</Description>
+                <Description>Return to menu in {counter}</Description>
             </Wrapper>
         </Center>
     );
