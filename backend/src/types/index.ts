@@ -10,6 +10,8 @@ declare global {
             DATABASE_URL: string;
             EXPO_URL: string;
             DOMAIN: string;
+            MAILER_URER: string;
+            MAILER_PASS: string;
         }
     }
 }

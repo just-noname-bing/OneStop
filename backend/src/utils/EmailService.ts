@@ -7,8 +7,9 @@ import {
 import {
     DOMAIN,
     EMAIL_VERIFICATION_TOKEN_SECRET,
+    MAILER_PASS,
+    MAILER_USER,
     prisma,
-
 } from "./constants";
 import Mail from "nodemailer/lib/mailer";
 
@@ -43,14 +44,16 @@ export const sendResetPasswordToken = async (email: string, userId: string) => {
         create: { userId, token },
     });
 
-    await sendEmail(email, token, "Password Reset");
+    const link = `<a href="${DOMAIN}/expo/redirect/password-verification/${token}">${token}</a>`;
+
+    await sendEmail(email, link, "Password Reset");
 };
 
 export async function sendEmail(email: string, text: string, subject: string) {
     let testAccount = await createTestAccount();
     let realAccount = {
-        user: "onestop.bot124@gmail.com",
-        pass: "kxnrbibqncmainyl",
+        user: MAILER_USER,
+        pass: MAILER_PASS,
     };
 
     // create reusable transporter object using the default SMTP transport
