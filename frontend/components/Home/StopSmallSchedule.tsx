@@ -3,13 +3,14 @@ import styled from "@emotion/native";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
+import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 import { Stop } from "./MainMapScreen";
 import {
     CategoryBtn,
     CategoryBtnText,
     CategoryBtnWrapper,
-    SearchInput,
     TransportRow,
     transportTypes,
     TransportRowBtn,
@@ -77,7 +78,10 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
         >
             <Wrapper>
                 <View style={{ gap: 13 }}>
-                    <SearchInput />
+                    <SearchWrapper>
+                        <Lupa />
+                        <SearchInput />
+                    </SearchWrapper>
                     <CategoryBtnWrapper>
                         {transportTypes.map((Type, idx) => (
                             <CategoryBtn

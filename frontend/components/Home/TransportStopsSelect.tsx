@@ -87,12 +87,6 @@ export function TransportStopsSelect({ route, navigation }: any) {
         }
     );
 
-    const RenderStopBtns = () => {
-        if (data) {
-            return;
-        }
-    };
-
     useEffect(() => {
         fetchDirections().catch(console.log);
     }, []);
@@ -107,6 +101,7 @@ export function TransportStopsSelect({ route, navigation }: any) {
                 </TransportRowBtn>
                 <View style={{ flex: 1 }}>
                     <DropDownPicker
+                        style={{ minHeight: 69 / 1.5, borderColor: COLOR_PALETE.stroke}}
                         open={open}
                         value={value}
                         items={items}

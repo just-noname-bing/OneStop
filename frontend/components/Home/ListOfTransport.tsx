@@ -2,12 +2,13 @@ import { gql, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { Lupa } from "../../assets/icons";
+import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 import { Center } from "../styled/Center";
 import {
     CategoryBtn,
     CategoryBtnText,
     CategoryBtnWrapper,
-    SearchInput,
     TransportRow,
     TransportRowBtn,
     TransportRowText,
@@ -50,7 +51,10 @@ export function ListOfTransport({ route, navigation }: any) {
             const f = routes.Routes.filter(
                 (rout) => rout.route_type === transportType
             );
-            f.sort((a,b)=> Number(a.route_sort_order) - Number(b.route_sort_order))
+            f.sort(
+                (a, b) =>
+                    Number(a.route_sort_order) - Number(b.route_sort_order)
+            );
             setFilteredRoutes(f);
         }
     }, [routes, loading, route]);
@@ -70,7 +74,10 @@ export function ListOfTransport({ route, navigation }: any) {
         >
             <Wrapper>
                 <View style={{ gap: 13 }}>
-                    <SearchInput />
+                    <SearchWrapper>
+                        <Lupa />
+                        <SearchInput />
+                    </SearchWrapper>
                     <CategoryBtnWrapper>
                         {transportTypes.map((Type, idx) => (
                             <CategoryBtn

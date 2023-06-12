@@ -1,0 +1,217 @@
+import React, { useState } from "react";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useQuery } from "@apollo/client/react";
+import { gql } from "@apollo/client/core";
+import styled from "@emotion/native";
+import { PostItem } from "./PostItem";
+import { COLOR_PALETE } from "../../utils/colors";
+import { Wrapper } from "../Home/SharedComponents";
+import { Path, Svg } from "react-native-svg";
+import { InputFieldWrapper } from "../Account/SharedComponents";
+import DropDownPicker from "react-native-dropdown-picker";
+
+interface Props {}
+
+export const POSTS_QUERY = gql`
+    query GetPosts {
+        getPosts {
+            id
+            text
+            title
+            transport_id
+            created_at
+            updated_at
+        }
+    }
+`;
+
+type POST = {
+    id: string;
+    text: string;
+    title: string;
+    transport_id: string;
+    created_at: Date;
+    updated_at: Date;
+};
+
+export default function Posts({ navigation }: any): JSX.Element {
+    const {
+        data: posts,
+        loading,
+        error,
+    } = useQuery<{ getPosts: POST[] }>(POSTS_QUERY);
+
+    const [open, setOpen] = useState(false);
+    const [items, setItems] = useState([{ label: "Popular", value: 0 }]);
+    const [value, setValue] = useState(items[0].value);
+
+    return (
+        <Wrapper style={{ gap: 10 }}>
+            <View
+                style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                }}
+            >
+                <View>
+                    <Title>Last updates</Title>
+                </View>
+                <NewPostBtn>
+                    <NewPostText>New post</NewPostText>
+                </NewPostBtn>
+            </View>
+
+            <View
+                style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    gap: 16,
+                }}
+            >
+                <SearchWrapper>
+                    <Lupa />
+                    <SearchInput />
+                </SearchWrapper>
+                <View>
+                    <DropDownPicker
+                        style={{
+                            width: 172 / 1.5,
+                            minHeight: 63 / 1.5,
+                        }}
+                        open={open}
+                        value={value}
+                        items={items}
+                        setOpen={setOpen}
+                        setValue={setValue}
+                        setItems={setItems}
+                    />
+                </View>
+            </View>
+
+            <ProblemList>
+                <ProblemWrapper>
+                    <InfoWrapper>
+                        <TransportIcon bg={COLOR_PALETE.bus}>
+                            <TransportIconText>13</TransportIconText>
+                        </TransportIcon>
+                        <View style={{ flex: 1, justifyContent:"space-between" }}>
+                            <ProblemTitle>Traffic jam</ProblemTitle>
+                            <TransportDirection>
+                                Imanta - jugla
+                            </TransportDirection>
+                        </View>
+                        <View>
+                            <TimeStamp>5 min ago</TimeStamp>
+                        </View>
+                    </InfoWrapper>
+                    <ProblemDescription>
+                        223235223523235223523235223523235223523235223523235223532352235
+                    </ProblemDescription>
+                </ProblemWrapper>
+            </ProblemList>
+        </Wrapper>
+    );
+}
+
+const NewPostBtn = styled.Pressable({
+    width: 172 / 1.5,
+    height: 63 / 1.5,
+    backgroundColor: "#FF3838",
+    borderWidth: 1,
+    borderColor: "#CDCDCD",
+    borderRadius: 10,
+
+    alignItems: "center",
+    justifyContent: "center",
+});
+const NewPostText = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 32 / 2,
+    lineHeight: 42 / 2,
+    color: "#FFFFFF",
+});
+
+const Title = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 48 / 2,
+    lineHeight: 62 / 2,
+    color: "#29221E",
+});
+
+const SearchWrapper = styled.View({
+    flexDirection: "row",
+    gap: 8,
+
+    flexGrow: 1,
+
+    borderColor: COLOR_PALETE.stroke,
+    borderWidth: 1,
+    borderRadius: 8,
+
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 13,
+    height: 63 / 1.5,
+});
+
+const SearchInput = styled.TextInput({
+    flex: 1,
+});
+
+const InfoWrapper = styled.View({
+    flexDirection: "row",
+    gap:10
+});
+
+const ProblemList = styled.View({});
+
+const ProblemWrapper = styled.View({
+    borderWidth: 1,
+    borderColor: "#CDCDCD",
+    borderRadius: 10,
+
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+
+    gap:20 / 1.5
+});
+
+const TransportIcon = styled.View(({ bg }: { bg: string }) => ({
+    width: 74 / 1.5,
+    height: 73 / 1.5,
+    backgroundColor: bg,
+    borderRadius: 10,
+
+    justifyContent: "center",
+    alignItems: "center",
+}));
+
+const TransportIconText = styled.Text({
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 32 / 1.5,
+    lineHeight: 42 / 1.5,
+    color: "#FFFFFF",
+});
+
+const ProblemTitle = styled.Text({});
+
+const TransportDirection = styled.Text({});
+
+const ProblemDescription = styled.Text({});
+
+const TimeStamp = styled.Text({});
+
+function Lupa() {
+    return (
+        <Svg width={15} height={16} viewBox="0 0 15 16" fill="none">
+            <Path
+                d="M13.5511 15.2653L8.77841 10.4858C8.35227 10.8272 7.86222 11.0974 7.30824 11.2966C6.75426 11.4957 6.16477 11.5953 5.53977 11.5953C3.99148 11.5953 2.68125 11.0582 1.60909 9.98393C0.536932 8.90967 0.000568182 7.59758 0 6.04765C0 4.49715 0.536364 3.18506 1.60909 2.11138C2.68182 1.0377 3.99205 0.500569 5.53977 0.5C7.08807 0.5 8.3983 1.03713 9.47045 2.11138C10.5426 3.18563 11.079 4.49772 11.0795 6.04765C11.0795 6.67354 10.9801 7.26387 10.7812 7.81863C10.5824 8.3734 10.3125 8.86415 9.97159 9.2909L14.7656 14.0917C14.9219 14.2482 15 14.4403 15 14.6679C15 14.8954 14.9148 15.0946 14.7443 15.2653C14.5881 15.4218 14.3892 15.5 14.1477 15.5C13.9062 15.5 13.7074 15.4218 13.5511 15.2653ZM5.53977 9.88834C6.60511 9.88834 7.5108 9.51479 8.25682 8.76771C9.00284 8.02063 9.37557 7.11394 9.375 6.04765C9.375 4.9808 9.00199 4.07383 8.25597 3.32674C7.50994 2.57966 6.60455 2.2064 5.53977 2.20697C4.47443 2.20697 3.56875 2.58051 2.82273 3.3276C2.0767 4.07468 1.70398 4.98137 1.70455 6.04765C1.70455 7.11451 2.07756 8.02148 2.82358 8.76856C3.5696 9.51565 4.475 9.8889 5.53977 9.88834Z"
+                fill="#8C8C8C"
+            />
+        </Svg>
+    );
+}

@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { Center } from "../styled/Center";
-import Svg, { Path, Rect } from "react-native-svg";
 import styled from "@emotion/native";
 import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
@@ -35,10 +34,16 @@ import {
     CategoryBtn,
     CategoryBtnText,
     CategoryBtnWrapper,
-    SearchInput,
     transportTypes,
 } from "./SharedComponents";
 import { getRoutesForStop, GET_ROUTES_FOR_STOP } from "./StopSmallSchedule";
+import {
+    CreatePostIcon,
+    GpsIconSvg,
+    Lupa,
+    TransportStopMarker,
+} from "../../assets/icons";
+import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 
 export const DELTA = {
     lat: 0.0922,
@@ -64,6 +69,44 @@ export type Stop = {
     stop_lon: string;
     stop_name: string;
 };
+
+const mapStyle = [
+    {
+        featureType: "administrative.land_parcel",
+        elementType: "labels",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+    {
+        featureType: "poi",
+        elementType: "labels.text",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+    {
+        featureType: "road.local",
+        elementType: "labels",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+    {
+        featureType: "transit",
+        stylers: [
+            {
+                visibility: "off",
+            },
+        ],
+    },
+];
 
 export function MainMap({ navigation }: any): JSX.Element {
     const [location, setLocation] = useState<LocationObject | null>(null);
@@ -183,6 +226,8 @@ export function MainMap({ navigation }: any): JSX.Element {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <MapView
+                customMapStyle={mapStyle}
+                provider="google"
                 ref={mapRef}
                 style={{ flex: 1, width: "100%" }}
                 initialRegion={{
@@ -253,7 +298,10 @@ export function MainMap({ navigation }: any): JSX.Element {
                 <BottomMenu style={rBottomSheetStyle}>
                     <MenuLine />
                     <BottomMenuContent>
-                        <SearchInput />
+                        <SearchWrapper>
+                            <Lupa />
+                            <SearchInput />
+                        </SearchWrapper>
                         <CategoryBtnWrapper>
                             {transportTypes.map((Type, idx) => (
                                 <CategoryBtn
@@ -458,40 +506,6 @@ const SoonTransportTimeMin = styled.Text({
 
     color: COLOR_PALETE.text,
 });
-
-function TransportStopMarker() {
-    return (
-        <Svg width={31 / 1.5} height={35 / 1.5} viewBox="0 0 31 35" fill="none">
-            <Rect width="31" height="35" rx="5" fill={COLOR_PALETE.troleybus} />
-            <Path
-                d="M5 23.4211C5 24.5789 5.51187 25.6184 6.3125 26.3421V28.6842C6.3125 29.4079 6.90312 30 7.625 30H8.9375C9.65938 30 10.25 29.4079 10.25 28.6842V27.3684H20.75V28.6842C20.75 29.4079 21.3406 30 22.0625 30H23.375C24.0969 30 24.6875 29.4079 24.6875 28.6842V26.3421C25.4881 25.6184 26 24.5789 26 23.4211V10.2632C26 5.65789 21.3013 5 15.5 5C9.69875 5 5 5.65789 5 10.2632V23.4211ZM9.59375 24.7368C8.50437 24.7368 7.625 23.8553 7.625 22.7632C7.625 21.6711 8.50437 20.7895 9.59375 20.7895C10.6831 20.7895 11.5625 21.6711 11.5625 22.7632C11.5625 23.8553 10.6831 24.7368 9.59375 24.7368ZM21.4062 24.7368C20.3169 24.7368 19.4375 23.8553 19.4375 22.7632C19.4375 21.6711 20.3169 20.7895 21.4062 20.7895C22.4956 20.7895 23.375 21.6711 23.375 22.7632C23.375 23.8553 22.4956 24.7368 21.4062 24.7368ZM23.375 16.8421H7.625V10.2632H23.375V16.8421Z"
-                fill="white"
-            />
-        </Svg>
-    );
-}
-
-function GpsIconSvg() {
-    return (
-        <Svg width="25" height="25" viewBox="0 0 34 35" fill="none">
-            <Path
-                d="M16.9998 11.3332C13.5928 11.3332 10.8332 14.0928 10.8332 17.4998C10.8332 20.9069 13.5928 23.6665 16.9998 23.6665C20.4069 23.6665 23.1665 20.9069 23.1665 17.4998C23.1665 14.0928 20.4069 11.3332 16.9998 11.3332ZM30.7823 15.9582C30.0732 9.52942 24.9703 4.4265 18.5415 3.71734V0.541504H15.4582V3.71734C9.02942 4.4265 3.9265 9.52942 3.21734 15.9582H0.0415039V19.0415H3.21734C3.9265 25.4703 9.02942 30.5732 15.4582 31.2823V34.4582H18.5415V31.2823C24.9703 30.5732 30.0732 25.4703 30.7823 19.0415H33.9582V15.9582H30.7823ZM16.9998 28.2915C11.0336 28.2915 6.20817 23.4661 6.20817 17.4998C6.20817 11.5336 11.0336 6.70817 16.9998 6.70817C22.9661 6.70817 27.7915 11.5336 27.7915 17.4998C27.7915 23.4661 22.9661 28.2915 16.9998 28.2915Z"
-                fill="#29221E"
-            />
-        </Svg>
-    );
-}
-
-function CreatePostIcon() {
-    return (
-        <Svg width={70 / 1.5} height={70 / 1.5} viewBox="0 0 70 70" fill="none">
-            <Path
-                d="M38.5 38.5H31.5V17.5H38.5M38.5 52.5H31.5V45.5H38.5M35 0C30.4037 0 25.8525 0.905302 21.6061 2.66422C17.3597 4.42313 13.5013 7.00121 10.2513 10.2513C3.68749 16.815 0 25.7174 0 35C0 44.2826 3.68749 53.185 10.2513 59.7487C13.5013 62.9988 17.3597 65.5769 21.6061 67.3358C25.8525 69.0947 30.4037 70 35 70C44.2826 70 53.185 66.3125 59.7487 59.7487C66.3125 53.185 70 44.2826 70 35C70 30.4037 69.0947 25.8525 67.3358 21.6061C65.5769 17.3597 62.9988 13.5013 59.7487 10.2513C56.4987 7.00121 52.6403 4.42313 48.3939 2.66422C44.1475 0.905302 39.5963 0 35 0Z"
-                fill="#FF3838"
-            />
-        </Svg>
-    );
-}
 
 function SoonTransportCostructor() {
     return (

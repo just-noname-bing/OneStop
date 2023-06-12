@@ -8,7 +8,7 @@ import {
     View,
     TouchableWithoutFeedback,
 } from "react-native";
-import { Path, Svg } from "react-native-svg";
+import { PencilIcon } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
 import { TokenContext } from "../../utils/context";
 import { transportTypes, Wrapper } from "../Home/SharedComponents";
@@ -82,23 +82,6 @@ export default function ({ route, navigation }: any) {
     );
 }
 
-function PencilIcon() {
-    return (
-        <Svg
-            style={{ position: "absolute", top: 5, right: 5, zIndex: 2 }}
-            pointerEvents={"none"}
-            width={19 / 1.5}
-            height={19 / 1.5}
-            viewBox="0 0 19 19"
-            fill="none"
-        >
-            <Path
-                d="M16.3 6.925L12.05 2.725L13.45 1.325C13.8333 0.941667 14.3043 0.75 14.863 0.75C15.4217 0.75 15.8923 0.941667 16.275 1.325L17.675 2.725C18.0583 3.10833 18.2583 3.571 18.275 4.113C18.2917 4.655 18.1083 5.11733 17.725 5.5L16.3 6.925ZM14.85 8.4L4.25 19H0V14.75L10.6 4.15L14.85 8.4Z"
-                fill="black"
-            />
-        </Svg>
-    );
-}
 
 const TitleInput = styled.TextInput({
     minHeight: 62 / 1.5,
