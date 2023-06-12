@@ -4,7 +4,12 @@ import { ApolloClient, InMemoryCache } from "@apollo/client/core";
 import { StatusBar } from "expo-status-bar";
 import Pages from "./components/Pages";
 import { GRAPHQL_API_URL } from "./utils/constants";
-import { DefaultTheme, NavigationContainer, useNavigation } from "@react-navigation/native";
+import {
+    DefaultTheme,
+    NavigationContainer,
+    useNavigation,
+} from "@react-navigation/native";
+import { createContext, useState } from "react";
 
 const MyTheme = {
     ...DefaultTheme,
@@ -20,6 +25,7 @@ const client = new ApolloClient({
 });
 
 export default function App() {
+
     return (
         <ApolloProvider client={client}>
             <NavigationContainer theme={MyTheme}>

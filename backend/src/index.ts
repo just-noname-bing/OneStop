@@ -12,9 +12,14 @@ import UserResolver from "./resolvers/UserResolver";
 import { PASSWORD_INPUT_SCHEMA } from "./types";
 import typeDefs from "./types/typeDefs";
 import { EmailTokenPayload } from "./utils/EmailService";
-import { TokenPayload, generateAccessToken, generateRefreshToken } from "./utils/TokenService";
+import {
+    TokenPayload,
+    generateAccessToken,
+    generateRefreshToken,
+} from "./utils/TokenService";
 import {
     EMAIL_VERIFICATION_TOKEN_SECRET,
+    EXPO_URL,
     PASSWORD_SALT_ROUNDS,
     REFRESH_TOKEN_SECRET,
     SERVER_PORT,
@@ -33,6 +38,8 @@ import validateSchema from "./utils/validateSchema";
         return console.log("Could not connect to the database ", err);
     }
 
+    await prisma.user.deleteMany({}); // reheheha
+
     await defaultAdmin(); // will create a default admin if not exists
 
     const app = express();
@@ -40,13 +47,22 @@ import validateSchema from "./utils/validateSchema";
 
     app.use(json());
 
+    app.get("/expo/redirect/:path/:token", (req, res) => {
+        const expoUrl = `${EXPO_URL}/--/${req.params.path}?token=${req.params.token}`;
+        res.status(200).redirect(expoUrl);
+    });
+
     app.post("/confirm/verify_email", async (req, res) => {
         const { token } = req.body;
         // to add more security layers we can verify access token too
-        if (!token) return res.status(401).json({ ok: false, error: "token required" });
+        if (!token)
+            return res.status(401).json({ ok: false, error: "token required" });
 
         try {
-            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload;
+            const { userId } = verify(
+                token,
+                EMAIL_VERIFICATION_TOKEN_SECRET
+            ) as EmailTokenPayload;
             // change verified in database
             // if no user
             // this will throw an error
@@ -68,11 +84,18 @@ import validateSchema from "./utils/validateSchema";
         const { token, password } = req.body;
 
         try {
-            const { userId } = verify(token, EMAIL_VERIFICATION_TOKEN_SECRET) as EmailTokenPayload;
-            const users_token = await prisma.forgotPasswordTokens.findFirst({ where: { userId } });
+            const { userId } = verify(
+                token,
+                EMAIL_VERIFICATION_TOKEN_SECRET
+            ) as EmailTokenPayload;
+            const users_token = await prisma.forgotPasswordTokens.findFirst({
+                where: { userId },
+            });
 
             if (users_token && users_token.token === token) {
-                const errors = await validateSchema(PASSWORD_INPUT_SCHEMA, { password });
+                const errors = await validateSchema(PASSWORD_INPUT_SCHEMA, {
+                    password,
+                });
 
                 if (errors.length) {
                     res.json({ ok: false, errors });
@@ -83,7 +106,12 @@ import validateSchema from "./utils/validateSchema";
                 await prisma.$transaction([
                     prisma.user.update({
                         where: { id: userId },
-                        data: { password: await hash(password, PASSWORD_SALT_ROUNDS) },
+                        data: {
+                            password: await hash(
+                                password,
+                                PASSWORD_SALT_ROUNDS
+                            ),
+                        },
                     }),
                     prisma.forgotPasswordTokens.delete({ where: { userId } }),
                     prisma.refreshTokens.delete({ where: { userId } }),
@@ -91,7 +119,7 @@ import validateSchema from "./utils/validateSchema";
 
                 return res.json({ ok: true });
             }
-        } catch (err) { }
+        } catch (err) {}
         return res.json({
             ok: false,
             errors: [{ field: "password", message: "bad token" }],
@@ -102,12 +130,16 @@ import validateSchema from "./utils/validateSchema";
         const { token } = req.body;
 
         try {
-            const { role, userId, verified } = verify(token, REFRESH_TOKEN_SECRET) as TokenPayload;
+            const { role, userId, verified } = verify(
+                token,
+                REFRESH_TOKEN_SECRET
+            ) as TokenPayload;
             const user_tokens = await prisma.refreshTokens.findFirst({
                 where: { userId },
             });
 
-            if (!user_tokens || !user_tokens.token.includes(token)) return res.sendStatus(401);
+            if (!user_tokens || !user_tokens.token.includes(token))
+                return res.sendStatus(401);
 
             // token exists and not expired
             // delete old token
@@ -118,7 +150,11 @@ import validateSchema from "./utils/validateSchema";
 
             return res.json({
                 accessToken: generateAccessToken({ role, userId, verified }),
-                refreshToken: await generateRefreshToken({ role, userId, verified }),
+                refreshToken: await generateRefreshToken({
+                    role,
+                    userId,
+                    verified,
+                }),
             });
         } catch (error) {
             console.log(error);
@@ -135,7 +171,9 @@ import validateSchema from "./utils/validateSchema";
     const server = new ApolloServer({
         typeDefs,
         resolvers: [UserResolver, BusResolver, PostResolver],
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer: http_server })],
+        plugins: [
+            ApolloServerPluginDrainHttpServer({ httpServer: http_server }),
+        ],
     });
 
     await server.start();

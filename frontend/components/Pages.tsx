@@ -4,7 +4,13 @@ import {
     NavigationContainer,
     useNavigation,
 } from "@react-navigation/native";
-import React, { createContext, useEffect, useState } from "react";
+import React, {
+    createContext,
+    Dispatch,
+    SetStateAction,
+    useEffect,
+    useState,
+} from "react";
 import { COLOR_PALETE } from "../utils/colors";
 import Account from "./Account";
 import Home from "./Home";
@@ -15,6 +21,7 @@ import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 const Tab = createBottomTabNavigator();
 
 import * as Linking from "expo-linking";
+import { getAccessToken, getRefreshToken } from "../utils/tokens";
 // Listen for incoming URLs
 
 // Function to parse the URL and extract the screen name and parameter
@@ -27,8 +34,33 @@ function parseScreen(url: any) {
     };
 }
 
-export default function Pages() {
+export type Tokens = {
+    accessToken: string;
+    refreshToken: string;
+};
+
+export const TokenContext = createContext<
+    [Tokens | null, Dispatch<SetStateAction<Tokens | null>>]
+>([] as any);
+
+export default function Pages({ route }: any) {
     const navigation = useNavigation() as any;
+
+    const [token, setToken] = useState<Tokens | null>(null);
+
+    const checkTokens = async () => {
+        const a = await getAccessToken();
+        const r = await getRefreshToken();
+
+        if (a && r) {
+            setToken({ accessToken: a, refreshToken: r });
+        }
+    };
+
+    useEffect(() => {
+        checkTokens();
+    }, [route]);
+
     useEffect(() => {
         Linking.addEventListener("url", (event) => {
             const url = event.url;
@@ -50,39 +82,44 @@ export default function Pages() {
                 console.log("ob");
             }
         });
+
+        checkTokens();
     }, []);
+
     return (
-        <Tab.Navigator
-            screenOptions={{
-                header: () => null,
-                tabBarLabel: () => null,
-                tabBarActiveTintColor: COLOR_PALETE.buttonActive,
-            }}
-            initialRouteName="Posts"
-        >
-            <Tab.Screen
-                options={{
-                    tabBarIcon: (p) => <Entypo name="chat" {...p} />,
+        <TokenContext.Provider value={[token, setToken]}>
+            <Tab.Navigator
+                screenOptions={{
+                    header: () => null,
+                    tabBarLabel: () => null,
+                    tabBarActiveTintColor: COLOR_PALETE.buttonActive,
                 }}
-                name="Posts"
-                component={Posts}
-            />
-            <Tab.Screen
-                options={{
-                    tabBarIcon: (p) => <Ionicons name="map-sharp" {...p} />,
-                }}
-                name="Map"
-                component={Home}
-            />
-            <Tab.Screen
-                options={{
-                    tabBarIcon: (p) => (
-                        <MaterialIcons name="account-circle" {...p} />
-                    ),
-                }}
-                name="Account"
-                component={Account}
-            />
-        </Tab.Navigator>
+                initialRouteName="Posts"
+            >
+                <Tab.Screen
+                    options={{
+                        tabBarIcon: (p) => <Entypo name="chat" {...p} />,
+                    }}
+                    name="Posts"
+                    component={Posts}
+                />
+                <Tab.Screen
+                    options={{
+                        tabBarIcon: (p) => <Ionicons name="map-sharp" {...p} />,
+                    }}
+                    name="Map"
+                    component={Home}
+                />
+                <Tab.Screen
+                    options={{
+                        tabBarIcon: (p) => (
+                            <MaterialIcons name="account-circle" {...p} />
+                        ),
+                    }}
+                    name="Account"
+                    component={Account}
+                />
+            </Tab.Navigator>
+        </TokenContext.Provider>
     );
 }

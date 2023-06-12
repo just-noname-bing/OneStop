@@ -1,13 +1,15 @@
 import { Roles, User } from "@prisma/client";
 import { InferType, boolean, mixed, object, string } from "yup";
 
-export { };
+export {};
 
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
             PORT: string;
             DATABASE_URL: string;
+            EXPO_URL: string;
+            DOMAIN: string;
         }
     }
 }
@@ -29,7 +31,7 @@ export interface CustomContext {
 // graphql types
 export const PASSWORD_INPUT_SCHEMA = object({
     password: string().required().max(20).min(5),
-})
+});
 
 export const LOGIN_INPUT_SCHEMA = object({
     email: string().email().required().max(50),
@@ -38,7 +40,7 @@ export const LOGIN_INPUT_SCHEMA = object({
 const user_info_fields = object({
     name: string().trim().required().max(50),
     surname: string().trim().required().max(50),
-})
+});
 
 export interface LoginInput {
     options: InferType<typeof LOGIN_INPUT_SCHEMA>;
@@ -68,7 +70,9 @@ export interface UpdateUserResponse {
     errors?: FieldError[];
 }
 
-export const REGISTER_INPUT_SCHEMA = object({}).concat(LOGIN_INPUT_SCHEMA).concat(user_info_fields);
+export const REGISTER_INPUT_SCHEMA = object({})
+    .concat(LOGIN_INPUT_SCHEMA)
+    .concat(user_info_fields);
 
 export interface RegisterInput {
     options: InferType<typeof REGISTER_INPUT_SCHEMA>;
@@ -76,11 +80,13 @@ export interface RegisterInput {
 
 export const UPDATE_USER_INPUT_SCHEMA = object({
     verified: boolean().required(),
-    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"]).required()
-}).concat(user_info_fields).concat(LOGIN_INPUT_SCHEMA.omit(["password"]));
+    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"]).required(),
+})
+    .concat(user_info_fields)
+    .concat(LOGIN_INPUT_SCHEMA.omit(["password"]));
 
 export interface UpdateUserInput {
-    id: string
+    id: string;
     options: InferType<typeof UPDATE_USER_INPUT_SCHEMA>;
 }
 
@@ -89,13 +95,12 @@ export interface SearchUserInput {
         // name: string
         // surname: string
         // email: string
-        search_text_field: string
-        verified: boolean
-        role: Roles
-        created_at: Date
-    }
+        search_text_field: string;
+        verified: boolean;
+        role: Roles;
+        created_at: Date;
+    };
 }
-
 
 // post and comments
 
@@ -123,7 +128,6 @@ export const UPDATE_COMMENT_INPUT_SCHEMA = object({
     text: string().trim().required().max(200), // new text
 });
 
-
 // new update Post args
 // id:String!
 // text:String!
@@ -142,7 +146,6 @@ export interface UpdateCommentInput {
 //     options: InferType<t>;
 // }
 
-
 export const COMMENT_INPUT_SCHEMA = object({
     postId: string().required().uuid(),
     text: string().trim().required().max(200),
@@ -151,8 +154,6 @@ export const COMMENT_INPUT_SCHEMA = object({
 export interface CommentInput {
     options: InferType<typeof COMMENT_INPUT_SCHEMA>;
 }
-
-
 
 // input PostInputSearch {
 //     # title:String
@@ -163,9 +164,8 @@ export interface CommentInput {
 // }
 export interface SearchPostInput {
     options: {
-        search_text_field: string
-        transport_id: string
-        created_at: Date
-    }
+        search_text_field: string;
+        transport_id: string;
+        created_at: Date;
+    };
 }
-

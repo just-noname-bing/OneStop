@@ -1,7 +1,7 @@
 import { gql, useMutation } from "@apollo/client";
 import { Formik } from "formik";
 import React from "react";
-import { KeyboardAvoidingView, ScrollView, Text } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
 import { REGISTER_INPUT_SCHEMA } from "../../utils/validationSchema";
@@ -36,7 +36,10 @@ const REGISTER_MUTATION = gql`
 export function Register({ navigation }: any): JSX.Element {
     const [Register] = useMutation(REGISTER_MUTATION);
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
             <ScrollView>
                 <LoginWrapper>
                     <TitleWrapper>
@@ -77,8 +80,8 @@ export function Register({ navigation }: any): JSX.Element {
 
                             if (SUCCESS_REGISTER) {
                                 // Show Verification Email sent Screen
-                                actions.resetForm()
-                                navigation.navigate("EmailSent")
+                                actions.resetForm();
+                                navigation.navigate("EmailSent");
                                 console.log("Success Account Created");
                             } else if (errors && errors.length) {
                                 errors.forEach((error: FieldError) => {

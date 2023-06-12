@@ -1,10 +1,13 @@
 import { gql, useMutation } from "@apollo/client";
+import { CommonActions } from "@react-navigation/native";
 import { Formik } from "formik";
-import React from "react";
-import { KeyboardAvoidingView, ScrollView, Text } from "react-native";
+import React, { useContext } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
+import { setAccessToken, setRefreshToken } from "../../utils/tokens";
 import { LOGIN_INPUT_SCHEMA } from "../../utils/validationSchema";
+import { TokenContext } from "../Pages";
 import {
     LoginWrapper,
     TitleWrapper,
@@ -36,8 +39,13 @@ const LOGIN_MUTATION = gql`
 export function Login({ navigation }: any): JSX.Element {
     const [Login] = useMutation(LOGIN_MUTATION);
 
+    const [, setTokens] = useContext(TokenContext);
+
     return (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
             <ScrollView>
                 <LoginWrapper>
                     <TitleWrapper>
@@ -78,6 +86,20 @@ export function Login({ navigation }: any): JSX.Element {
                             } else {
                                 //Save tokens to SecureStorage
                                 console.log("Success", data);
+                                await setAccessToken(data.accessToken);
+                                await setRefreshToken(data.refreshToken);
+
+                                setTokens({
+                                    accessToken: data.accessToken,
+                                    refreshToken: data.refreshToken,
+                                });
+
+                                // navigation.dispatch(
+                                //     CommonActions.reset({
+                                //         index: 0,
+                                //         routes: [{ name: "Account" }],
+                                //     })
+                                // );
                             }
                         }}
                         validationSchema={LOGIN_INPUT_SCHEMA}

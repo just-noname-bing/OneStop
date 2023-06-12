@@ -1,4 +1,4 @@
-import { getItemAsync, setItemAsync } from "expo-secure-store";
+import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
 
 export enum TOKENS {
     access = "jiaz",
@@ -19,4 +19,9 @@ export async function setAccessToken(accessToken: string) {
 
 export async function setRefreshToken(refreshToken: string) {
     return await setItemAsync(TOKENS.refresh, refreshToken);
+}
+
+export async function TokensLogout(){ 
+    await deleteItemAsync(TOKENS.access)
+    await deleteItemAsync(TOKENS.refresh)
 }

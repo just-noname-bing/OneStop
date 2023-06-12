@@ -35,6 +35,14 @@ const Icons = [<BigTrolleyIcon />, <BigTramIcon />, <BigBusIcon />];
 
 export default function ({ navigation }: any) {
     const [isAuth, setIsAuth] = useState(false);
+
+
+    const { data, loading } = useQuery<{ Routes: Routes[] }>(GET_ROUTES);
+    const [value, setValue] = useState(0);
+    const [color, setColor] = useState(COLOR_PALETE.tram);
+
+    const [filteredRoutes, setFilteredRoutes] = useState<Routes[]>([]);
+
     useEffect(() => {
         getAccessToken().then((token) => {
             if (!token) {
@@ -49,14 +57,6 @@ export default function ({ navigation }: any) {
             }
         });
     }, []);
-
-    if (!isAuth) return
-
-    const { data, loading } = useQuery<{ Routes: Routes[] }>(GET_ROUTES);
-    const [value, setValue] = useState(0);
-    const [color, setColor] = useState(COLOR_PALETE.tram);
-
-    const [filteredRoutes, setFilteredRoutes] = useState<Routes[]>([]);
 
     useEffect(() => {
         if (data && data.Routes) {
@@ -75,6 +75,8 @@ export default function ({ navigation }: any) {
             setFilteredRoutes(f);
         }
     }, [data, loading, value]);
+
+    if (!isAuth) return
 
     if (!data || loading)
         return (
