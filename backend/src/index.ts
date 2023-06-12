@@ -18,6 +18,7 @@ import {
     generateRefreshToken,
 } from "./utils/TokenService";
 import {
+    DOMAIN,
     EMAIL_VERIFICATION_TOKEN_SECRET,
     EXPO_URL,
     PASSWORD_SALT_ROUNDS,
@@ -187,5 +188,5 @@ import validateSchema from "./utils/validateSchema";
 
     // Modified server startup
     http_server.listen({ port: SERVER_PORT });
-    console.log(`🚀 Server ready at http://localhost:${SERVER_PORT}/`);
+    console.log(`🚀 Server ready at ${DOMAIN}/`);
 })();
