@@ -6,28 +6,29 @@ import { COLOR_PALETE } from "../../utils/colors";
 import { GRAPHQL_API_URL } from "../../utils/constants";
 import { Center } from "../styled/Center";
 
-export default function ({ route, navigation }: any) {
+export default function({ route, navigation }: any) {
     const token = route.params?.token as string;
     const [success, setSuccess] = useState<boolean | null>(null);
     const [counter, setCounter] = useState(5);
 
     useEffect(() => {
-        // fetch(GRAPHQL_API_URL + "/confirm/verify_email", {
-        //     method: "POST",
-        //     body: JSON.stringify({ token }),
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        // })
-        //     .catch(() => {
-        //         setSuccess(false);
-        //     })
-        //     .then((d) => {
-        //         console.log(d);
-        //         setSuccess(true);
-        //     });
-        console.log(token);
-        setSuccess(false);
+        fetch(GRAPHQL_API_URL + "/confirm/verify_email", {
+            method: "POST",
+            body: JSON.stringify({ token }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .catch(() => {
+                console.log("chelik vzorvalsja");
+                setSuccess(false);
+            })
+            .then(async (d) => {
+                if (d) {
+                    const data = await d.json();
+                    setSuccess(data.ok)
+                }
+            });
     }, []);
 
     useEffect(() => {
@@ -58,7 +59,7 @@ export default function ({ route, navigation }: any) {
                     </View>
                 )}
                 {success ? (
-                    <Title>E-mail has been sent!</Title>
+                    <Title>Your email has been verified</Title>
                 ) : (
                     <Title>Something went wrong 😭</Title>
                 )}

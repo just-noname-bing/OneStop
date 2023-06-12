@@ -13,18 +13,56 @@ const ImportBusData = (folder: string) => {
             return;
         }
 
-        files.forEach(async (fileName) => {
-            const jsonObj = await csvtojson({}).fromFile(join(fullFolderPath, fileName));
+        const order = [
+            "routes",
+            "trips",
+            "shapes",
+            "stops",
+            "stop_times",
+            "calendar",
+            "calendar_dates",
+        ];
 
-            console.log(fileName.split(".")[0]);
-
-            const createMany = await prisma[fileName.split(".")[0]].createMany({
-                data: jsonObj,
-                skipDuplicates: true,
-            });
-
-            console.log(createMany);
+        files.sort((a, b) => {
+            const aIndex = order.indexOf(a.split(".")[0]);
+            const bIndex = order.indexOf(b.split(".")[0]);
+            return aIndex - bIndex;
         });
+
+        console.log(files);
+
+        const toChunk = function* (items: any[], chunkSize: number) {
+            let index = 0;
+
+            while (index < items.length) {
+                const currentChunk = items.slice(index, index + chunkSize);
+                index += chunkSize;
+                yield currentChunk;
+            }
+        };
+
+        const chunkSize = 100;
+
+        for (let fileName of files) {
+            const jsonObj: any[] = await csvtojson({}).fromFile(
+                join(fullFolderPath, fileName)
+            );
+            const splitFileName = fileName.split(".");
+            console.log(splitFileName[0]);
+
+            for (const batch of toChunk(jsonObj, chunkSize)) {
+                try {
+                    await prisma[splitFileName[0]].createMany({
+                        data: batch,
+                        skipDuplicates: true,
+                    });
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+
+        // console.log(createMany);
     });
 };
 
