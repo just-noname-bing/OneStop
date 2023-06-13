@@ -1,10 +1,9 @@
-import styled from "@emotion/native";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Path, Svg } from "react-native-svg";
-import { COLOR_PALETE } from "../../utils/colors";
 import { GRAPHQL_API_URL } from "../../utils/constants";
 import { Center } from "../styled/Center";
+import { Description, Title, Wrapper } from "./EmailHasBeenSent";
 
 export default function({ route, navigation }: any) {
     const token = route.params?.token as string;
@@ -74,32 +73,6 @@ export default function({ route, navigation }: any) {
         </Center>
     );
 }
-
-const Wrapper = styled.View({
-    flexGrow: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-});
-
-const Title = styled.Text({
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 48 / 1.5,
-    lineHeight: 62 / 1.5,
-
-    textAlign: "center",
-
-    maxWidth: 250,
-});
-
-const Description = styled.Text({
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 28 / 1.5,
-    lineHeight: 36 / 1.5,
-    textAlign: "center",
-    color: COLOR_PALETE.additionalText,
-});
 
 function CheckMark() {
     return (

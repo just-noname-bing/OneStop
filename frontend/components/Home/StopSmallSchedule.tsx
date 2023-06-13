@@ -146,21 +146,21 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                         <View style={{ gap: 15 / 1.5 }}>
                             <TimeTableRow>
                                 <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
+                                    <TransportRowText>5</TransportRowText>
                                 </TransportRowBtn>
-                                <Text>1 min ago</Text>
+                                <Text style={{opacity:.3}}>1 min ago</Text>
                             </TimeTableRow>
                             <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
+                                <TransportRowBtn bg={COLOR_PALETE.bus}>
+                                    <TransportRowText>13</TransportRowText>
                                 </TransportRowBtn>
-                                <Text>1 min ago</Text>
+                                <Text>in 2 min</Text>
                             </TimeTableRow>
                             <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
+                                <TransportRowBtn bg={COLOR_PALETE.bus}>
+                                    <TransportRowText>30</TransportRowText>
                                 </TransportRowBtn>
-                                <Text>1 min ago</Text>
+                                <Text>in 6 min</Text>
                             </TimeTableRow>
                             <TimeTableRow>
                                 <TransportRowBtn bg={COLOR_PALETE.troleybus}>

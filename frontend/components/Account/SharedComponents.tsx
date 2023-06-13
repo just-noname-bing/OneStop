@@ -74,6 +74,11 @@ export const SubmitButtonText = styled.Text({
 
 export const Description = styled.Text({
     textAlign: "center",
+    fontStyle: "normal",
+    fontWeight: "400",
+    fontSize: 24 / 1.5,
+    lineHeight: 31 / 1.5,
+    color: "#999999",
 });
 
 export const ErrorMessage = styled.Text({
@@ -105,3 +110,5 @@ export type FieldError = {
     field: string;
     message: string;
 };
+
+

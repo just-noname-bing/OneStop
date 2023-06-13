@@ -36,7 +36,7 @@ export function EmailSent({ navigation }: any): JSX.Element {
                         />
                     </Svg>
                 </View>
-                <Title>E-mail has been sent!</Title>
+                <Title>Verification e-mail has been sent!</Title>
             </Wrapper>
             <Wrapper
                 style={{
@@ -49,20 +49,23 @@ export function EmailSent({ navigation }: any): JSX.Element {
     );
 }
 
-const Wrapper = styled.View({
+export const Wrapper = styled.View({
     flexGrow: 1,
     justifyContent: "flex-end",
     alignItems: "center",
 });
 
-const Title = styled.Text({
+export const Title = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 48 / 1.5,
     lineHeight: 62 / 1.5,
+
+    textAlign: "center",
+    maxWidth: 250,
 });
 
-const Description = styled.Text({
+export const Description = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 28 / 1.5,

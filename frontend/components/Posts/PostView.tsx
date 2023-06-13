@@ -72,7 +72,7 @@ export default function ({ navigation }: any) {
                         <ProblemWrapper activeOpacity={1}>
                             <InfoWrapper>
                                 <TransportIcon bg={COLOR_PALETE.bus}>
-                                    <TransportIconText>13</TransportIconText>
+                                    <TransportIconText>41</TransportIconText>
                                 </TransportIcon>
                                 <View
                                     style={{
@@ -80,17 +80,22 @@ export default function ({ navigation }: any) {
                                         justifyContent: "space-between",
                                     }}
                                 >
-                                    <ProblemTitle>Traffic jam</ProblemTitle>
+                                    <ProblemTitle>Car crash</ProblemTitle>
                                     <TransportDirection>
-                                        Imanta - jugla
+                                        Imanta - Esplanāde
                                     </TransportDirection>
                                 </View>
                                 <View>
-                                    <TimeStamp>5 min ago</TimeStamp>
+                                    <TimeStamp>3 min ago</TimeStamp>
                                 </View>
                             </InfoWrapper>
                             <ProblemDescription>
-                                223235223523235223523235223523235223523235223523235223532352235
+                                the bus didn't arrive as usual, but today there
+                                was a pretty decent reason, the driver said he
+                                was attacked by optimus prime from the planet
+                                Cybertron the de facto leader of the Autobots, a
+                                faction of a transforming species of synthetic
+                                intelligence 😭
                             </ProblemDescription>
                         </ProblemWrapper>
 
@@ -110,10 +115,10 @@ export default function ({ navigation }: any) {
                                 <TimeStamp>5 min ago</TimeStamp>
                             </CommentAuthorWrapper>
                             <ProblemDescription>
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
+                                Кидаю step, лечу прям вверх, мой красный сет
+                                убил их всех У них в башке один preset, я покажу
+                                тоннельный свет Им не найти меня, я скрылся, я
+                                пропавший в dissimilate
                             </ProblemDescription>
                         </ProblemWrapper>
                         <ProblemWrapper activeOpacity={1}>
@@ -121,12 +126,7 @@ export default function ({ navigation }: any) {
                                 <CommentAuthor>Nikkita733:</CommentAuthor>
                                 <TimeStamp>5 min ago</TimeStamp>
                             </CommentAuthorWrapper>
-                            <ProblemDescription>
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
-                                bbombabombabombabombabombabombabombabombaomba
-                            </ProblemDescription>
+                            <ProblemDescription>real</ProblemDescription>
                         </ProblemWrapper>
                     </ProblemList>
                 </Wrapper>

@@ -6,7 +6,12 @@ import Account from "./Account";
 import Home from "./Home";
 import Posts from "./Posts";
 
-import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import {
+    Entypo,
+    Ionicons,
+    MaterialIcons,
+    Foundation,
+} from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
@@ -99,6 +104,13 @@ export default function Pages({ route }: any) {
                         ),
                     }}
                     name="Account"
+                    component={Account}
+                />
+                <Tab.Screen
+                    options={{
+                        tabBarIcon: (p) => <Foundation name="shield" {...p} />,
+                    }}
+                    name="AdminMenu"
                     component={Account}
                 />
             </Tab.Navigator>

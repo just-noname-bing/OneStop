@@ -10,7 +10,22 @@ import { Path, Svg } from "react-native-svg";
 import { InputFieldWrapper } from "../Account/SharedComponents";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Lupa } from "../../assets/icons";
-import { InfoWrapper, NewPostBtn, NewPostText, ProblemDescription, ProblemList, ProblemTitle, ProblemWrapper, SearchInput, SearchWrapper, TimeStamp, Title, TransportDirection, TransportIcon, TransportIconText } from "./SharedComponents";
+import {
+    InfoWrapper,
+    NewPostBtn,
+    NewPostText,
+    ProblemDescription,
+    ProblemList,
+    ProblemTitle,
+    ProblemWrapper,
+    SearchInput,
+    SearchWrapper,
+    TimeStamp,
+    Title,
+    TransportDirection,
+    TransportIcon,
+    TransportIconText,
+} from "./SharedComponents";
 
 interface Props {}
 
@@ -59,7 +74,9 @@ export default function Posts({ navigation }: any): JSX.Element {
                 <View>
                     <Title>Last updates</Title>
                 </View>
-                <NewPostBtn onPress={() => navigation.navigate("CreateNewPost")}>
+                <NewPostBtn
+                    onPress={() => navigation.navigate("CreateNewPost")}
+                >
                     <NewPostText>New post</NewPostText>
                 </NewPostBtn>
             </View>
@@ -93,11 +110,45 @@ export default function Posts({ navigation }: any): JSX.Element {
             </View>
 
             <ScrollView
-                style={{ height:"100%", zIndex:-1 }}
+                style={{ height: "100%", zIndex: -1 }}
                 showsVerticalScrollIndicator={false}
             >
-                <ProblemList style={{paddingBottom: 80}}>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
+                <ProblemList style={{ paddingBottom: 80 }}>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
+                        <InfoWrapper>
+                            <TransportIcon bg={COLOR_PALETE.bus}>
+                                <TransportIconText>41</TransportIconText>
+                            </TransportIcon>
+                            <View
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "space-between",
+                                }}
+                            >
+                                <ProblemTitle>Car crash</ProblemTitle>
+                                <TransportDirection>
+                                    Imanta - Esplanāde
+                                </TransportDirection>
+                            </View>
+                            <View>
+                                <TimeStamp>4 min ago</TimeStamp>
+                            </View>
+                        </InfoWrapper>
+                        <ProblemDescription>
+                            the bus didn't arrive as usual, but today there was
+                            a pretty decent reason, the driver said he was
+                            attacked by optimus prime from the planet Cybertron
+                            the de facto leader of the Autobots, a faction of a
+                            transforming species of synthetic intelligence 😭
+                        </ProblemDescription>
+                    </ProblemWrapper>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
                         <InfoWrapper>
                             <TransportIcon bg={COLOR_PALETE.bus}>
                                 <TransportIconText>13</TransportIconText>
@@ -121,7 +172,10 @@ export default function Posts({ navigation }: any): JSX.Element {
                             223235223523235223523235223523235223523235223523235223532352235
                         </ProblemDescription>
                     </ProblemWrapper>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
                         <InfoWrapper>
                             <TransportIcon bg={COLOR_PALETE.bus}>
                                 <TransportIconText>13</TransportIconText>
@@ -145,7 +199,10 @@ export default function Posts({ navigation }: any): JSX.Element {
                             223235223523235223523235223523235223523235223523235223532352235
                         </ProblemDescription>
                     </ProblemWrapper>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
                         <InfoWrapper>
                             <TransportIcon bg={COLOR_PALETE.bus}>
                                 <TransportIconText>13</TransportIconText>
@@ -169,7 +226,10 @@ export default function Posts({ navigation }: any): JSX.Element {
                             223235223523235223523235223523235223523235223523235223532352235
                         </ProblemDescription>
                     </ProblemWrapper>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
                         <InfoWrapper>
                             <TransportIcon bg={COLOR_PALETE.bus}>
                                 <TransportIconText>13</TransportIconText>
@@ -193,31 +253,10 @@ export default function Posts({ navigation }: any): JSX.Element {
                             223235223523235223523235223523235223523235223523235223532352235
                         </ProblemDescription>
                     </ProblemWrapper>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
-                        <InfoWrapper>
-                            <TransportIcon bg={COLOR_PALETE.bus}>
-                                <TransportIconText>13</TransportIconText>
-                            </TransportIcon>
-                            <View
-                                style={{
-                                    flex: 1,
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <ProblemTitle>Traffic jam</ProblemTitle>
-                                <TransportDirection>
-                                    Imanta - jugla
-                                </TransportDirection>
-                            </View>
-                            <View>
-                                <TimeStamp>5 min ago</TimeStamp>
-                            </View>
-                        </InfoWrapper>
-                        <ProblemDescription>
-                            223235223523235223523235223523235223523235223523235223532352235
-                        </ProblemDescription>
-                    </ProblemWrapper>
-                    <ProblemWrapper activeOpacity={1} onPress={() => navigation.navigate("PostView")}>
+                    <ProblemWrapper
+                        activeOpacity={1}
+                        onPress={() => navigation.navigate("PostView")}
+                    >
                         <InfoWrapper>
                             <TransportIcon bg={COLOR_PALETE.bus}>
                                 <TransportIconText>13</TransportIconText>
@@ -246,4 +285,3 @@ export default function Posts({ navigation }: any): JSX.Element {
         </Wrapper>
     );
 }
-

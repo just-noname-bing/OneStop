@@ -474,8 +474,8 @@ const SoonTransportCode = styled.Text({
 const SoonTransportDesc = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
-    fontSize: 18 / 1.2,
-    lineHeight: 23 / 1.2,
+    fontSize: 18 / 1.6,
+    lineHeight: 23 / 1.6,
 });
 
 const SoonTransportTimeWrapper = styled.View({
@@ -511,7 +511,7 @@ function SoonTransportCostructor() {
     return (
         <SoonTransport>
             <SoonTransportCodeWrapper>
-                <SoonTransportCode>12</SoonTransportCode>
+                <SoonTransportCode>56</SoonTransportCode>
             </SoonTransportCodeWrapper>
             <View
                 style={{
@@ -519,13 +519,13 @@ function SoonTransportCostructor() {
                     flexGrow: 1,
                 }}
             >
-                <SoonTransportDesc>Keista iela</SoonTransportDesc>
+                <SoonTransportDesc>Daugavgrīva - Ziepniekkalns</SoonTransportDesc>
                 <SoonTransportDesc
                     style={{
                         color: COLOR_PALETE.additionalText,
                     }}
                 >
-                    to Prechu iela
+                    to Kleistu iela
                 </SoonTransportDesc>
             </View>
             <SoonTransportTimeWrapper>
@@ -570,7 +570,7 @@ function NearStopConstructor(props: { stop: Stop }) {
                 <NearTransportTitle>{props.stop.stop_name}</NearTransportTitle>
                 <NearTransportDescWrapper>
                     <NearTransportDescription>
-                        to Kipsala norverg
+                        to Kleistu iela
                     </NearTransportDescription>
                     <View>
                         <NearTransportDescription>
@@ -603,7 +603,6 @@ function NearStopConstructor(props: { stop: Stop }) {
             </View>
 
             <View>
-                <SoonTransportCostructor />
                 <SoonTransportCostructor />
             </View>
         </NearTransportStopWrapper>

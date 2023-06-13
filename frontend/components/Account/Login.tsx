@@ -1,7 +1,14 @@
 import { gql, useMutation } from "@apollo/client";
 import { Formik } from "formik";
 import React, { useContext } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
+import {
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    View,
+} from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
 import { TokenContext } from "../../utils/context";
@@ -115,13 +122,33 @@ export function Login({ navigation }: any): JSX.Element {
                                         value={values.email}
                                         error={errors.email}
                                     />
-                                    <CustomInputField
-                                        label="Password"
-                                        secureTextEntry
-                                        onChangeText={handleChange("password")}
-                                        value={values.password}
-                                        error={errors.password}
-                                    />
+                                    <View style={{gap:10}}>
+                                        <CustomInputField
+                                            label="Password"
+                                            secureTextEntry
+                                            onChangeText={handleChange(
+                                                "password"
+                                            )}
+                                            value={values.password}
+                                            error={errors.password}
+                                        />
+                                        <View
+                                            style={{
+                                                flex: 1,
+                                                alignItems: "flex-end",
+                                            }}
+                                        >
+                                            <Pressable>
+                                                <Text
+                                                    style={{
+                                                        color: COLOR_PALETE.tram,
+                                                    }}
+                                                >
+                                                    Forgot password?
+                                                </Text>
+                                            </Pressable>
+                                        </View>
+                                    </View>
                                 </CustomForm>
                                 <SubmitButtonWrapper
                                     onPress={handleSubmit as any}
