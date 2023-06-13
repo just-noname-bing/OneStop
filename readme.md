@@ -98,8 +98,8 @@ Izpildiet komandu "npm install", lai instalētu visas atkarības:
 npm install
 ```
 
-	Tas ielādēs un uzstādīs visus nepieciešamos moduļus un bibliotēkas, kas ir norādītas failā "package.json".
-Pēc tam izpildiet komandu "npx prisma generate", lai ģenerētu Prisma klientu, izmantojot noklusēto "schema.prisma" ceļu:
+Tas ielādēs un uzstādīs visus nepieciešamos moduļus un bibliotēkas, kas ir norādītas failā "package.json".
+Pēc tam izpildiet komandu prisma generate, lai ģenerētu Prisma klientu, izmantojot noklusēto "schema.prisma" ceļu:
 
 ```
 npx prisma generate
@@ -107,7 +107,7 @@ npx prisma generate
 
 Tas ģenerēs Prisma klienta kodi, kas ir nepieciešams, lai mijiedarbotos ar datubāzi.
 
-Pēc tam izpildiet komandu "npx prisma migrate dev", lai sinhronizētu shēmu ar datubāzi:
+Pēc tam izpildiet komandu prisma migrate, lai sinhronizētu shēmu ar datubāzi:
 
 ```
 npx prisma migrate dev
