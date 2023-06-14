@@ -12,12 +12,7 @@ import { prisma } from "../utils/constants";
 export const BusResolver = {
     Query: {
         Routes: async (): Promise<Routes[]> => {
-            return await prisma.routes.findMany({
-                include: {
-                    trips: true,
-                    posts: true,
-                },
-            });
+            return await prisma.routes.findMany({});
         },
 
         Trips: async (): Promise<Trips[]> => {
@@ -32,27 +27,11 @@ export const BusResolver = {
         },
 
         Shapes: async (): Promise<Shapes[]> => {
-            return await prisma.shapes.findMany({
-                include: { trips: true },
-            });
+            return await prisma.shapes.findMany({});
         },
 
         Stops: async (): Promise<Stops[]> => {
-            return await prisma.stops.findMany({
-                include: {
-                    stop_times: {
-                        include: {
-                            trips: {
-                                include: {
-                                    Shapes: true,
-                                    route: true,
-                                    Calendar: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
+            return await prisma.stops.findMany({});
         },
 
         Stop_times: async (): Promise<Stop_times[]> => {

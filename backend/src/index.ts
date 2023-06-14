@@ -1,3 +1,4 @@
+import "dotenv-safe/config"
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware as expressM } from "@apollo/server/express4";
 import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
@@ -121,7 +122,7 @@ import validateSchema from "./utils/validateSchema";
 
                 return res.json({ ok: true });
             }
-        } catch (err) {}
+        } catch (err) { }
         return res.json({
             ok: false,
             errors: [{ field: "password", message: "bad token" }],
