@@ -55,7 +55,7 @@ export function PasswordReset() {
                     handleChange,
                     handleSubmit,
                 }) => (
-                    <Wrapper style={{ gap: 125 / 1.5 }}>
+                    <Wrapper style={{ gap: 125 / 1.5, paddingHorizontal: 50 }}>
                         <TitleWrapper>
                             <View>
                                 <QuerstionMarkIcon />
@@ -80,7 +80,9 @@ export function PasswordReset() {
                                 {isSubmitting ? (
                                     <ActivityIndicator color={"white"} />
                                 ) : (
-                                    <SubmitButtonText>send code</SubmitButtonText>
+                                    <SubmitButtonText>
+                                        send code
+                                    </SubmitButtonText>
                                 )}
                             </SubmitButtonWrapper>
                         </View>

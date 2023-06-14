@@ -79,7 +79,7 @@ export function NewPassword({ route }: any) {
                     handleChange,
                     handleSubmit,
                 }) => (
-                    <Wrapper style={{ gap: 125 / 1.5 }}>
+                    <Wrapper style={{ gap: 125 / 1.5, paddingHorizontal:50 }}>
                         <TitleWrapper>
                             <View>
                                 <QuerstionMarkIcon />
