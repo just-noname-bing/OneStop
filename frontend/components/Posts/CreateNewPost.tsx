@@ -26,11 +26,11 @@ import { Wrapper } from "../styled/Wrapper";
 //
 const Icons = [<BigTrolleyIcon />, <BigTramIcon />, <BigBusIcon />];
 
-export default function ({ navigation }: any) {
+export default function({ navigation }: any) {
     const { auth, loading: authLoading } = useAuth();
 
 
-    const { data, loading  } = useQuery<{ Routes: Routes[] }>(
+    const { data, loading } = useQuery<{ Routes: Routes[] }>(
         GET_ROUTES,
         {
             skip: !auth,

@@ -25,7 +25,7 @@ export default function Posts({ navigation }: any): JSX.Element {
     const [value, setValue] = useState(items[0].value);
 
     return (
-        <Wrapper style={{ gap: 10 }}>
+        <Wrapper style={{ gap: 10, minHeight: "100%" }}>
             <View
                 style={{
                     flexDirection: "row",

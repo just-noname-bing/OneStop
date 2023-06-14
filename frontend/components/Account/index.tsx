@@ -13,7 +13,10 @@ import { NewPassword } from "./NewPassword";
 const Stack = createNativeStackNavigator();
 
 export default function Account({ route }: any): JSX.Element {
-    const { auth } = useAuth();
+    const { auth, loading } = useAuth();
+
+
+    if (loading) return <></>
 
     return (
         <Stack.Navigator
