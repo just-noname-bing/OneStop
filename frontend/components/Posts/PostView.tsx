@@ -1,24 +1,45 @@
-import styled from "@emotion/native";
-import React, { useState } from "react";
 import {
-    Text,
+    ApolloClient,
+    gql,
+    useApolloClient,
+    useMutation,
+    useQuery,
+} from "@apollo/client";
+import styled from "@emotion/native";
+import { CommonActions } from "@react-navigation/native";
+import { ErrorMessage, Formik, FormikHelpers, FormikValues } from "formik";
+import React, {
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
+import {
+    FlatList,
     Keyboard,
-    KeyboardAvoidingView,
-    SafeAreaView,
     ScrollView,
     View,
+    Text,
+    ActivityIndicator,
+    Alert,
+    RefreshControl,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { Lupa } from "../../assets/icons";
+import { LoadingIndicator, Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
-import { Wrapper } from "../Home/SharedComponents";
+import { formatRelativeTime } from "../../utils/formatTime";
+import { GET_POST_BY_ID, POST_BY_ID } from "../../utils/graphql";
+import { getAccessToken } from "../../utils/tokens";
+import { COMMENT_INPUT_SCHEMA, FieldError } from "../../utils/validationSchema";
+import { transportTypes } from "../Home/SharedComponents";
+import { Center } from "../styled/Center";
+import { Wrapper } from "../styled/Wrapper";
 import {
     InfoWrapper,
     NewPostBtn,
     NewPostText,
     ProblemDescription,
-    ProblemList,
     ProblemTitle,
     ProblemWrapper,
     SearchInput,
@@ -30,13 +51,96 @@ import {
     TransportIconText,
 } from "./SharedComponents";
 
-export default function ({ navigation }: any) {
+const defaultFields = {
+    text: "",
+};
+
+const CREATE_COMMENT_MUTATION = gql`
+    mutation CreateComment($options: commentInput!) {
+        createComment(options: $options) {
+            data {
+                id
+                author_id
+                text
+                created_at
+                updated_at
+            }
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
+
+type createCommentMutation = {
+    data: {
+        id: string;
+        author_id: string;
+        text: string;
+        created_at: string;
+        updated_at: string;
+    };
+    errors: FieldError[];
+};
+
+export default function ({ navigation, route }: any) {
+    const [isAuth, setIsAuth] = useState<boolean | null>(null);
+    // const [, setToken] = useContext(TokenContext);
+
+    const postId = route.params.postId as string;
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const client = useApolloClient();
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        client
+            .refetchQueries({
+                include: [GET_POST_BY_ID],
+            })
+            .then(() => setIsRefreshing(false));
+    };
+    const [createComment] = useMutation<{
+        createComment: createCommentMutation;
+    }>(CREATE_COMMENT_MUTATION);
+
+    const { data, loading } = useQuery<{ getPost: POST_BY_ID }>(
+        GET_POST_BY_ID,
+        {
+            variables: { id: postId },
+        }
+    );
+
+    const orderedComments = useMemo(() => {
+        return data?.getPost.Comment.slice().sort(
+            (a, b) =>
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime()
+        );
+    }, [data, loading]);
+
+    useEffect(() => {
+        getAccessToken().then((token) => {
+            setIsAuth(!!token);
+        });
+    }, []);
+
+    if (isAuth === null) return <></>;
+
     return (
         <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
             style={{ flexGrow: 1 }}
         >
-            <ScrollView>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
+            >
                 <Wrapper style={{ gap: 10 }}>
                     <View
                         style={{
@@ -68,67 +172,199 @@ export default function ({ navigation }: any) {
                         </SearchWrapper>
                     </View>
 
-                    <ProblemList>
-                        <ProblemWrapper activeOpacity={1}>
-                            <InfoWrapper>
-                                <TransportIcon bg={COLOR_PALETE.bus}>
-                                    <TransportIconText>41</TransportIconText>
-                                </TransportIcon>
-                                <View
-                                    style={{
-                                        flex: 1,
-                                        justifyContent: "space-between",
+                    {!data || !data.getPost || loading ? (
+                        <LoadingIndicator />
+                    ) : (
+                        <>
+                            <ProblemWrapper activeOpacity={1}>
+                                <InfoWrapper>
+                                    <TransportIcon
+                                        bg={
+                                            transportTypes.filter(
+                                                (x) =>
+                                                    x.id ===
+                                                    data.getPost.route
+                                                        .route_type
+                                            )[0].color
+                                        }
+                                    >
+                                        <TransportIconText>
+                                            {
+                                                data.getPost.route
+                                                    .route_short_name
+                                            }
+                                        </TransportIconText>
+                                    </TransportIcon>
+                                    <View
+                                        style={{
+                                            flex: 1,
+                                            justifyContent: "space-between",
+                                        }}
+                                    >
+                                        <ProblemTitle>
+                                            {data.getPost.title}
+                                        </ProblemTitle>
+                                        <TransportDirection>
+                                            {data.getPost.route.route_long_name}
+                                        </TransportDirection>
+                                    </View>
+                                    <View>
+                                        <TimeStamp>
+                                            {formatRelativeTime(
+                                                data.getPost.created_at
+                                            )}
+                                        </TimeStamp>
+                                    </View>
+                                </InfoWrapper>
+                                <ProblemDescription>
+                                    {data.getPost.text}
+                                </ProblemDescription>
+                            </ProblemWrapper>
+
+                            {isAuth && (
+                                <Formik
+                                    initialValues={{ ...defaultFields, postId }}
+                                    validationSchema={COMMENT_INPUT_SCHEMA}
+                                    validateOnChange={true}
+                                    validateOnMount={false}
+                                    validateOnBlur={false}
+                                    onSubmit={async (values, actions) => {
+                                        let response = null;
+                                        try {
+                                            response = await createComment({
+                                                variables: { options: values },
+                                            });
+                                        } catch {
+                                            console.log("something went wrong");
+                                            // navigation.dispatch(
+                                            //     CommonActions.reset({
+                                            //         index: 0,
+                                            //         routes: [
+                                            //             { name: "Account" },
+                                            //         ],
+                                            //     })
+                                            // );
+                                            return;
+                                        }
+
+                                        if (
+                                            response.errors?.length ||
+                                            !response.data
+                                        ) {
+                                            return Alert.alert(
+                                                "something went wrong"
+                                            );
+                                        }
+
+                                        const { errors } =
+                                            response.data.createComment;
+
+                                        if (errors?.length) {
+                                            return errors.forEach((error) => {
+                                                actions.setErrors({
+                                                    [error["field"]]:
+                                                        error.message,
+                                                });
+                                            });
+                                        }
+
+                                        actions.setValues(
+                                            { ...values, text: "" },
+                                            true
+                                        );
+
+                                        actions.resetForm();
+                                        await client.refetchQueries({
+                                            include: [GET_POST_BY_ID],
+                                        });
                                     }}
                                 >
-                                    <ProblemTitle>Car crash</ProblemTitle>
-                                    <TransportDirection>
-                                        Imanta - Esplanāde
-                                    </TransportDirection>
-                                </View>
-                                <View>
-                                    <TimeStamp>3 min ago</TimeStamp>
-                                </View>
-                            </InfoWrapper>
-                            <ProblemDescription>
-                                the bus didn't arrive as usual, but today there
-                                was a pretty decent reason, the driver said he
-                                was attacked by optimus prime from the planet
-                                Cybertron the de facto leader of the Autobots, a
-                                faction of a transforming species of synthetic
-                                intelligence 😭
-                            </ProblemDescription>
-                        </ProblemWrapper>
+                                    {({
+                                        isSubmitting,
+                                        handleChange,
+                                        handleSubmit,
+                                        values,
+                                        errors,
+                                    }) => (
+                                        <View style={{ gap: 25 / 1.5 }}>
+                                            <CommentInput
+                                                onChangeText={handleChange(
+                                                    "text"
+                                                )}
+                                                value={values.text}
+                                                multiline={true}
+                                                placeholder="Write your comment"
+                                                style={
+                                                    !!errors.text
+                                                        ? {
+                                                              borderColor:
+                                                                  COLOR_PALETE.tram,
+                                                          }
+                                                        : {}
+                                                }
+                                            />
+                                            <ErrorMessage name="text">
+                                                {(msg) => (
+                                                    <Text
+                                                        style={{
+                                                            color: COLOR_PALETE.tram,
+                                                        }}
+                                                    >
+                                                        {msg}
+                                                    </Text>
+                                                )}
+                                            </ErrorMessage>
+                                            <CreateCommentBtn
+                                                disabled={isSubmitting}
+                                                onPress={handleSubmit as any}
+                                            >
+                                                {isSubmitting ? (
+                                                    <ActivityIndicator
+                                                        color={"white"}
+                                                    />
+                                                ) : (
+                                                    <CreateCommentText>
+                                                        Send
+                                                    </CreateCommentText>
+                                                )}
+                                            </CreateCommentBtn>
+                                        </View>
+                                    )}
+                                </Formik>
+                            )}
 
-                        <View style={{ gap: 25 / 1.5 }}>
-                            <CommentInput
-                                multiline={true}
-                                placeholder="Write your comment"
-                            />
-                            <CreateCommentBtn>
-                                <CreateCommentText>Send</CreateCommentText>
-                            </CreateCommentBtn>
-                        </View>
-
-                        <ProblemWrapper activeOpacity={1}>
-                            <CommentAuthorWrapper>
-                                <CommentAuthor>Nikkita733:</CommentAuthor>
-                                <TimeStamp>5 min ago</TimeStamp>
-                            </CommentAuthorWrapper>
-                            <ProblemDescription>
-                                Кидаю step, лечу прям вверх, мой красный сет
-                                убил их всех У них в башке один preset, я покажу
-                                тоннельный свет Им не найти меня, я скрылся, я
-                                пропавший в dissimilate
-                            </ProblemDescription>
-                        </ProblemWrapper>
-                        <ProblemWrapper activeOpacity={1}>
-                            <CommentAuthorWrapper>
-                                <CommentAuthor>Nikkita733:</CommentAuthor>
-                                <TimeStamp>5 min ago</TimeStamp>
-                            </CommentAuthorWrapper>
-                            <ProblemDescription>real</ProblemDescription>
-                        </ProblemWrapper>
-                    </ProblemList>
+                            {orderedComments?.length ? (
+                                orderedComments?.map((item) => (
+                                    <ProblemWrapper
+                                        key={item.id}
+                                        activeOpacity={1}
+                                    >
+                                        <CommentAuthorWrapper>
+                                            <CommentAuthor>
+                                                {item.author.name}:
+                                            </CommentAuthor>
+                                            <TimeStamp>
+                                                {formatRelativeTime(
+                                                    item.created_at
+                                                )}
+                                            </TimeStamp>
+                                        </CommentAuthorWrapper>
+                                        <ProblemDescription>
+                                            {item.text}
+                                        </ProblemDescription>
+                                    </ProblemWrapper>
+                                ))
+                            ) : (
+                                <Center style={{ paddingVertical: 100 }}>
+                                    <Text
+                                        style={{ color: COLOR_PALETE.stroke }}
+                                    >
+                                        No comments
+                                    </Text>
+                                </Center>
+                            )}
+                        </>
+                    )}
                 </Wrapper>
             </ScrollView>
         </TouchableWithoutFeedback>

@@ -1,4 +1,7 @@
+import { ActivityIndicator } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
+import { Center } from "../components/styled/Center";
+import { Wrapper } from "../components/styled/Wrapper";
 import { COLOR_PALETE } from "../utils/colors";
 
 export function Lupa() {
@@ -11,7 +14,6 @@ export function Lupa() {
         </Svg>
     );
 }
-
 
 export function PencilIcon() {
     return (
@@ -30,7 +32,6 @@ export function PencilIcon() {
         </Svg>
     );
 }
-
 
 export function TransportStopMarker() {
     return (
@@ -77,7 +78,6 @@ export function BusIcon() {
     );
 }
 
-
 export function BigTrolleyIcon() {
     return (
         <Svg width={57 / 1.5} height={89 / 1.5} viewBox="0 0 57 89" fill="none">
@@ -109,3 +109,10 @@ export function BigTramIcon() {
     );
 }
 
+export function LoadingIndicator() {
+    return (
+        <Center>
+            <ActivityIndicator size="large" color={COLOR_PALETE.tram} />
+        </Center>
+    );
+}

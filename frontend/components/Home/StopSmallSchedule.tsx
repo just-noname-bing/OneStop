@@ -1,12 +1,13 @@
-import { gql, useMutation } from "@apollo/client";
+import {  useMutation } from "@apollo/client";
 import styled from "@emotion/native";
 import { useEffect } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import {  Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Lupa } from "../../assets/icons";
+import { LoadingIndicator, Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
+import { getRoutesForStop, GET_ROUTES_FOR_STOP, Stop } from "../../utils/graphql";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
-import { Stop } from "./MainMapScreen";
+import { Wrapper } from "../styled/Wrapper";
 import {
     CategoryBtn,
     CategoryBtnText,
@@ -15,7 +16,6 @@ import {
     transportTypes,
     TransportRowBtn,
     TransportRowText,
-    Wrapper,
     ScheduleTypeBtn,
     ScheduleTypeText,
     StopTitle,
@@ -26,27 +26,6 @@ import {
 // test data riga_bus_41
 // test data 1086
 
-export const GET_ROUTES_FOR_STOP = gql`
-    mutation GetRoutesForStop($stopId: String!) {
-        getRoutesForStop(stop_id: $stopId) {
-            route_id
-            route_long_name
-            route_short_name
-            route_type
-        }
-    }
-`;
-
-export type Route = {
-    route_id: string;
-    route_long_name: string;
-    route_short_name: string;
-    route_type: string;
-};
-
-export type getRoutesForStop = {
-    getRoutesForStop: Route[];
-};
 
 export function SmallSchedule({ route, navigation }: any): JSX.Element {
     const stop = route.params.stop as Stop;
@@ -64,12 +43,7 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
         getInformation().catch(console.log);
     }, []);
 
-    if (!data || loading)
-        return (
-            <Wrapper>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Wrapper>
-        );
+    if (!data || loading) return <LoadingIndicator />;
 
     return (
         <ScrollView
@@ -145,16 +119,16 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                         <TimeTableTitle>Timetable</TimeTableTitle>
                         <View style={{ gap: 15 / 1.5 }}>
                             <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>5</TransportRowText>
+                                <TransportRowBtn bg={COLOR_PALETE.bus}>
+                                    <TransportRowText>56</TransportRowText>
                                 </TransportRowBtn>
-                                <Text style={{opacity:.3}}>1 min ago</Text>
+                                <Text>now</Text>
                             </TimeTableRow>
                             <TimeTableRow>
                                 <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                    <TransportRowText>13</TransportRowText>
+                                    <TransportRowText>56</TransportRowText>
                                 </TransportRowBtn>
-                                <Text>in 2 min</Text>
+                                <Text>in 43 min</Text>
                             </TimeTableRow>
                             <TimeTableRow>
                                 <TransportRowBtn bg={COLOR_PALETE.bus}>

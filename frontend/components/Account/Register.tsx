@@ -1,10 +1,17 @@
 import { gql, useMutation } from "@apollo/client";
 import { Formik } from "formik";
 import React from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text } from "react-native";
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+} from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
-import { REGISTER_INPUT_SCHEMA } from "../../utils/validationSchema";
+import { REGISTER_MUTATION } from "../../utils/graphql";
+import { FieldError, REGISTER_INPUT_SCHEMA } from "../../utils/validationSchema";
 import {
     LoginWrapper,
     TitleWrapper,
@@ -15,23 +22,7 @@ import {
     Description,
     CustomForm,
     CustomInputField,
-    FieldError,
 } from "./SharedComponents";
-
-const REGISTER_MUTATION = gql`
-    mutation Register($options: registerInput!) {
-        register(options: $options) {
-            data {
-                accessToken
-                refreshToken
-            }
-            errors {
-                field
-                message
-            }
-        }
-    }
-`;
 
 export function Register({ navigation }: any): JSX.Element {
     const [Register] = useMutation(REGISTER_MUTATION);
@@ -97,7 +88,13 @@ export function Register({ navigation }: any): JSX.Element {
                         validateOnChange={true}
                         validateOnMount={false}
                     >
-                        {({ handleChange, values, handleSubmit, errors }) => (
+                        {({
+                            handleChange,
+                            values,
+                            handleSubmit,
+                            isSubmitting,
+                            errors,
+                        }) => (
                             <FormWrapper>
                                 <CustomForm>
                                     <CustomInputField
@@ -128,9 +125,16 @@ export function Register({ navigation }: any): JSX.Element {
                                     />
                                 </CustomForm>
                                 <SubmitButtonWrapper
+                                    disabled={isSubmitting}
                                     onPress={handleSubmit as any}
                                 >
-                                    <SubmitButtonText>Sign up</SubmitButtonText>
+                                    {isSubmitting ? (
+                                        <ActivityIndicator color={"white"}/>
+                                    ) : (
+                                        <SubmitButtonText>
+                                            Sign up
+                                        </SubmitButtonText>
+                                    )}
                                 </SubmitButtonWrapper>
                                 <Description>
                                     Already have an account?{" "}

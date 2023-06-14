@@ -1,10 +1,16 @@
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import styled from "@emotion/native";
-import { useEffect, useMemo, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { View, Text, ScrollView } from "react-native";
+import { LoadingIndicator } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
-import { Center } from "../styled/Center";
-import { Stop } from "./MainMapScreen";
+import {
+    getTransportSchedule,
+    GET_TRANSPORT_SCHEDULE,
+    Route,
+    Stop,
+} from "../../utils/graphql";
+import { Wrapper } from "../styled/Wrapper";
 import {
     isWorkingDay,
     ScheduleTypeBtn,
@@ -14,43 +20,7 @@ import {
     TransportRowBtn,
     TransportRowText,
     transportTypes,
-    Wrapper,
 } from "./SharedComponents";
-import { Route } from "./StopSmallSchedule";
-
-const GET_TRANSPORT_SCHEDULE = gql`
-    mutation GetTransportSchedule($stopId: String!, $transportId: String!) {
-        getTransportSchedule(stop_id: $stopId, transport_id: $transportId) {
-            arrival_time
-            departure_time
-            drop_off_type
-            pickup_type
-            stop_id
-            stop_sequence
-            trips {
-                Calendar {
-                    friday
-                    start_date
-                }
-            }
-        }
-    }
-`;
-
-type getTransportSchedule = {
-    arrival_time: string;
-    departure_tim: string;
-    drop_off_type: string;
-    pickup_type: string;
-    stop_id: string;
-    stop_sequence: string;
-    trips: {
-        Calendar: {
-            friday: string;
-            start_date: string;
-        };
-    };
-};
 
 type Times = {
     hour: string;
@@ -61,8 +31,6 @@ export function BigSchedule({ route, navigation }: any) {
     const stop = route.params.stop as Stop;
     const transport = route.params.transport as Route;
     const scheduleType = route.params?.scheduleType ?? Number(isWorkingDay());
-    const [schedule, setSchedule] = useState<getTransportSchedule[]>([]);
-    const [times, setTimes] = useState<Times[]>([]);
 
     const [fetchData, { data, loading }] = useMutation<{
         getTransportSchedule: getTransportSchedule[];
@@ -73,11 +41,29 @@ export function BigSchedule({ route, navigation }: any) {
         },
     });
 
-    console.log(stop, transport);
-    console.log(schedule);
+    const schedule = useMemo(() => {
+        const newSchedule: getTransportSchedule[] = [];
+        if (data?.getTransportSchedule) {
+            data.getTransportSchedule.forEach((sched) => {
+                console.log(sched.trips.Calendar.friday, scheduleType);
+                const IS_CORRECT_SCHEDULE =
+                    sched.trips.Calendar.friday == scheduleType;
+                if (IS_CORRECT_SCHEDULE) {
+                    newSchedule.push(sched);
+                }
+            });
+        }
 
-    useMemo(() => {
-        setTimes(
+        return newSchedule;
+    }, [data, route, scheduleType]);
+
+    const transportColor = useMemo(() => {
+        return transportTypes.filter((x) => transport.route_type === x.id)[0]
+            .color;
+    }, [transport, route]);
+
+    const times = useMemo<Times[]>(
+        () =>
             schedule.reduce((acc: any, value) => {
                 const splitted = value.arrival_time.split(":");
                 const hour = splitted[0];
@@ -92,32 +78,13 @@ export function BigSchedule({ route, navigation }: any) {
                 }
 
                 return acc;
-            }, {})
-        );
-    }, [schedule]);
+            }, {}),
+        [schedule]
+    );
 
-    useMemo(() => {
-        if (data?.getTransportSchedule) {
-            // const newHolidays: getTransportSchedule[] = [];
-            // const newWorkingDays: getTransportSchedule[] = [];
-            const newSchedule: getTransportSchedule[] = [];
-            data.getTransportSchedule.forEach((sched) => {
-                console.log(sched.trips.Calendar.friday, scheduleType);
-                const IS_CORRECT_SCHEDULE =
-                    sched.trips.Calendar.friday == scheduleType;
-                if (IS_CORRECT_SCHEDULE) {
-                    newSchedule.push(sched);
-                }
-            });
+    console.log(stop, transport);
+    console.log(schedule);
 
-            setSchedule(newSchedule);
-        }
-    }, [data, route, scheduleType]);
-
-    const transportColor = useMemo(() => {
-        return transportTypes.filter((x) => transport.route_type === x.id)[0]
-            .color;
-    }, [transport, route]);
 
     useEffect(() => {
         fetchData().catch(console.log);
@@ -172,9 +139,7 @@ export function BigSchedule({ route, navigation }: any) {
                 <View style={{ gap: 23 / 1.5 }}>
                     <TimeTableTitle>Timetable</TimeTableTitle>
                     {!data || loading ? (
-                        <Center>
-                            <ActivityIndicator size="large" color="#0000ff" />
-                        </Center>
+                        <LoadingIndicator />
                     ) : (
                         <View>
                             {Object.entries(times)

@@ -1,9 +1,20 @@
 import { ApolloProvider } from "@apollo/client";
-import { ApolloClient, InMemoryCache } from "@apollo/client/core";
+import { setContext } from "@apollo/client/link/context";
+import { onError } from "@apollo/client/link/error";
+import {
+    ApolloClient,
+    from,
+    HttpLink,
+    InMemoryCache,
+} from "@apollo/client/core";
 import { StatusBar } from "expo-status-bar";
 import Pages from "./components/Pages";
 import { GRAPHQL_API_URL } from "./utils/constants";
 import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { AsyncStorageWrapper, persistCacheSync } from "apollo3-cache-persist";
+import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchNewTokens, getAccessToken } from "./utils/tokens";
 
 const MyTheme = {
     ...DefaultTheme,
@@ -13,8 +24,61 @@ const MyTheme = {
     },
 };
 
-const client = new ApolloClient({
+const authLink = setContext(async (_, { headers }) => {
+    const token = await getAccessToken();
+    return {
+        headers: {
+            ...headers,
+            authorization: token ? `Bearer ${token}` : "",
+        },
+    };
+});
+
+const errorLink = onError(
+    ({ graphQLErrors, networkError, operation, forward }) => {
+        if (graphQLErrors)
+            graphQLErrors.forEach(
+                async ({ message, locations, path, ...x }) => {
+                    console.log(
+                        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+                    );
+
+                    if (message === "not authenticated") {
+                        const newA = await fetchNewTokens();
+                        if (!newA) {
+                            console.log("explode user");
+                        } else {
+                            // new token received
+                            operation.setContext({
+                                Headers: {
+                                    ...operation.getContext().headers,
+                                    authorization: newA,
+                                },
+                            });
+                        }
+
+                        return forward(operation)
+                    }
+                }
+            );
+
+        if (networkError) console.log(`[Network error]: ${networkError}`);
+    }
+);
+
+const cache = new InMemoryCache();
+
+persistCacheSync({
+    cache,
+    storage: AsyncStorage,
+});
+
+const httpLink = new HttpLink({
     uri: GRAPHQL_API_URL,
+});
+
+const client = new ApolloClient({
+    link: from([errorLink, authLink.concat(httpLink)]),
     cache: new InMemoryCache(),
 });
 

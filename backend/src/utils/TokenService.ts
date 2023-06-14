@@ -15,7 +15,7 @@ export const generateAccessToken = (payload: TokenPayload) => {
 export const generateRefreshToken = async (payload: TokenPayload) => {
     // save every new token to database
     // add new token to array
-    const refreshToken = sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "50m" });
+    const refreshToken = sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: "69days" });
 
     await prisma.refreshTokens.upsert({
         where: { userId: payload.userId },

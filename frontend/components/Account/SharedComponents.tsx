@@ -56,7 +56,7 @@ export const InputField = styled.TextInput({
     lineHeight: 26 / 1.5,
 });
 
-export const SubmitButtonWrapper = styled.TouchableOpacity({
+export const SubmitButtonWrapper = styled.Pressable({
     backgroundColor: COLOR_PALETE.tram,
     borderRadius: 30,
     minHeight: 75 / 1.5,
@@ -106,9 +106,5 @@ export function CustomInputField({
     );
 }
 
-export type FieldError = {
-    field: string;
-    message: string;
-};
 
 

@@ -50,12 +50,6 @@ export const CategoryBtnText = styled.Text({
 });
 
 
-export const Wrapper = styled.View({
-    paddingHorizontal: 54 / 2.5,
-    paddingVertical: 80,
-
-    gap: 58 / 1.5,
-});
 
 export const TransportRow = styled.View({
     flexDirection: "row",

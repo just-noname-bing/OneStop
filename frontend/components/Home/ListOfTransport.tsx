@@ -2,9 +2,11 @@ import { gql, useQuery } from "@apollo/client";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Lupa } from "../../assets/icons";
+import { LoadingIndicator, Lupa } from "../../assets/icons";
+import { Routes, GET_ROUTES } from "../../utils/graphql";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 import { Center } from "../styled/Center";
+import { Wrapper } from "../styled/Wrapper";
 import {
     CategoryBtn,
     CategoryBtnText,
@@ -13,32 +15,11 @@ import {
     TransportRowBtn,
     TransportRowText,
     transportTypes,
-    Wrapper,
 } from "./SharedComponents";
-
-const ROUTES_QUERY = gql`
-    query Routes {
-        Routes {
-            route_id
-            route_long_name
-            route_short_name
-            route_sort_order
-            route_type
-        }
-    }
-`;
-
-export type Routes = {
-    route_id: string;
-    route_long_name: string;
-    route_short_name: string;
-    route_sort_order: string;
-    route_type: string;
-};
 
 export function ListOfTransport({ route, navigation }: any) {
     const { data: routes, loading } = useQuery<{ Routes: Routes[] }>(
-        ROUTES_QUERY
+        GET_ROUTES
     );
 
     const [filteredRoutes, setFilteredRoutes] = useState<Routes[]>([]);
@@ -60,11 +41,7 @@ export function ListOfTransport({ route, navigation }: any) {
     }, [routes, loading, route]);
 
     if (!routes || loading) {
-        return (
-            <Center>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Center>
-        );
+        return <LoadingIndicator />;
     }
 
     return (

@@ -1,7 +1,9 @@
 import { gql, useMutation } from "@apollo/client";
+import { CommonActions } from "@react-navigation/native";
 import { Formik } from "formik";
 import React, { useContext } from "react";
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     Pressable,
@@ -11,9 +13,13 @@ import {
 } from "react-native";
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
-import { TokenContext } from "../../utils/context";
-import { setAccessToken, setRefreshToken } from "../../utils/tokens";
-import { LOGIN_INPUT_SCHEMA } from "../../utils/validationSchema";
+import { LOGIN_MUTATION } from "../../utils/graphql";
+import {
+    setAccessToken,
+    setRefreshToken,
+    useAuth,
+} from "../../utils/tokens";
+import { FieldError, LOGIN_INPUT_SCHEMA } from "../../utils/validationSchema";
 import {
     LoginWrapper,
     TitleWrapper,
@@ -24,28 +30,10 @@ import {
     Description,
     CustomForm,
     CustomInputField,
-    FieldError,
 } from "./SharedComponents";
-
-const LOGIN_MUTATION = gql`
-    mutation Login($options: loginInput!) {
-        login(options: $options) {
-            data {
-                accessToken
-                refreshToken
-            }
-            errors {
-                field
-                message
-            }
-        }
-    }
-`;
 
 export function Login({ navigation }: any): JSX.Element {
     const [Login] = useMutation(LOGIN_MUTATION);
-
-    const [, setTokens] = useContext(TokenContext);
 
     return (
         <KeyboardAvoidingView
@@ -92,20 +80,16 @@ export function Login({ navigation }: any): JSX.Element {
                             } else {
                                 //Save tokens to SecureStorage
                                 console.log("Success", data);
+
                                 await setAccessToken(data.accessToken);
                                 await setRefreshToken(data.refreshToken);
 
-                                setTokens({
-                                    accessToken: data.accessToken,
-                                    refreshToken: data.refreshToken,
-                                });
-
-                                // navigation.dispatch(
-                                //     CommonActions.reset({
-                                //         index: 0,
-                                //         routes: [{ name: "Account" }],
-                                //     })
-                                // );
+                                navigation.dispatch(
+                                    CommonActions.reset({
+                                        index: 0,
+                                        routes: [{ name: "Account" }],
+                                    })
+                                );
                             }
                         }}
                         validationSchema={LOGIN_INPUT_SCHEMA}
@@ -113,7 +97,13 @@ export function Login({ navigation }: any): JSX.Element {
                         validateOnMount={false}
                         validateOnBlur={false}
                     >
-                        {({ handleChange, values, handleSubmit, errors }) => (
+                        {({
+                            handleChange,
+                            values,
+                            handleSubmit,
+                            errors,
+                            isSubmitting,
+                        }) => (
                             <FormWrapper>
                                 <CustomForm>
                                     <CustomInputField
@@ -122,7 +112,7 @@ export function Login({ navigation }: any): JSX.Element {
                                         value={values.email}
                                         error={errors.email}
                                     />
-                                    <View style={{gap:10}}>
+                                    <View style={{ gap: 10 }}>
                                         <CustomInputField
                                             label="Password"
                                             secureTextEntry
@@ -138,7 +128,7 @@ export function Login({ navigation }: any): JSX.Element {
                                                 alignItems: "flex-end",
                                             }}
                                         >
-                                            <Pressable>
+                                            <Pressable onPress={() => navigation.navigate("PasswordReset")}>
                                                 <Text
                                                     style={{
                                                         color: COLOR_PALETE.tram,
@@ -151,9 +141,16 @@ export function Login({ navigation }: any): JSX.Element {
                                     </View>
                                 </CustomForm>
                                 <SubmitButtonWrapper
+                                    disabled={isSubmitting}
                                     onPress={handleSubmit as any}
                                 >
-                                    <SubmitButtonText>Sign in</SubmitButtonText>
+                                    {isSubmitting ? (
+                                        <ActivityIndicator color={"white"} />
+                                    ) : (
+                                        <SubmitButtonText>
+                                            Sign in
+                                        </SubmitButtonText>
+                                    )}
                                 </SubmitButtonWrapper>
                                 <Description>
                                     Don't have an account?{" "}

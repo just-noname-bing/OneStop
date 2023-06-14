@@ -1,61 +1,19 @@
 import { COLOR_PALETE } from "../../utils/colors";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect,  useState } from "react";
 import {
     TransportRowBtn,
     TransportRowText,
     transportTypes,
-    Wrapper,
 } from "./SharedComponents";
-import { ActivityIndicator, View } from "react-native";
+import {  View } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import styled from "@emotion/native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Routes } from "./ListOfTransport";
-import { gql, split, useMutation } from "@apollo/client";
-import { useFocusEffect } from "@react-navigation/native";
-import { Center } from "../styled/Center";
-import { Stop } from "./MainMapScreen";
+import {  useMutation } from "@apollo/client";
+import { LoadingIndicator } from "../../assets/icons";
+import { getTransportDirectionStops, GET_TRANSPORT_DIRECTION_STOPS, Routes } from "../../utils/graphql";
+import { Wrapper } from "../styled/Wrapper";
 
-const GET_TRANSPORT_DIRECTION_STOPS = gql`
-    mutation GetTransportDirectionStops(
-        $transportId: String!
-        $order1: String!
-        $order2: String!
-    ) {
-        asc: getTransportDirectionStops(
-            transport_id: $transportId
-            order: $order1
-        ) {
-            trip_id
-            stop_id
-            stops {
-                stop_id
-                stop_lat
-                stop_lon
-                stop_name
-            }
-        }
-        desc: getTransportDirectionStops(
-            transport_id: $transportId
-            order: $order2
-        ) {
-            stops {
-                stop_id
-                stop_lat
-                stop_lon
-                stop_name
-            }
-            stop_id
-            trip_id
-        }
-    }
-`;
-
-type getTransportDirectionStops = {
-    stops: Stop;
-    stop_id: string;
-    trip_id: string;
-};
 
 type doubleDirection = {
     asc: getTransportDirectionStops[];
@@ -112,9 +70,7 @@ export function TransportStopsSelect({ route, navigation }: any) {
                 </View>
             </View>
             {!data || loading ? (
-                <Center>
-                    <ActivityIndicator size="large" color="#0000ff" />
-                </Center>
+                <LoadingIndicator />
             ) : (
                 <ScrollView
                     style={{ flexGrow: 1, zIndex: -1 }}

@@ -83,6 +83,7 @@ import validateSchema from "./utils/validateSchema";
 
     app.post("/confirm/forgot_password", async (req, res) => {
         const { token, password } = req.body;
+        console.log(token, password)
 
         try {
             const { userId } = verify(

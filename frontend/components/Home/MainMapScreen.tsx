@@ -6,14 +6,12 @@ import {
 } from "expo-location";
 import { LocationObject, watchPositionAsync } from "expo-location";
 import {
-    ActivityIndicator,
-    View,
     Dimensions,
     Pressable,
     Keyboard,
+    View,
 } from "react-native";
-import { gql, useMutation, useQuery } from "@apollo/client";
-import { Center } from "../styled/Center";
+import { useMutation, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
 import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
@@ -36,14 +34,15 @@ import {
     CategoryBtnWrapper,
     transportTypes,
 } from "./SharedComponents";
-import { getRoutesForStop, GET_ROUTES_FOR_STOP } from "./StopSmallSchedule";
 import {
     CreatePostIcon,
     GpsIconSvg,
+    LoadingIndicator,
     Lupa,
     TransportStopMarker,
 } from "../../assets/icons";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
+import { getRoutesForStop, GET_ROUTES_FOR_STOP, Stop, STOPS_QUERY } from "../../utils/graphql";
 
 export const DELTA = {
     lat: 0.0922,
@@ -51,24 +50,6 @@ export const DELTA = {
 };
 
 const WINDOW_HEIGHT = Dimensions.get("window").height;
-
-const STOPS_QUERY = gql`
-    query Stops {
-        Stops {
-            stop_id
-            stop_lat
-            stop_lon
-            stop_name
-        }
-    }
-`;
-
-export type Stop = {
-    stop_id: string;
-    stop_lat: string;
-    stop_lon: string;
-    stop_name: string;
-};
 
 const mapStyle = [
     {
@@ -117,7 +98,7 @@ export function MainMap({ navigation }: any): JSX.Element {
         loading,
         error,
         refetch,
-    } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY);
+    } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {fetchPolicy:"cache-and-network"});
     const mapRef = useRef<MapView>(null);
 
     const translateY = useSharedValue(0);
@@ -216,12 +197,7 @@ export function MainMap({ navigation }: any): JSX.Element {
         refetch();
     }
 
-    if (!location || !stops || loading)
-        return (
-            <Center>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Center>
-        );
+    if (!location || !stops || loading) return <LoadingIndicator />;
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -519,7 +495,9 @@ function SoonTransportCostructor() {
                     flexGrow: 1,
                 }}
             >
-                <SoonTransportDesc>Daugavgrīva - Ziepniekkalns</SoonTransportDesc>
+                <SoonTransportDesc>
+                    Daugavgrīva - Ziepniekkalns
+                </SoonTransportDesc>
                 <SoonTransportDesc
                     style={{
                         color: COLOR_PALETE.additionalText,
@@ -557,11 +535,7 @@ function NearStopConstructor(props: { stop: Stop }) {
     }, []);
 
     if (!data || loading) {
-        return (
-            <Center style={{ flexGrow: 1 }}>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Center>
-        );
+        return <LoadingIndicator />;
     }
 
     return (

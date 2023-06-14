@@ -6,47 +6,14 @@ import Account from "./Account";
 import Home from "./Home";
 import Posts from "./Posts";
 
-import {
-    Entypo,
-    Ionicons,
-    MaterialIcons,
-    Foundation,
-} from "@expo/vector-icons";
+import { Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 
 import * as Linking from "expo-linking";
-import { getAccessToken, getRefreshToken } from "../utils/tokens";
-import { TokenContext, Tokens } from "../utils/context";
-// Listen for incoming URLs
 
-// Function to parse the URL and extract the screen name and parameter
-// function parseScreen(url: any) {
-//     const { path, queryParams } = Linking.parse(url);
-//     return {
-//         screenName: queryParams?.screenName,
-//         parameter: queryParams?.parameter,
-//         path,
-//     };
-// }
-
-export default function Pages({ route }: any) {
+export default function Pages({}: any) {
     const navigation = useNavigation() as any;
-
-    const [token, setToken] = useState<Tokens | null>(null);
-
-    const checkTokens = async () => {
-        const a = await getAccessToken();
-        const r = await getRefreshToken();
-
-        if (a && r) {
-            setToken({ accessToken: a, refreshToken: r });
-        }
-    };
-
-    useEffect(() => {
-        checkTokens();
-    }, [route]);
 
     useEffect(() => {
         Linking.addEventListener("url", (event) => {
@@ -64,17 +31,19 @@ export default function Pages({ route }: any) {
                     },
                 });
             } else if (path === "password-verification") {
-                // ...
+                navigation.navigate("Account", {
+                    screen: "NewPassword",
+                    params: {
+                        [a]: b,
+                    },
+                });
             } else {
                 console.log("ob");
             }
         });
-
-        checkTokens();
     }, []);
 
     return (
-        <TokenContext.Provider value={[token, setToken]}>
             <Tab.Navigator
                 screenOptions={{
                     header: () => null,
@@ -106,14 +75,6 @@ export default function Pages({ route }: any) {
                     name="Account"
                     component={Account}
                 />
-                <Tab.Screen
-                    options={{
-                        tabBarIcon: (p) => <Foundation name="shield" {...p} />,
-                    }}
-                    name="AdminMenu"
-                    component={Account}
-                />
             </Tab.Navigator>
-        </TokenContext.Provider>
     );
 }

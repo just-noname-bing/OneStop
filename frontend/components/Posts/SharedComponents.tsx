@@ -1,5 +1,12 @@
+import { useApolloClient } from "@apollo/client";
 import styled from "@emotion/native";
+import { useNavigation } from "@react-navigation/native";
+import { useCallback, useState } from "react";
+import { FlatList, RefreshControl, View } from "react-native";
 import { COLOR_PALETE } from "../../utils/colors";
+import { formatRelativeTime } from "../../utils/formatTime";
+import { POST, POSTS_QUERY, problemListProps } from "../../utils/graphql";
+import { transportTypes } from "../Home/SharedComponents";
 
 export const NewPostBtn = styled.Pressable({
     width: 172 / 1.5,
@@ -51,10 +58,6 @@ export const SearchInput = styled.TextInput({
 export const InfoWrapper = styled.View({
     flexDirection: "row",
     gap: 10,
-});
-
-export const ProblemList = styled.View({
-    gap: 15,
 });
 
 export const ProblemWrapper = styled.TouchableOpacity({
@@ -110,3 +113,91 @@ export const TimeStamp = styled.Text({
     lineHeight: 23 / 1.5,
     color: "#29221E",
 });
+
+export function ProblemList(props: problemListProps) {
+    const navigation = useNavigation() as any;
+    const sortedData = useCallback(
+        () =>
+            props.data?.slice().sort((a, b) => {
+                return (
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                );
+            }),
+        [props.data]
+    );
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const client = useApolloClient();
+
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        client
+            .refetchQueries({
+                include: [POSTS_QUERY],
+            })
+            .then(() => setIsRefreshing(false));
+    };
+
+    const getColor = useCallback(
+        (item: POST) =>
+            transportTypes.filter((x) => x.id === item.route.route_type)[0]
+                .color,
+        [transportTypes]
+    );
+
+    return (
+        <FlatList
+            showsVerticalScrollIndicator={false}
+            style={{ zIndex: -1 }}
+            data={sortedData()}
+            keyExtractor={({ id }) => id}
+            contentContainerStyle={{ gap: 15 }}
+            refreshControl={
+                <RefreshControl
+                    style={{ borderColor: COLOR_PALETE.tram }}
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                />
+            }
+            ListFooterComponent={() => (
+                <View style={{ paddingBottom: 50 }}></View>
+            )}
+            renderItem={({ item }) => (
+                <ProblemWrapper
+                    activeOpacity={1}
+                    onPress={() =>
+                        navigation.navigate("PostView", { postId: item.id })
+                    }
+                >
+                    <InfoWrapper>
+                        <TransportIcon
+                            bg={getColor(item)}
+                        >
+                            <TransportIconText>
+                                {item.route.route_short_name}
+                            </TransportIconText>
+                        </TransportIcon>
+                        <View
+                            style={{
+                                flex: 1,
+                                justifyContent: "space-between",
+                            }}
+                        >
+                            <ProblemTitle>{item.title}</ProblemTitle>
+                            <TransportDirection>
+                                {item.route.route_long_name}
+                            </TransportDirection>
+                        </View>
+                        <View>
+                            <TimeStamp>
+                                {formatRelativeTime(item.created_at)}
+                            </TimeStamp>
+                        </View>
+                    </InfoWrapper>
+                    <ProblemDescription>{item.text}</ProblemDescription>
+                </ProblemWrapper>
+            )}
+        />
+    );
+}

@@ -1,66 +1,51 @@
-import React, {
-    useContext,
-    useEffect,
-    useState,
-} from "react";
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Login } from "./Login";
 import { Register } from "./Register";
 import { EmailSent } from "./EmailHasBeenSent";
 import EmailVerificated from "./EmailVerificated";
-import { getAccessToken, getRefreshToken } from "../../utils/tokens";
+import { useAuth } from "../../utils/tokens";
 import Profile from "./Profile";
-import { TokenContext } from "../../utils/context";
+import { PasswordMessage } from "./PasswordHasBeenSent";
+import { PasswordReset } from "./PasswordResetForm";
+import { NewPassword } from "./NewPassword";
 
 const Stack = createNativeStackNavigator();
 
 export default function Account({ route }: any): JSX.Element {
-    const [isAuth, setIsAuth] = useState<boolean | null>(null);
-    const [token, setToken] = useContext(TokenContext);
-
-    const checkTokens = async () => {
-        const a = await getAccessToken();
-        const r = await getRefreshToken();
-
-        if (!a || !r) {
-            setIsAuth(false);
-        } else {
-            setIsAuth(true);
-            setToken({ accessToken: a, refreshToken: r });
-        }
-    };
-
-    useEffect(() => {
-        checkTokens();
-    }, []);
-
-    useEffect(() => {
-        checkTokens();
-    }, [route]);
-
-    if (isAuth === null) return <></>;
+    const { auth } = useAuth();
 
     return (
-            <Stack.Navigator
-                screenOptions={{
-                    header: () => null,
-                }}
-            >
-                {token ? (
-                    <>
-                        <Stack.Screen name="Profile" component={Profile} />
-                    </>
-                ) : (
-                    <>
-                        <Stack.Screen name="Login" component={Login} />
-                        <Stack.Screen name="Register" component={Register} />
-                        <Stack.Screen name="EmailSent" component={EmailSent} />
-                        <Stack.Screen
-                            name="VerifyEmail"
-                            component={EmailVerificated}
-                        />
-                    </>
-                )}
-            </Stack.Navigator>
+        <Stack.Navigator
+            screenOptions={{
+                header: () => null,
+            }}
+        >
+            {auth ? (
+                <>
+                    <Stack.Screen name="Profile" component={Profile} />
+                </>
+            ) : (
+                <>
+                    <Stack.Screen name="Login" component={Login} />
+                    <Stack.Screen name="Register" component={Register} />
+                    <Stack.Screen name="EmailSent" component={EmailSent} />
+                    <Stack.Screen
+                        name="PasswordMessage"
+                        component={PasswordMessage}
+                    />
+                    <Stack.Screen
+                        name="VerifyEmail"
+                        component={EmailVerificated}
+                    />
+
+                    <Stack.Screen
+                        name="PasswordReset"
+                        component={PasswordReset}
+                    />
+                    <Stack.Screen name="NewPassword" component={NewPassword} />
+                </>
+            )}
+        </Stack.Navigator>
     );
 }

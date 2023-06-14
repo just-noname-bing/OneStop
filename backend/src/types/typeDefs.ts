@@ -68,7 +68,9 @@ export default `#graphql
     # Post & Comment queries
     type Query {
         getPosts: [Post!]!
+        getPost(id: String): Post
         getComments: [Comment!]!
+        getComment(id: String): Comment
     }
 
     input PostInput {
@@ -118,6 +120,7 @@ export default `#graphql
         updatePost(options: updatePostInput!): PostResponse
         deletePost(id: String!): Boolean
         postSearch(options: searchPostInput!): [Post]
+        postSearchById(id:String!): Post
     }
     # Comment mutation
     type Mutation {

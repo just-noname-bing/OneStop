@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Path, Svg } from "react-native-svg";
+import { LoadingIndicator } from "../../assets/icons";
 import { GRAPHQL_API_URL } from "../../utils/constants";
 import { Center } from "../styled/Center";
 import { Description, Title, Wrapper } from "./EmailHasBeenSent";
 
-export default function({ route, navigation }: any) {
+export default function ({ route, navigation }: any) {
     const token = route.params?.token as string;
     const [success, setSuccess] = useState<boolean | null>(null);
     const [counter, setCounter] = useState(5);
@@ -25,7 +26,7 @@ export default function({ route, navigation }: any) {
             .then(async (d) => {
                 if (d) {
                     const data = await d.json();
-                    setSuccess(data.ok)
+                    setSuccess(data.ok);
                 }
             });
     }, []);
@@ -42,11 +43,7 @@ export default function({ route, navigation }: any) {
     }, [counter]);
 
     if (success === null) {
-        return (
-            <Center>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Center>
-        );
+        return <LoadingIndicator />;
     }
 
     return (

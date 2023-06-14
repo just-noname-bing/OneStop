@@ -1,26 +1,19 @@
-import { gql, useQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import styled from "@emotion/native";
 import { CommonActions } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { View, ActivityIndicator, ScrollView } from "react-native";
-import { BigBusIcon, BigTramIcon, BigTrolleyIcon } from "../../assets/icons";
+import {
+    BigBusIcon,
+    BigTramIcon,
+    BigTrolleyIcon,
+    LoadingIndicator,
+} from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
-import { getAccessToken } from "../../utils/tokens";
-import { Routes } from "../Home/ListOfTransport";
-import { transportTypes, Wrapper } from "../Home/SharedComponents";
-import { Center } from "../styled/Center";
-
-const GET_ROUTES = gql`
-    query Routes {
-        Routes {
-            route_id
-            route_long_name
-            route_short_name
-            route_type
-            route_sort_order
-        }
-    }
-`;
+import { Routes, GET_ROUTES } from "../../utils/graphql";
+import { getAccessToken, useAuth } from "../../utils/tokens";
+import { transportTypes } from "../Home/SharedComponents";
+import { Wrapper } from "../styled/Wrapper";
 
 // { id: "900", title: "Tram", color: COLOR_PALETE.tram, icon: BusIcon },
 // {
@@ -34,33 +27,37 @@ const GET_ROUTES = gql`
 const Icons = [<BigTrolleyIcon />, <BigTramIcon />, <BigBusIcon />];
 
 export default function ({ navigation }: any) {
-    const [isAuth, setIsAuth] = useState(false);
+    const { auth, loading: authLoading } = useAuth();
 
 
-    const { data, loading } = useQuery<{ Routes: Routes[] }>(GET_ROUTES);
+    const { data, loading  } = useQuery<{ Routes: Routes[] }>(
+        GET_ROUTES,
+        {
+            skip: !auth,
+        }
+    );
+
     const [value, setValue] = useState(0);
     const [color, setColor] = useState(COLOR_PALETE.tram);
 
-    const [filteredRoutes, setFilteredRoutes] = useState<Routes[]>([]);
+    // useEffect(() => {
+    //     getAccessToken().then((token) => {
+    //         if (!token) {
+    //             navigation.dispatch(
+    //                 CommonActions.reset({
+    //                     index: 0,
+    //                     routes: [{ name: "Account" }],
+    //                 })
+    //             );
+    //         } else {
+    //             setIsAuth(true);
+    //         }
+    //     });
+    // }, []);
 
-    useEffect(() => {
-        getAccessToken().then((token) => {
-            if (!token) {
-                navigation.dispatch(
-                    CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: "Account" }],
-                    })
-                );
-            } else {
-                setIsAuth(true);
-            }
-        });
-    }, []);
-
-    useEffect(() => {
+    const filtered = useMemo(() => {
         if (data && data.Routes) {
-            const f = data.Routes.filter((r) => {
+            return data.Routes.filter((r) => {
                 if (value === 0) {
                     return r.route_type === "900";
                 } else if (value === 1) {
@@ -68,22 +65,25 @@ export default function ({ navigation }: any) {
                 } else {
                     return r.route_type === "3";
                 }
-            });
-            f.sort((a, b) => {
-                return Number(a.route_sort_order) - Number(b.route_sort_order);
-            });
-            setFilteredRoutes(f);
+            })
+                .slice()
+                .sort(
+                    (a, b) =>
+                        Number(a.route_sort_order) - Number(b.route_sort_order)
+                );
         }
     }, [data, loading, value]);
 
-    if (!isAuth) return <></>
-
-    if (!data || loading)
-        return (
-            <Center>
-                <ActivityIndicator size="large" color="#0000ff" />
-            </Center>
+    if (!auth && !authLoading) {
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: "Account" }],
+            })
         );
+    }
+
+    if (!data || loading) return <LoadingIndicator />;
 
     return (
         <Wrapper>
@@ -106,7 +106,7 @@ export default function ({ navigation }: any) {
                     </View>
                     <ScrollView showsVerticalScrollIndicator={false}>
                         <TransportWrapper>
-                            {filteredRoutes.map((r, idx) => (
+                            {filtered?.map((r, idx) => (
                                 <TransportBtn
                                     key={idx}
                                     bg={color}

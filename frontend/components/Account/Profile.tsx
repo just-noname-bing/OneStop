@@ -1,35 +1,32 @@
 import { gql, useMutation } from "@apollo/client";
-import { CommonActions } from "@react-navigation/native";
-import { useContext } from "react";
+import { CommonActions, useNavigation } from "@react-navigation/native";
+import { useContext, useEffect, useState } from "react";
 import { Text } from "react-native";
 import { Pressable } from "react-native";
-import { TokenContext } from "../../utils/context";
-import { TokensLogout } from "../../utils/tokens";
+import { LOGOUT_MUTATION } from "../../utils/graphql";
+import { TokensLogout, useAuth } from "../../utils/tokens";
 import { Center } from "../styled/Center";
-
-const LOGOUT_MUTATION = gql`
-    mutation Logout($token: String!) {
-        logout(token: $token)
-    }
-`;
 
 export default function ({}: any) {
     const [logout] = useMutation(LOGOUT_MUTATION);
-    const [tokens, setToken] = useContext(TokenContext);
+    const navigation = useNavigation()
+
+    const { rf } = useAuth();
 
     return (
         <Center>
             <Pressable
                 onPress={async () => {
                     await logout({
-                        variables: { token: tokens?.refreshToken },
+                        variables: { token: rf },
                     });
                     await TokensLogout();
-                    setToken(null);
-                    CommonActions.reset({
-                        index: 1,
-                        routes: [{ name: "Account" }],
-                    });
+                    navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: "Account" }],
+                        })
+                    );
                 }}
             >
                 <Text>Profile press to logout</Text>

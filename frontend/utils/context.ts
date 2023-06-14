@@ -5,7 +5,7 @@ export type Tokens = {
     refreshToken: string;
 };
 
-export const TokenContext = createContext<
-    [Tokens | null, Dispatch<SetStateAction<Tokens | null>>]
->([] as any);
-
+// export const TokenContext = createContext<
+//     [Tokens | null, Dispatch<SetStateAction<Tokens | null>>]
+// >([] as any);
+//
