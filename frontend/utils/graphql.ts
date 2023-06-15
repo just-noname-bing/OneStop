@@ -139,10 +139,10 @@ export type CustomRouteForStop = {
         route_short_name: string;
         route_type: string;
     };
-    Stop_times: {
+    Stop_times: [{
         arrival_time: string;
         trip_id: string;
-    };
+    }];
 };
 
 export type getRoutesForStop = {

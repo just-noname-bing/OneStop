@@ -5,12 +5,7 @@ import {
     requestForegroundPermissionsAsync,
 } from "expo-location";
 import { LocationObject, watchPositionAsync } from "expo-location";
-import {
-    Dimensions,
-    Pressable,
-    Keyboard,
-    View,
-} from "react-native";
+import { Dimensions, Pressable, Keyboard, View } from "react-native";
 import { useMutation, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
 import { MapMarker } from "react-native-maps";
@@ -42,7 +37,14 @@ import {
     TransportStopMarker,
 } from "../../assets/icons";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
-import { getRoutesForStop, GET_ROUTES_FOR_STOP, Stop, STOPS_QUERY } from "../../utils/graphql";
+import {
+    CustomRouteForStop,
+    getRoutesForStop,
+    GET_ROUTES_FOR_STOP,
+    Stop,
+    STOPS_QUERY,
+} from "../../utils/graphql";
+import { Route, useNavigation } from "@react-navigation/native";
 
 export const DELTA = {
     lat: 0.0922,
@@ -98,7 +100,9 @@ export function MainMap({ navigation }: any): JSX.Element {
         loading,
         error,
         refetch,
-    } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {fetchPolicy:"cache-and-network"});
+    } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {
+        fetchPolicy: "cache-and-network",
+    });
     const mapRef = useRef<MapView>(null);
 
     const translateY = useSharedValue(0);
@@ -189,7 +193,7 @@ export function MainMap({ navigation }: any): JSX.Element {
                 setClosestStops(closest)
             );
         }
-    }, [stops, location]);
+    }, [stops]);
 
     console.log(loading, location, !!stops, error);
 
@@ -370,7 +374,7 @@ const BottomMenuContent = styled.View({
     gap: 25 / 1.5,
 });
 
-const NearTransportStopWrapper = styled.View({
+const NearTransportStopWrapper = styled.Pressable({
     borderWidth: 1,
     borderColor: "#D0D0D0",
     borderRadius: 15,
@@ -450,8 +454,8 @@ const SoonTransportCode = styled.Text({
 const SoonTransportDesc = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
-    fontSize: 18 / 1.6,
-    lineHeight: 23 / 1.6,
+    fontSize: 18 / 1.5,
+    lineHeight: 23 / 1.5,
 });
 
 const SoonTransportTimeWrapper = styled.View({
@@ -483,11 +487,24 @@ const SoonTransportTimeMin = styled.Text({
     color: COLOR_PALETE.text,
 });
 
-function SoonTransportCostructor() {
+function SoonTransportCostructor(routes: CustomRouteForStop) {
+    const [head, end] = routes.Routes.route_long_name.split(" - ");
+
+    const firstTwo = routes.Stop_times.splice(0, 2);
+
+    console.log(firstTwo)
     return (
         <SoonTransport>
-            <SoonTransportCodeWrapper>
-                <SoonTransportCode>56</SoonTransportCode>
+            <SoonTransportCodeWrapper
+                style={{
+                    backgroundColor: transportTypes.filter(
+                        (x) => routes.Routes.route_type === x.id
+                    )[0].color,
+                }}
+            >
+                <SoonTransportCode>
+                    {routes.Routes.route_short_name}
+                </SoonTransportCode>
             </SoonTransportCodeWrapper>
             <View
                 style={{
@@ -495,40 +512,46 @@ function SoonTransportCostructor() {
                     flexGrow: 1,
                 }}
             >
-                <SoonTransportDesc>
-                    Daugavgrīva - Ziepniekkalns
-                </SoonTransportDesc>
+                <SoonTransportDesc>{head}</SoonTransportDesc>
                 <SoonTransportDesc
                     style={{
                         color: COLOR_PALETE.additionalText,
                     }}
                 >
-                    to Kleistu iela
+                    to {end}
                 </SoonTransportDesc>
             </View>
             <SoonTransportTimeWrapper>
-                <SoonTransportTime>
-                    <SoonTransportTimeTitle>Now</SoonTransportTimeTitle>
-                    <SoonTransportTimeMin>min</SoonTransportTimeMin>
-                </SoonTransportTime>
-                <SoonTransportTime>
-                    <SoonTransportTimeTitle>43</SoonTransportTimeTitle>
-                    <SoonTransportTimeMin>min</SoonTransportTimeMin>
-                </SoonTransportTime>
+                {routes.Stop_times.splice(0, 2).map((times, i) => (
+                    <SoonTransportTime key={i}>
+                        <SoonTransportTimeTitle>
+                            {times.arrival_time.slice(
+                                0,
+                                times.arrival_time.lastIndexOf(":")
+                            )}
+                        </SoonTransportTimeTitle>
+                        <SoonTransportTimeMin>min</SoonTransportTimeMin>
+                    </SoonTransportTime>
+                ))}
             </SoonTransportTimeWrapper>
         </SoonTransport>
     );
 }
 
 function NearStopConstructor(props: { stop: Stop }) {
+    const navigation = useNavigation() as any;
+    console.log(props.stop);
     const [fetchRoutes, { loading, data }] = useMutation<getRoutesForStop>(
         GET_ROUTES_FOR_STOP,
         {
             variables: {
                 stopId: props.stop.stop_id,
             },
+            fetchPolicy: "network-only",
         }
     );
+
+    console.log(data);
 
     useEffect(() => {
         fetchRoutes().catch(console.log);
@@ -539,7 +562,11 @@ function NearStopConstructor(props: { stop: Stop }) {
     }
 
     return (
-        <NearTransportStopWrapper>
+        <NearTransportStopWrapper
+            onPress={() =>
+                navigation.navigate("SmallSchedule", { stop: props.stop })
+            }
+        >
             <View>
                 <NearTransportTitle>{props.stop.stop_name}</NearTransportTitle>
                 <NearTransportDescWrapper>
@@ -560,7 +587,7 @@ function NearStopConstructor(props: { stop: Stop }) {
                     flexWrap: "wrap",
                 }}
             >
-                {data.getRoutesForStop.map(({Routes}, i) => (
+                {data.getRoutesForStop.map(({ Routes }, i) => (
                     <NearTransportCodeWrapper
                         bg={
                             transportTypes.filter(
@@ -577,7 +604,9 @@ function NearStopConstructor(props: { stop: Stop }) {
             </View>
 
             <View>
-                <SoonTransportCostructor />
+                {data.getRoutesForStop.map((route, i) => (
+                    <SoonTransportCostructor key={i} {...route} />
+                ))}
             </View>
         </NearTransportStopWrapper>
     );
@@ -623,4 +652,23 @@ async function getClosestMarkers(
             )
     );
     return sortedMarkers.slice(0, 3);
+}
+
+function convertTimeToString(t: string) {
+    const currentDate = new Date();
+    const [h, min, sec] = t.split(":");
+    currentDate.setHours(Number(h));
+    currentDate.setMinutes(Number(min));
+    currentDate.setSeconds(Number(sec));
+
+    const time = currentDate.getTime();
+    const minutes = Math.floor((time % 3600) / 60);
+
+    if (minutes === 0) {
+        return "now";
+    } else if (minutes < 50) {
+        return `${min}`;
+    } else {
+        return h + ":" + min;
+    }
 }

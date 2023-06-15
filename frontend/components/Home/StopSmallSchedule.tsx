@@ -1,11 +1,16 @@
-import {  useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import styled from "@emotion/native";
-import { useEffect } from "react";
-import {  Text, View } from "react-native";
+import { useEffect, useMemo } from "react";
+import { Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { LoadingIndicator, Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
-import { getRoutesForStop, GET_ROUTES_FOR_STOP, Stop } from "../../utils/graphql";
+import {
+    getRoutesForStop,
+    GET_ROUTES_FOR_STOP,
+    Routes,
+    Stop,
+} from "../../utils/graphql";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 import { Wrapper } from "../styled/Wrapper";
 import {
@@ -26,7 +31,6 @@ import {
 // test data riga_bus_41
 // test data 1086
 
-
 export function SmallSchedule({ route, navigation }: any): JSX.Element {
     const stop = route.params.stop as Stop;
 
@@ -38,6 +42,33 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
             },
         }
     );
+
+    const rightTimeTableFormat = useMemo(() => {
+        if (data?.getRoutesForStop) {
+            const map = new Map<string, Routes>();
+            for (let routs of data.getRoutesForStop) {
+                for (let x of routs.Stop_times) {
+                    map.set(x.arrival_time, routs.Routes as any);
+                }
+            }
+            const full = Array.from(map.entries()).sort((a, b) => {
+                const aa = a[0].split(":");
+                const bb = b[0].split(":");
+                return Number(aa.join("")) - Number(bb.join(""));
+            });
+
+            const cool = [];
+            const currD = new Date()
+            for (let f of full) {
+                if (Number(f[0].split(":")[0]) > currD.getHours() + 1){ 
+                    break
+                }
+                cool.push(f)
+            }
+
+            return cool
+        }
+    }, [data, loading]);
 
     useEffect(() => {
         getInformation().catch(console.log);
@@ -91,7 +122,9 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                         {transportTypes.map((type, idx) => (
                             <TransportRow key={idx}>
                                 {data.getRoutesForStop
-                                    .filter((x) => x.route_type === type.id)
+                                    .filter(
+                                        (x) => x.Routes.route_type === type.id
+                                    )
                                     .map((t, i) => (
                                         <TransportRowBtn
                                             key={`${idx}@${i}`}
@@ -101,13 +134,13 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                                                     "BigSchedule",
                                                     {
                                                         stop,
-                                                        transport: t,
+                                                        transport: t.Routes,
                                                     }
                                                 )
                                             }
                                         >
                                             <TransportRowText>
-                                                {t.route_short_name}
+                                                {t.Routes.route_short_name}
                                             </TransportRowText>
                                         </TransportRowBtn>
                                     ))}
@@ -118,42 +151,24 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                     <View style={{ gap: 15 / 1.5 }}>
                         <TimeTableTitle>Timetable</TimeTableTitle>
                         <View style={{ gap: 15 / 1.5 }}>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                    <TransportRowText>56</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>now</Text>
-                            </TimeTableRow>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                    <TransportRowText>56</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>in 43 min</Text>
-                            </TimeTableRow>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.bus}>
-                                    <TransportRowText>30</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>in 6 min</Text>
-                            </TimeTableRow>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>1 min ago</Text>
-                            </TimeTableRow>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>1 min ago</Text>
-                            </TimeTableRow>
-                            <TimeTableRow>
-                                <TransportRowBtn bg={COLOR_PALETE.troleybus}>
-                                    <TransportRowText>9</TransportRowText>
-                                </TransportRowBtn>
-                                <Text>1 min ago</Text>
-                            </TimeTableRow>
+                            {rightTimeTableFormat?.map(([time, route]) => (
+                                <TimeTableRow>
+                                    <TransportRowBtn
+                                        bg={
+                                            transportTypes.filter(
+                                                (x) => x.id === route.route_type
+                                            )[0].color
+                                        }
+                                    >
+                                        <TransportRowText>
+                                            {route.route_short_name}
+                                        </TransportRowText>
+                                    </TransportRowBtn>
+                                    <Text>
+                                        {time.slice(0, time.lastIndexOf(":"))}
+                                    </Text>
+                                </TimeTableRow>
+                            ))}
                         </View>
                     </View>
                 </View>
