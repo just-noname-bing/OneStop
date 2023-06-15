@@ -41,6 +41,9 @@ const PostResolver = {
                     Comment: { include: { author: true } },
                     author: true,
                     route: true,
+                    stop_time:true,
+                    trip:true,
+                    stop:true,
                 },
             });
         },

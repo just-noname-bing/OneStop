@@ -203,8 +203,8 @@ export function ProblemList(props: problemListProps) {
                     </InfoWrapper>
                     <ProblemDescription>{item.text}</ProblemDescription>
                     <View style={{flexDirection:"row", gap:20, alignSelf:"flex-end"}}>
-                        <Text>stop name</Text>
-                        <Text>time</Text>
+                        <Text>{item.stop.stop_name}</Text>
+                        <Text>{item.stop_time.arrival_time.slice(0, item.stop_time.arrival_time.lastIndexOf(":"))}</Text>
                     </View>
                 </ProblemWrapper>
             )}

@@ -20,6 +20,12 @@ export const POSTS_QUERY = gql`
                 route_desc
                 route_type
             }
+            stop {
+                stop_name
+            }
+            stop_time {
+                arrival_time
+            }
         }
     }
 `;
@@ -27,19 +33,12 @@ export const POSTS_QUERY = gql`
 export const GET_POST_BY_ID = gql`
     query GetPost($id: String) {
         getPost(id: $id) {
+            id
+            created_at
             text
             title
+            transport_id
             updated_at
-            created_at
-            Comment {
-                text
-                id
-                created_at
-                author {
-                    name
-                    surname
-                }
-            }
             author {
                 name
                 surname
@@ -51,6 +50,12 @@ export const GET_POST_BY_ID = gql`
                 route_desc
                 route_type
             }
+            stop {
+                stop_name
+            }
+            stop_time {
+                arrival_time
+            }
         }
     }
 `;
@@ -59,19 +64,8 @@ export type POST_BY_ID = {
     text: string;
     title: string;
     transport_id: string;
-    updated_at: Date;
     created_at: Date;
-    Comment: [
-        {
-            text: string;
-            id: string;
-            created_at: Date;
-            author: {
-                name: string;
-                surname: string;
-            };
-        }
-    ];
+    updated_at: Date;
     author: {
         name: string;
         surname: string;
@@ -82,6 +76,12 @@ export type POST_BY_ID = {
         route_id: string;
         route_desc: string;
         route_type: string;
+    };
+    stop: {
+        stop_name: string;
+    };
+    stop_time: {
+        arrival_time: string;
     };
 };
 
@@ -89,6 +89,7 @@ export type POST = {
     id: string;
     text: string;
     title: string;
+    transport_id: string;
     created_at: Date;
     updated_at: Date;
     author: {
@@ -101,6 +102,12 @@ export type POST = {
         route_id: string;
         route_desc: string;
         route_type: string;
+    };
+    stop: {
+        stop_name: string;
+    };
+    stop_time: {
+        arrival_time: string;
     };
 };
 
