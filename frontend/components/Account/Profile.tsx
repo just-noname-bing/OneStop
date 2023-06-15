@@ -29,6 +29,7 @@ import {
     FieldError,
     UPDATE_USER_INPUT_SCHEMA,
 } from "../../utils/validationSchema";
+import { transportTypes } from "../Home/SharedComponents";
 import {
     InfoWrapper,
     ProblemDescription,
@@ -412,7 +413,7 @@ export default function ({}: any) {
                                 }}
                             >
                                 <InfoWrapper>
-                                    <TransportIcon bg={COLOR_PALETE.bus}>
+                                    <TransportIcon bg={transportTypes.filter(x => x.id === item.route.route_type)[0].color}>
                                         <TransportIconText>
                                             {item.route.route_short_name}
                                         </TransportIconText>

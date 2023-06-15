@@ -162,7 +162,7 @@ export function ProblemList(props: problemListProps) {
                 />
             }
             ListEmptyComponent={() => (
-                <Center style={{minHeight:"50%"}}>
+                <Center style={{ minHeight: "50%" }}>
                     <Text style={{ color: COLOR_PALETE.additionalText }}>
                         No posts
                     </Text>
@@ -202,6 +202,10 @@ export function ProblemList(props: problemListProps) {
                         </View>
                     </InfoWrapper>
                     <ProblemDescription>{item.text}</ProblemDescription>
+                    <View style={{flexDirection:"row", gap:20, alignSelf:"flex-end"}}>
+                        <Text>stop name</Text>
+                        <Text>time</Text>
+                    </View>
                 </ProblemWrapper>
             )}
         />

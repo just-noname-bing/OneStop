@@ -20,7 +20,14 @@ const PostResolver = {
     Query: {
         async getPosts(): Promise<Post[]> {
             return await prisma.post.findMany({
-                include: { Comment: true, route: true, author: true },
+                include: {
+                    Comment: true,
+                    route: true,
+                    stop: true,
+                    trip: true,
+                    stop_time: true,
+                    author: true,
+                },
             });
         },
         async getComments(): Promise<Comment[]> {
