@@ -39,6 +39,15 @@ export const GET_POST_BY_ID = gql`
             title
             transport_id
             updated_at
+            Comment {
+                text
+                id
+                created_at
+                author {
+                    name
+                    surname
+                }
+            }
             author {
                 name
                 surname
@@ -66,6 +75,15 @@ export type POST_BY_ID = {
     transport_id: string;
     created_at: Date;
     updated_at: Date;
+    Comment: [{
+        text: string;
+        id: string;
+        created_at: Date;
+        author: {
+            name: string;
+            surname: string;
+        };
+    }];
     author: {
         name: string;
         surname: string;

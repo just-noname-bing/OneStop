@@ -84,7 +84,7 @@ type createCommentMutation = {
     errors: FieldError[];
 };
 
-export default function({ navigation, route }: any) {
+export default function ({ navigation, route }: any) {
     const [isAuth, setIsAuth] = useState<boolean | null>(null);
     // const [, setToken] = useContext(TokenContext);
 
@@ -298,9 +298,9 @@ export default function({ navigation, route }: any) {
                                                 style={
                                                     !!errors.text
                                                         ? {
-                                                            borderColor:
-                                                                COLOR_PALETE.tram,
-                                                        }
+                                                              borderColor:
+                                                                  COLOR_PALETE.tram,
+                                                          }
                                                         : {}
                                                 }
                                             />
@@ -335,7 +335,7 @@ export default function({ navigation, route }: any) {
                             )}
 
                             {orderedComments?.length ? (
-                                orderedComments?.map((item) => (
+                                orderedComments?.map((item: any) => (
                                     <ProblemWrapper
                                         key={item.id}
                                         activeOpacity={1}
@@ -353,10 +353,23 @@ export default function({ navigation, route }: any) {
                                         <ProblemDescription>
                                             {item.text}
                                         </ProblemDescription>
-                    <View style={{flexDirection:"row", gap:20, alignSelf:"flex-end"}}>
-                        <Text>{item.stop.stop_name}</Text>
-                        <Text>{item.stop_time.arrival_time.slice(0, item.stop_time.arrival_time.lastIndexOf(":"))}</Text>
-                    </View>
+                                        <View
+                                            style={{
+                                                flexDirection: "row",
+                                                gap: 20,
+                                                alignSelf: "flex-end",
+                                            }}
+                                        >
+                                            <Text>{item.stop.stop_name}</Text>
+                                            <Text>
+                                                {item.stop_time.arrival_time.slice(
+                                                    0,
+                                                    item.stop_time.arrival_time.lastIndexOf(
+                                                        ":"
+                                                    )
+                                                )}
+                                            </Text>
+                                        </View>
                                     </ProblemWrapper>
                                 ))
                             ) : (
