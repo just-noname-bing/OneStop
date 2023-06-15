@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { PencilIcon } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
-import { POSTS_QUERY, Route } from "../../utils/graphql";
+import { POSTS_QUERY, Route, Stop } from "../../utils/graphql";
 import { FieldError, POST_INPUT_SCHEMA } from "../../utils/validationSchema";
 import { transportTypes } from "../Home/SharedComponents";
 import { Wrapper } from "../styled/Wrapper";
@@ -66,6 +66,8 @@ export default function ({ route, navigation }: any) {
     const client = useApolloClient();
 
     const transport = route.params.transport as Route;
+    const stop = route.params.stop as Stop;
+    const trip_id = route.params.trip_id as string;
     const color = transportTypes.filter((r) => r.id === transport.route_type)[0]
         .color;
 
@@ -78,6 +80,8 @@ export default function ({ route, navigation }: any) {
                 initialValues={{
                     ...defaultFields,
                     transport_id: transport.route_id,
+                    stop_id: stop.stop_id,
+                    trip_id,
                 }}
                 onSubmit={async (values, actions) => {
                     let response = null;

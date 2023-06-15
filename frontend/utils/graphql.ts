@@ -139,10 +139,12 @@ export type CustomRouteForStop = {
         route_short_name: string;
         route_type: string;
     };
-    Stop_times: [{
-        arrival_time: string;
-        trip_id: string;
-    }];
+    Stop_times: [
+        {
+            arrival_time: string;
+            trip_id: string;
+        }
+    ];
 };
 
 export type getRoutesForStop = {
@@ -197,6 +199,7 @@ export const GET_TRANSPORT_SCHEDULE = gql`
             stop_id
             stop_sequence
             trips {
+                trip_id
                 Calendar {
                     friday
                     start_date
@@ -214,6 +217,7 @@ export type getTransportSchedule = {
     stop_id: string;
     stop_sequence: string;
     trips: {
+        trip_id: string;
         Calendar: {
             friday: string;
             start_date: string;

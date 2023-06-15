@@ -57,7 +57,7 @@ const PostResolver = {
                 { options }: PostInput,
                 ctx: CustomContext
             ): Promise<MessageResponse<Post>> => {
-                const { text, transport_id, title } = options;
+                const { text, transport_id, title, stop_id, trip_id } = options;
                 const errors = await validateSchema(POST_INPUT_SCHEMA, options);
 
                 if (errors.length) {
@@ -84,6 +84,8 @@ const PostResolver = {
                         title,
                         text,
                         transport_id,
+                        stop_id,
+                        trip_id,
                         author_id: ctx.user.id,
                     },
                 });

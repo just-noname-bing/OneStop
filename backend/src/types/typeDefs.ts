@@ -48,9 +48,14 @@ export default `#graphql
         text: String!
         title: String!
         transport_id: String!
+        stop_id: String!
+        trip_id: String!
         created_at: DateTime!
         updated_at: DateTime!
         author: User!
+        stop: Stops!
+        stop_time: Stop_times!
+        trip: Trips!
         Comment: [Comment!]!
         route: Routes! # route / trasport where is accident 
     }
@@ -77,6 +82,8 @@ export default `#graphql
         text:String!
         title:String!
         transport_id:String!
+        trip_id:String!
+        stop_id:String!
     }
 
     input commentInput {
@@ -89,6 +96,8 @@ export default `#graphql
         text:String!
         title:String!
         transport_id:String!
+        trip_id:String!
+        stop_id:String!
     }
 
     input updateCommentInput {

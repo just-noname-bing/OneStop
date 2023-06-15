@@ -95,7 +95,7 @@ export default function ({ navigation }: any) {
                                     key={idx}
                                     bg={color}
                                     onPress={() =>
-                                        navigation.navigate("WhatHappend", {
+                                        navigation.navigate("TransportSelectorForPost", {
                                             transport: r,
                                         })
                                     }

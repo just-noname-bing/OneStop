@@ -95,9 +95,12 @@ export interface MessageResponse<T> {
 
 export const POST_INPUT_SCHEMA = object({
     text: string().trim().required().max(200),
+    trip_id: string().required(),
+    stop_id: string().required(),
     title: string().trim().required().max(100),
     transport_id: string().required(),
 });
+
 
 export const UPDATE_POST_INPUT_SCHEMA = object({
     id: string().required().uuid(),
