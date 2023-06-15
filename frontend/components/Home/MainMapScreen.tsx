@@ -560,17 +560,17 @@ function NearStopConstructor(props: { stop: Stop }) {
                     flexWrap: "wrap",
                 }}
             >
-                {data.getRoutesForStop.map((route, i) => (
+                {data.getRoutesForStop.map(({Routes}, i) => (
                     <NearTransportCodeWrapper
                         bg={
                             transportTypes.filter(
-                                (x) => route.route_type === x.id
+                                (x) => Routes.route_type === x.id
                             )[0].color
                         }
                         key={i}
                     >
                         <NearTransportCode>
-                            {route.route_short_name}
+                            {Routes.route_short_name}
                         </NearTransportCode>
                     </NearTransportCodeWrapper>
                 ))}

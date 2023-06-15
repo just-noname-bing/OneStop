@@ -111,10 +111,16 @@ export type problemListProps = {
 export const GET_ROUTES_FOR_STOP = gql`
     mutation GetRoutesForStop($stopId: String!) {
         getRoutesForStop(stop_id: $stopId) {
-            route_id
-            route_long_name
-            route_short_name
-            route_type
+            Routes {
+                route_id
+                route_long_name
+                route_short_name
+                route_type
+            }
+            Stop_times {
+                arrival_time
+                trip_id
+            }
         }
     }
 `;
@@ -126,8 +132,21 @@ export type Route = {
     route_type: string;
 };
 
+export type CustomRouteForStop = {
+    Routes: {
+        route_id: string;
+        route_long_name: string;
+        route_short_name: string;
+        route_type: string;
+    };
+    Stop_times: {
+        arrival_time: string;
+        trip_id: string;
+    };
+};
+
 export type getRoutesForStop = {
-    getRoutesForStop: Route[];
+    getRoutesForStop: CustomRouteForStop[];
 };
 
 export const STOPS_QUERY = gql`

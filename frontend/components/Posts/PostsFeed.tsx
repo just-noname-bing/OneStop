@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useQuery } from "@apollo/client/react";
 import { COLOR_PALETE } from "../../utils/colors";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -52,7 +52,7 @@ export default function Posts({ navigation }: any): JSX.Element {
             >
                 <SearchWrapper>
                     <Lupa />
-                    <SearchInput />
+                    <SearchInput/>
                 </SearchWrapper>
                 <View>
                     <DropDownPicker
@@ -78,3 +78,4 @@ export default function Posts({ navigation }: any): JSX.Element {
         </Wrapper>
     );
 }
+

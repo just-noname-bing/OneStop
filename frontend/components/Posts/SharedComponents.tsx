@@ -2,11 +2,12 @@ import { useApolloClient } from "@apollo/client";
 import styled from "@emotion/native";
 import { useNavigation } from "@react-navigation/native";
 import { useCallback, useState } from "react";
-import { FlatList, RefreshControl, View } from "react-native";
+import { FlatList, RefreshControl, View, Text } from "react-native";
 import { COLOR_PALETE } from "../../utils/colors";
 import { formatRelativeTime } from "../../utils/formatTime";
 import { POST, POSTS_QUERY, problemListProps } from "../../utils/graphql";
 import { transportTypes } from "../Home/SharedComponents";
+import { Center } from "../styled/Center";
 
 export const NewPostBtn = styled.Pressable({
     width: 172 / 1.5,
@@ -149,7 +150,7 @@ export function ProblemList(props: problemListProps) {
     return (
         <FlatList
             showsVerticalScrollIndicator={false}
-            style={{ zIndex: -1 }}
+            style={{ zIndex: -1, minHeight: "100%" }}
             data={sortedData()}
             keyExtractor={({ id }) => id}
             contentContainerStyle={{ gap: 15 }}
@@ -160,8 +161,15 @@ export function ProblemList(props: problemListProps) {
                     onRefresh={handleRefresh}
                 />
             }
+            ListEmptyComponent={() => (
+                <Center style={{minHeight:"50%"}}>
+                    <Text style={{ color: COLOR_PALETE.additionalText }}>
+                        No posts
+                    </Text>
+                </Center>
+            )}
             ListFooterComponent={() => (
-                <View style={{ paddingBottom: 50 }}></View>
+                <View style={{ paddingBottom: 150 }}></View>
             )}
             renderItem={({ item }) => (
                 <ProblemWrapper
@@ -171,9 +179,7 @@ export function ProblemList(props: problemListProps) {
                     }
                 >
                     <InfoWrapper>
-                        <TransportIcon
-                            bg={getColor(item)}
-                        >
+                        <TransportIcon bg={getColor(item)}>
                             <TransportIconText>
                                 {item.route.route_short_name}
                             </TransportIconText>

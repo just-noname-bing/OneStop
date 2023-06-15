@@ -1,5 +1,7 @@
 import { getItemAsync, setItemAsync, deleteItemAsync } from "expo-secure-store";
+import jwt_decode from "jwt-decode";
 import { createContext, useContext, useEffect, useState } from "react";
+import { withDecay } from "react-native-reanimated";
 import { GRAPHQL_API_URL } from "./constants";
 
 export enum TOKENS {
@@ -50,33 +52,53 @@ export async function fetchNewTokens() {
             return null;
         }
 
+        console.log("fetching new tokens --- -")
+
+        // console.log(response)
         const tokens = await response.json();
-        // console.log(tokens)
-        const a = await setAccessToken(tokens.accessToken);
+        console.log(tokens)
+        const a = tokens.accessToken;
+        await setAccessToken(a);
         await setRefreshToken(tokens.refreshToken);
 
         return a;
     } catch (err) {
         console.log(err);
+        console.log("BOMBA");
     }
 }
 
+type payload = { exp: number, role: "ADMIN" | "MODERATOR" | "DEFAULT" }
 export function useAuth() {
     const [auth, setAuth] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [payload, setPayload] = useState<payload | null>(null);
     const [ac, setAc] = useState<string | null>(null);
     const [rf, setRf] = useState<string | null>(null);
     useEffect(() => {
         (async () => {
-            const t = await getAccessToken()
-            const tt = await getAccessToken()
-            setAuth(!!t);
-            setAc(t);
-            setRf(tt);
+            const t = await getAccessToken();
+            const tt = await getRefreshToken();
+            try {
+                const decodedTT: payload = jwt_decode(tt ?? "");
+
+                const isExpired = decodedTT.exp < new Date().getTime() / 1000;
+
+                if (isExpired) {
+                    setAuth(false);
+                } else {
+                    setAuth(true);
+                    setAc(t);
+                    setRf(tt);
+                    setPayload(decodedTT);
+                }
+            } catch {
+                setAuth(false);
+            }
+
             setLoading(false);
-        })()
+        })();
     }, []);
 
-    return { auth, loading, ac, rf };
+    return { auth, loading, ac, rf, payload };
 }
-

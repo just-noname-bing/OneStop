@@ -69,7 +69,7 @@ export type Roles = (typeof Roles)[keyof typeof Roles];
 
 export const UPDATE_USER_INPUT_SCHEMA = object({
     verified: boolean().required(),
-    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR"]).required(),
+    role: mixed<Roles>().oneOf(["DEFAULT", "MODERATOR", "ADMIN"]).required(),
 })
     .concat(user_info_fields)
     .concat(LOGIN_INPUT_SCHEMA.omit(["password"]));

@@ -2,7 +2,6 @@ import { gql, useApolloClient, useMutation } from "@apollo/client";
 import styled from "@emotion/native";
 import { CommonActions } from "@react-navigation/native";
 import { ErrorMessage, Formik } from "formik";
-import { useContext, useEffect } from "react";
 import {
     Keyboard,
     ScrollView,
@@ -13,11 +12,9 @@ import {
     ActivityIndicator,
     Alert,
 } from "react-native";
-import { err } from "react-native-svg/lib/typescript/xml";
 import { PencilIcon } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
 import { POSTS_QUERY, Route } from "../../utils/graphql";
-import { useAuth } from "../../utils/tokens";
 import { FieldError, POST_INPUT_SCHEMA } from "../../utils/validationSchema";
 import { transportTypes } from "../Home/SharedComponents";
 import { Wrapper } from "../styled/Wrapper";
@@ -88,15 +85,15 @@ export default function ({ route, navigation }: any) {
                         response = await createPost({
                             variables: { options: values },
                         });
-                    } catch {
-                        console.log("something went wrong");
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: "Account" }],
-                            })
-                        );
-                        return;
+                    } catch(err) {
+                        console.log(err);
+                        return Alert.alert("something went wrong");
+                        // navigation.dispatch(
+                        //     CommonActions.reset({
+                        //         index: 0,
+                        //         routes: [{ name: "Account" }],
+                        //     })
+                        // );
                     }
 
                     if (response.errors?.length || !response.data) {
@@ -134,7 +131,7 @@ export default function ({ route, navigation }: any) {
                     isSubmitting,
                     errors,
                 }) => (
-                    <ScrollView>
+                    <ScrollView style={{minHeight:"100%"}}>
                         <Wrapper style={{ gap: 25 }}>
                             <View
                                 style={{
@@ -156,6 +153,7 @@ export default function ({ route, navigation }: any) {
                                 <View style={{ flex: 1, gap: 12 / 1.5 }}>
                                     <TitleInput
                                         isErrors={!!errors.title}
+                                        multiline={false}
                                         placeholder="Traffic jam..."
                                         value={values.title}
                                         onChangeText={handleChange("title")}

@@ -129,6 +129,7 @@ export const BusResolver = {
                 stop_id: string;
                 transport_id: string;
             };
+
             return await prisma.stop_times.findMany({
                 where: {
                     AND: [{ stop_id }, { trips: { route_id: transport_id } }],
@@ -143,7 +144,21 @@ export const BusResolver = {
         getRoutesForStop: async (_p: any, args: any, _ctx: any) => {
             const { stop_id } = args as { stop_id: string };
 
-            return await prisma.routes.findMany({
+            // const test = await prisma.stop_times.findMany({
+            //     where: {
+            //         AND: [{ stop_id }, { trips: { route_id: "riga_bus_41" } }],
+            //     },
+            //     orderBy: [
+            //         { trips: { service_id: "asc" } },
+            //         { arrival_time: "asc" },
+            //     ],
+            // });
+
+            // stop
+            // route
+            // shclue
+
+            const SpecificRoutes = await prisma.routes.findMany({
                 where: {
                     trips: {
                         some: {
@@ -154,6 +169,51 @@ export const BusResolver = {
                     },
                 },
             });
+
+            const newDataset = [
+                // route
+                // Stop_times
+            ];
+
+            // params
+            // stopId
+            // currentDay
+            //
+
+            const currentDate = new Date();
+            const isWorkking = isWorkingDay(currentDate);
+            for (let r of SpecificRoutes) {
+                const test = await prisma.stop_times.findMany({
+                    where: {
+                        AND: [
+                            { stop_id },
+                            { trips: { route_id: r.route_id } },
+                            {
+                                trips: {
+                                    Calendar: {
+                                        friday: {
+                                            equals: isWorkking ? "1" : "0",
+                                        },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    orderBy: [
+                        { trips: { service_id: "asc" } },
+                        { arrival_time: "asc" },
+                    ],
+                });
+
+                newDataset.push({
+                    Routes: r,
+                    Stop_times: getTwoClosestTimes(test),
+                });
+            }
+
+            console.dir(newDataset, { depth: null });
+
+            return newDataset;
         },
         stopsSearch: async (_p: any, args: any, _ctx: any) => {
             const { stop_name } = args as { stop_name: string };
@@ -181,3 +241,41 @@ export const BusResolver = {
         },
     },
 };
+
+function getTwoClosestTimes(test: Stop_times[]) {
+    const currentTime = new Date(); // Current time
+    const twoClosestTimes = test
+        .slice()
+        .sort((a, b) => {
+            const aa = a.arrival_time.split(":");
+            const bb = b.arrival_time.split(":");
+
+            const hourDiff = Number(aa[0]) - Number(bb[0]);
+            if (hourDiff !== 0) {
+                return hourDiff; // Sort by hours if they are different
+            }
+
+            const minuteDiff = Number(aa[1]) - Number(bb[1]);
+            return minuteDiff; // Sort by minutes if hours are the same
+        })
+        .filter((sche) => {
+            const [hours, mins] = sche.arrival_time.split(":");
+
+            if (currentTime.getHours() < Number(hours)) {
+                return true;
+            } else if (
+                currentTime.getHours() <= Number(hours) &&
+                currentTime.getMinutes() <= Number(mins)
+            ) {
+                return true;
+            }
+
+            return false;
+        });
+    return twoClosestTimes;
+}
+
+function isWorkingDay(date: Date) {
+    const dayOfWeek = date.getDay();
+    return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday (1-5)
+}

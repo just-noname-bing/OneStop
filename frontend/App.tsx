@@ -10,11 +10,16 @@ import {
 import { StatusBar } from "expo-status-bar";
 import Pages from "./components/Pages";
 import { GRAPHQL_API_URL } from "./utils/constants";
-import { DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import {
+    DefaultTheme,
+    NavigationContainer,
+    useIsFocused,
+} from "@react-navigation/native";
 import { AsyncStorageWrapper, persistCacheSync } from "apollo3-cache-persist";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchNewTokens, getAccessToken } from "./utils/tokens";
+import { fetchNewTokens, getAccessToken, TokensLogout } from "./utils/tokens";
+import { useEffect } from "react";
 
 const MyTheme = {
     ...DefaultTheme,
@@ -43,8 +48,9 @@ const errorLink = onError(
                         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
                     );
 
-                    if (message === "not authenticated") {
+                    if (message.toLowerCase() === "not authenticated") {
                         const newA = await fetchNewTokens();
+                        console.log(newA);
                         if (!newA) {
                             console.log("explode user");
                         } else {
@@ -57,7 +63,10 @@ const errorLink = onError(
                             });
                         }
 
-                        return forward(operation)
+                        return forward(operation);
+                    } else if (message.toLowerCase() === "not authorized") {
+                        await TokensLogout()
+                        // gg
                     }
                 }
             );

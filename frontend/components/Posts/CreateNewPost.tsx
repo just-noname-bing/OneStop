@@ -26,34 +26,24 @@ import { Wrapper } from "../styled/Wrapper";
 //
 const Icons = [<BigTrolleyIcon />, <BigTramIcon />, <BigBusIcon />];
 
-export default function({ navigation }: any) {
+export default function ({ navigation }: any) {
     const { auth, loading: authLoading } = useAuth();
 
-
-    const { data, loading } = useQuery<{ Routes: Routes[] }>(
-        GET_ROUTES,
-        {
-            skip: !auth,
-        }
-    );
+    const { data, loading } = useQuery<{ Routes: Routes[] }>(GET_ROUTES, {
+        skip: !auth,
+    });
 
     const [value, setValue] = useState(0);
     const [color, setColor] = useState(COLOR_PALETE.tram);
 
-    // useEffect(() => {
-    //     getAccessToken().then((token) => {
-    //         if (!token) {
-    //             navigation.dispatch(
-    //                 CommonActions.reset({
-    //                     index: 0,
-    //                     routes: [{ name: "Account" }],
-    //                 })
-    //             );
-    //         } else {
-    //             setIsAuth(true);
-    //         }
-    //     });
-    // }, []);
+    useEffect(() => {
+        if (!auth && !authLoading) {
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "Account" }],
+            });
+        }
+    }, [auth, authLoading]);
 
     const filtered = useMemo(() => {
         if (data && data.Routes) {
@@ -74,20 +64,11 @@ export default function({ navigation }: any) {
         }
     }, [data, loading, value]);
 
-    if (!auth && !authLoading) {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: "Account" }],
-            })
-        );
-    }
-
     if (!data || loading) return <LoadingIndicator />;
 
     return (
         <Wrapper>
-            <View style={{ height: "100%" }}>
+            <View style={{ minHeight: "100%" }}>
                 <SelectorWrapper style={{ flexGrow: 1 }}>
                     <View style={{ gap: 12 }}>
                         {transportTypes.map((type, idx) => (
@@ -104,7 +85,10 @@ export default function({ navigation }: any) {
                             </BigSelectorWrapper>
                         ))}
                     </View>
-                    <ScrollView showsVerticalScrollIndicator={false}>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        style={{ minHeight: "100%" }}
+                    >
                         <TransportWrapper>
                             {filtered?.map((r, idx) => (
                                 <TransportBtn

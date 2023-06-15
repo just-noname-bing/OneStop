@@ -1,16 +1,34 @@
 import { gql, useApolloClient, useMutation, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
-import { CommonActions, useNavigation } from "@react-navigation/native";
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, SafeAreaView, Text, View } from "react-native";
+import {
+    CommonActions,
+    StackActions,
+    useNavigation,
+} from "@react-navigation/native";
+import { ErrorMessage, Formik, FormikHelpers } from "formik";
+import { useContext, useEffect, useMemo, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    SafeAreaView,
+    Text,
+    View,
+} from "react-native";
 import { RefreshControl } from "react-native";
 import { Pressable } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { withDecay } from "react-native-reanimated";
 import { LoadingIndicator } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
+import { ShowAdminMenuContext } from "../../utils/context";
 import { formatRelativeTime } from "../../utils/formatTime";
 import { LOGOUT_MUTATION } from "../../utils/graphql";
 import { TokensLogout, useAuth } from "../../utils/tokens";
+import {
+    FieldError,
+    UPDATE_USER_INPUT_SCHEMA,
+} from "../../utils/validationSchema";
 import {
     InfoWrapper,
     ProblemDescription,
@@ -31,13 +49,20 @@ const GET_ME_QUERY = gql`
             name
             surname
             email
+            role
+            verified
             Post {
+                id
                 created_at
                 updated_at
                 title
                 text
                 route {
                     route_short_name
+                    route_long_name
+                    route_id
+                    route_desc
+                    route_type
                 }
             }
             Comment {
@@ -59,14 +84,21 @@ type getMeQuery = {
     name: string;
     surname: string;
     email: string;
+    role: "MODERATOR" | "ADMIN" | "DEFAULT";
+    verified: boolean;
     Post: [
         {
+            id: string;
             created_at: Date;
             updated_at: Date;
             title: string;
             text: string;
             route: {
                 route_short_name: string;
+                route_long_name: string;
+                route_id: string;
+                route_desc: string;
+                route_type: string;
             };
         }
     ];
@@ -84,11 +116,50 @@ type getMeQuery = {
     updated_at: Date;
 };
 
+const UPDATE_USER_MUTATION = gql`
+    mutation UpdateUser($options: updateUserInput!, $updateUserId: String!) {
+        updateUser(options: $options, id: $updateUserId) {
+            data {
+                id
+            }
+            errors {
+                field
+                message
+            }
+        }
+    }
+`;
+
+type updateUserMutation = {
+    data: {
+        id: string;
+    };
+    errors: FieldError[];
+};
+
 export default function ({}: any) {
     const [logout] = useMutation(LOGOUT_MUTATION);
+    const [updateUser] = useMutation<{ updateUser: updateUserMutation }>(
+        UPDATE_USER_MUTATION
+    );
     const navigation = useNavigation() as any;
 
-    const { data: me, loading } = useQuery<{ me: getMeQuery }>(GET_ME_QUERY);
+    const { rf, payload, auth, loading: authLoading } = useAuth();
+
+    useEffect(() => {
+        if (!auth && !authLoading) {
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: "Account" }],
+                })
+            );
+        }
+    }, [auth, authLoading]);
+
+    const { data: me, loading } = useQuery<{ me: getMeQuery }>(GET_ME_QUERY, {
+        fetchPolicy: "cache-and-network",
+    });
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showPosts, setShowPosts] = useState(true);
@@ -101,13 +172,13 @@ export default function ({}: any) {
         );
     }, [me]);
 
-    const orderedComments = useMemo(() => {
-        return me?.me.Comment.slice().sort(
-            (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
-        );
-    }, [me?.me]);
+    // const orderedComments = useMemo(() => {
+    //     return me?.me.Comment.slice().sort(
+    //         (a, b) =>
+    //             new Date(b.created_at).getTime() -
+    //             new Date(a.created_at).getTime()
+    //     );
+    // }, [me?.me]);
 
     const client = useApolloClient();
 
@@ -120,9 +191,7 @@ export default function ({}: any) {
             .then(() => setIsRefreshing(false));
     };
 
-    const { rf, loading: authLoading } = useAuth();
-
-    if (!me?.me || loading || authLoading) <LoadingIndicator />;
+    if (!me?.me || loading || authLoading) return <LoadingIndicator />;
 
     return (
         <ScrollView
@@ -134,47 +203,156 @@ export default function ({}: any) {
             }
         >
             <Wrapper>
-                <View style={{ gap: 30 }}>
-                    <InputWrapper>
-                        <Lable>Name:</Lable>
-                        <InputField value={me?.me.name} />
-                    </InputWrapper>
-                    <InputWrapper>
-                        <Lable>Surname:</Lable>
-                        <InputField value={me?.me.surname} />
-                    </InputWrapper>
-                    <InputWrapper>
-                        <Lable>E-mail:</Lable>
-                        <InputField
-                            value={me?.me.email}
-                            editable={false}
-                            style={{ color: COLOR_PALETE.additionalText }}
-                        />
-                    </InputWrapper>
-                </View>
-                <ConfirmWrapper>
-                    <View style={{ flexDirection: "row", gap: 10 }}>
-                        <ConfirmBtn isPrimary>
-                            <ConfirmText isPrimary>confirm</ConfirmText>
-                        </ConfirmBtn>
-                        <ConfirmBtn
-                            onPress={async () => {
-                                await logout({
-                                    variables: { token: rf },
-                                });
-                                await TokensLogout();
-                                navigation.dispatch(
-                                    CommonActions.reset({
-                                        index: 0,
-                                        routes: [{ name: "Account" }],
-                                    })
+                <Formik
+                    initialValues={{
+                        name: me.me.name,
+                        surname: me.me.surname,
+                        email: me.me.email,
+                        role: "DEFAULT",
+                        verified: me.me.verified,
+                    }}
+                    validationSchema={UPDATE_USER_INPUT_SCHEMA}
+                    validateOnChange={true}
+                    validateOnBlur={false}
+                    validateOnMount={false}
+                    onSubmit={async (values, a) => {
+                        console.log(values, me.me.id);
+
+                        const response = await updateUser({
+                            variables: {
+                                options: values,
+                                updateUserId: me.me.id,
+                            },
+                        });
+
+                        if (response.data?.updateUser) {
+                            if (response.data.updateUser.errors?.length) {
+                                response.data.updateUser.errors.forEach(
+                                    (error) => {
+                                        console.log(error);
+                                        a.setErrors({
+                                            [error.field]: error.message,
+                                        });
+                                    }
                                 );
-                            }}
-                        >
-                            <ConfirmText>logout</ConfirmText>
-                        </ConfirmBtn>
-                    </View>
-                </ConfirmWrapper>
+                                return;
+                            }
+
+                            // success
+
+                            Alert.alert("Fields are successfuly changed");
+                        } else {
+                            return Alert.alert("Something went wrong");
+                        }
+                    }}
+                >
+                    {({ values, handleSubmit, isSubmitting, handleChange }) => (
+                        <>
+                            <View style={{ gap: 30 }}>
+                                <InputWrapper>
+                                    <Lable>Name:</Lable>
+                                    <InputField
+                                        onChangeText={handleChange("name")}
+                                        editable={me.me.role !== "ADMIN"}
+                                        value={values.name}
+                                        style={{
+                                            color:
+                                                me.me.role === "ADMIN"
+                                                    ? COLOR_PALETE.additionalText
+                                                    : "black",
+                                        }}
+                                    />
+                                </InputWrapper>
+                                <ErrorMessage name="name">
+                                    {(msg) => (
+                                        <Text
+                                            style={{
+                                                color: COLOR_PALETE.tram,
+                                            }}
+                                        >
+                                            {msg}
+                                        </Text>
+                                    )}
+                                </ErrorMessage>
+                                <InputWrapper>
+                                    <Lable>Surname:</Lable>
+                                    <InputField
+                                        onChangeText={handleChange("surname")}
+                                        editable={payload?.role !== "ADMIN"}
+                                        value={values.surname}
+                                        style={{
+                                            color:
+                                                me.me.role === "ADMIN"
+                                                    ? COLOR_PALETE.additionalText
+                                                    : "black",
+                                        }}
+                                    />
+                                </InputWrapper>
+                                <ErrorMessage name="surname">
+                                    {(msg) => (
+                                        <Text
+                                            style={{
+                                                color: COLOR_PALETE.tram,
+                                            }}
+                                        >
+                                            {msg}
+                                        </Text>
+                                    )}
+                                </ErrorMessage>
+                                <InputWrapper>
+                                    <Lable>E-mail:</Lable>
+                                    <InputField
+                                        value={me?.me.email}
+                                        editable={false}
+                                        style={{
+                                            color: COLOR_PALETE.additionalText,
+                                        }}
+                                    />
+                                </InputWrapper>
+                            </View>
+                            <ConfirmWrapper>
+                                <View style={{ flexDirection: "row", gap: 10 }}>
+                                    {me.me.role !== "ADMIN" && (
+                                        <ConfirmBtn
+                                            disabled={isSubmitting}
+                                            onPress={handleSubmit as any}
+                                            isPrimary
+                                        >
+                                            {isSubmitting ? (
+                                                <ActivityIndicator
+                                                    color={"white"}
+                                                />
+                                            ) : (
+                                                <ConfirmText isPrimary>
+                                                    confirm
+                                                </ConfirmText>
+                                            )}
+                                        </ConfirmBtn>
+                                    )}
+                                    <ConfirmBtn
+                                        onPress={async () => {
+                                            await logout({
+                                                variables: { token: rf },
+                                            });
+                                            await TokensLogout();
+
+                                            navigation.dispatch(
+                                                CommonActions.reset({
+                                                    index: 0,
+                                                    routes: [
+                                                        { name: "Account" },
+                                                    ],
+                                                })
+                                            );
+                                        }}
+                                    >
+                                        <ConfirmText>logout</ConfirmText>
+                                    </ConfirmBtn>
+                                </View>
+                            </ConfirmWrapper>
+                        </>
+                    )}
+                </Formik>
 
                 <HistoryWrapper>
                     <HistoryCategory
@@ -207,11 +385,31 @@ export default function ({}: any) {
                         renderItem={({ item }) => (
                             <ProblemWrapper
                                 activeOpacity={1}
-                                onPress={() =>
-                                    navigation.navigate("PostView", {
-                                        postId: "",
-                                    })
-                                }
+                                onPress={() => {
+                                    // navigation.navigate("Posts", {
+                                    //     screen: "PostView",
+                                    //     params: { postId: item.id },
+                                    // });
+                                    navigation.reset({
+                                        index: 0,
+                                        routes: [
+                                            {
+                                                name: "Posts",
+                                                state: {
+                                                    routes: [
+                                                        { name: "PostsFeed" },
+                                                        {
+                                                            name: "PostView",
+                                                            params: {
+                                                                postId: item.id,
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    });
+                                }}
                             >
                                 <InfoWrapper>
                                     <TransportIcon bg={COLOR_PALETE.bus}>

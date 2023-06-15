@@ -117,7 +117,7 @@ export default function ({ navigation, route }: any) {
                 new Date(b.created_at).getTime() -
                 new Date(a.created_at).getTime()
         );
-    }, [data, loading]);
+    }, [data, loading, route]);
 
     useEffect(() => {
         getAccessToken().then((token) => {
@@ -134,6 +134,7 @@ export default function ({ navigation, route }: any) {
         >
             <ScrollView
                 showsVerticalScrollIndicator={false}
+                style={{ minHeight: "100%" }}
                 refreshControl={
                     <RefreshControl
                         refreshing={isRefreshing}

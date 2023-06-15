@@ -14,11 +14,7 @@ import {
 import Svg, { Path } from "react-native-svg";
 import { COLOR_PALETE } from "../../utils/colors";
 import { LOGIN_MUTATION } from "../../utils/graphql";
-import {
-    setAccessToken,
-    setRefreshToken,
-    useAuth,
-} from "../../utils/tokens";
+import { setAccessToken, setRefreshToken, useAuth } from "../../utils/tokens";
 import { FieldError, LOGIN_INPUT_SCHEMA } from "../../utils/validationSchema";
 import {
     LoginWrapper,
@@ -128,7 +124,13 @@ export function Login({ navigation }: any): JSX.Element {
                                                 alignItems: "flex-end",
                                             }}
                                         >
-                                            <Pressable onPress={() => navigation.navigate("PasswordReset")}>
+                                            <Pressable
+                                                onPress={() =>
+                                                    navigation.navigate(
+                                                        "PasswordReset"
+                                                    )
+                                                }
+                                            >
                                                 <Text
                                                     style={{
                                                         color: COLOR_PALETE.tram,

@@ -15,8 +15,9 @@ const Stack = createNativeStackNavigator();
 export default function Account({ route }: any): JSX.Element {
     const { auth, loading } = useAuth();
 
-
     if (loading) return <></>
+
+    console.log(auth, loading, "here")
 
     return (
         <Stack.Navigator
