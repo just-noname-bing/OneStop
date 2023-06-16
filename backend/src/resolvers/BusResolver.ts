@@ -189,7 +189,7 @@ export const BusResolver = {
                     AND: [{ stop_id }, { trips: { route_id: transport_id } }],
                 },
                 include: { trips: { include: { Calendar: true } } },
-                orderBy: [{trip_id:"asc"}],
+                orderBy: [{ arrival_time: "asc" }],
             });
             return x;
         },
