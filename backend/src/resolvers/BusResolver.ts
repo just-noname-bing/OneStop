@@ -184,16 +184,14 @@ export const BusResolver = {
                 transport_id: string;
             };
 
-            return await prisma.stop_times.findMany({
+            const x = await prisma.stop_times.findMany({
                 where: {
                     AND: [{ stop_id }, { trips: { route_id: transport_id } }],
                 },
                 include: { trips: { include: { Calendar: true } } },
-                orderBy: [
-                    { trips: { service_id: "asc" } },
-                    { arrival_time: "asc" },
-                ],
+                orderBy: [{trip_id:"asc"}],
             });
+            return x;
         },
         stopsSearch: async (_p: any, args: any, _ctx: any) => {
             const { stop_name } = args as { stop_name: string };
