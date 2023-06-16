@@ -492,7 +492,7 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
 
     const firstTwo = routes.Stop_times.splice(0, 2);
 
-    console.log(firstTwo)
+    console.log(firstTwo);
     return (
         <SoonTransport>
             <SoonTransportCodeWrapper
@@ -525,12 +525,8 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
                 {routes.Stop_times.splice(0, 2).map((times, i) => (
                     <SoonTransportTime key={i}>
                         <SoonTransportTimeTitle>
-                            {times.arrival_time.slice(
-                                0,
-                                times.arrival_time.lastIndexOf(":")
-                            )}
+                        {convertTimeToString(times.arrival_time)}
                         </SoonTransportTimeTitle>
-                        <SoonTransportTimeMin>min</SoonTransportTimeMin>
                     </SoonTransportTime>
                 ))}
             </SoonTransportTimeWrapper>
@@ -654,21 +650,19 @@ async function getClosestMarkers(
     return sortedMarkers.slice(0, 3);
 }
 
-function convertTimeToString(t: string) {
-    const currentDate = new Date();
-    const [h, min, sec] = t.split(":");
-    currentDate.setHours(Number(h));
-    currentDate.setMinutes(Number(min));
-    currentDate.setSeconds(Number(sec));
+export function convertTimeToString(arrival_time: string) {
+    const [h, m, s] = arrival_time.split(":");
+    const now = new Date();
+    const date = new Date();
+    date.setHours(Number(h), Number(m), Number(s));
+    const diff = Math.round((date.getTime() - now.getTime()) / 1000);
 
-    const time = currentDate.getTime();
-    const minutes = Math.floor((time % 3600) / 60);
-
-    if (minutes === 0) {
+    if (diff < 60) {
         return "now";
-    } else if (minutes < 50) {
-        return `${min}`;
+    } else if (diff < 3600) {
+        const mins = Math.floor(diff / 60);
+        return "in " + mins + " mins";
     } else {
-        return h + ":" + min;
+        return h + ":" + m;
     }
 }

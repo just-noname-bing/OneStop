@@ -1,7 +1,7 @@
-import { useMutation } from "@apollo/client";
+import { useApolloClient, useMutation } from "@apollo/client";
 import styled from "@emotion/native";
-import { useEffect, useMemo } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { LoadingIndicator, Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
@@ -12,7 +12,9 @@ import {
     Stop,
 } from "../../utils/graphql";
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
+import { Center } from "../styled/Center";
 import { Wrapper } from "../styled/Wrapper";
+import { convertTimeToString } from "./MainMapScreen";
 import {
     CategoryBtn,
     CategoryBtnText,
@@ -43,6 +45,14 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
         }
     );
 
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        getInformation({ variables: { stopId: stop.stop_id } }).then(() => {
+            setIsRefreshing(false);
+        });
+    };
+
     const rightTimeTableFormat = useMemo(() => {
         if (data?.getRoutesForStop) {
             const map = new Map<string, Routes>();
@@ -58,15 +68,15 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
             });
 
             const cool = [];
-            const currD = new Date()
+            const currD = new Date();
             for (let f of full) {
-                if (Number(f[0].split(":")[0]) > currD.getHours() + 1){ 
-                    break
+                if (Number(f[0].split(":")[0]) > currD.getHours() + 1) {
+                    break;
                 }
-                cool.push(f)
+                cool.push(f);
             }
 
-            return cool
+            return cool;
         }
     }, [data, loading]);
 
@@ -80,6 +90,13 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
         <ScrollView
             style={{ flexGrow: 1 }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl
+                    style={{ borderColor: COLOR_PALETE.tram }}
+                    refreshing={isRefreshing}
+                    onRefresh={handleRefresh}
+                />
+            }
         >
             <Wrapper>
                 <View style={{ gap: 13 }}>
@@ -151,24 +168,38 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                     <View style={{ gap: 15 / 1.5 }}>
                         <TimeTableTitle>Timetable</TimeTableTitle>
                         <View style={{ gap: 15 / 1.5 }}>
-                            {rightTimeTableFormat?.map(([time, route]) => (
-                                <TimeTableRow>
-                                    <TransportRowBtn
-                                        bg={
-                                            transportTypes.filter(
-                                                (x) => x.id === route.route_type
-                                            )[0].color
-                                        }
+                            <FlatList
+                                style={{}}
+                                ListEmptyComponent={() => (
+                                    <Center
+                                        style={{
+                                            paddingVertical: 100,
+                                            opacity: 0.3,
+                                        }}
                                     >
-                                        <TransportRowText>
-                                            {route.route_short_name}
-                                        </TransportRowText>
-                                    </TransportRowBtn>
-                                    <Text>
-                                        {time.slice(0, time.lastIndexOf(":"))}
-                                    </Text>
-                                </TimeTableRow>
-                            ))}
+                                        <Text>No transport will come soon</Text>
+                                    </Center>
+                                )}
+                                scrollEnabled={false}
+                                data={rightTimeTableFormat}
+                                contentContainerStyle={{ gap: 15 / 1.5 }}
+                                renderItem={({ item: [a, b] }) => (
+                                    <TimeTableRow>
+                                        <TransportRowBtn
+                                            bg={
+                                                transportTypes.filter(
+                                                    (x) => x.id === b.route_type
+                                                )[0].color
+                                            }
+                                        >
+                                            <TransportRowText>
+                                                {b.route_short_name}
+                                            </TransportRowText>
+                                        </TransportRowBtn>
+                                        <Text>{convertTimeToString(a)}</Text>
+                                    </TimeTableRow>
+                                )}
+                            />
                         </View>
                     </View>
                 </View>

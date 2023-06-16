@@ -87,7 +87,7 @@ const httpLink = new HttpLink({
 });
 
 const client = new ApolloClient({
-    link: from([errorLink, authLink.concat(httpLink)]),
+    link: from([authLink, errorLink, httpLink]),
     cache: new InMemoryCache(),
 });
 
@@ -97,7 +97,7 @@ export default function App() {
             <NavigationContainer theme={MyTheme}>
                 <Pages />
             </NavigationContainer>
-            <StatusBar style="auto" />
+            <StatusBar style="dark" />
         </ApolloProvider>
     );
 }

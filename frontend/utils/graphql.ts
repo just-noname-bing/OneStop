@@ -134,7 +134,7 @@ export type problemListProps = {
 };
 
 export const GET_ROUTES_FOR_STOP = gql`
-    mutation GetRoutesForStop($stopId: String!) {
+    query GetRoutesForStop($stopId: String!) {
         getRoutesForStop(stop_id: $stopId) {
             Routes {
                 route_id

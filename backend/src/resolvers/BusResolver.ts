@@ -55,71 +55,7 @@ export const BusResolver = {
                     Calendar: true,
                 },
             }),
-    },
 
-    Mutation: {
-        getTransportDirectionStops: async (_p: any, args: any, _ctx: any) => {
-            const { transport_id, order } = args as {
-                order: string;
-                transport_id: string;
-            };
-
-            // const directions = await prisma.trips.findMany({
-            //     where: {
-            //         route_id: transport_id,
-            //     },
-            //     distinct: ["shape_id"],
-            //     include: { route: true },
-            // });
-            //
-            // console.log(directions)
-            //
-            const raw2 = await prisma.trips.findFirst({
-                where: {
-                    route_id: transport_id,
-                    direction_id: order,
-                },
-                distinct: ["trip_id"],
-            });
-
-            const raw3 = await prisma.stop_times.findMany({
-                where: {
-                    trip_id: raw2?.trip_id,
-                },
-                orderBy: { stop_sequence: "asc" },
-                include: { stops: true },
-            });
-
-            raw3.sort((a, b) => {
-                const aa = Number(a.stop_sequence);
-                const bb = Number(b.stop_sequence);
-                if (aa < bb) {
-                    return -1;
-                } else if (aa > bb) {
-                    return 1;
-                }
-                return 0;
-            });
-
-            return raw3;
-        },
-        getTransportSchedule: async (_p: any, args: any, _ctx: any) => {
-            const { stop_id, transport_id } = args as {
-                stop_id: string;
-                transport_id: string;
-            };
-
-            return await prisma.stop_times.findMany({
-                where: {
-                    AND: [{ stop_id }, { trips: { route_id: transport_id } }],
-                },
-                include: { trips: { include: { Calendar: true } } },
-                orderBy: [
-                    { trips: { service_id: "asc" } },
-                    { arrival_time: "asc" },
-                ],
-            });
-        },
         getRoutesForStop: async (_p: any, args: any, _ctx: any) => {
             const { stop_id } = args as { stop_id: string };
 
@@ -193,6 +129,71 @@ export const BusResolver = {
             console.dir(newDataset, { depth: null });
 
             return newDataset;
+        },
+    },
+
+    Mutation: {
+        getTransportDirectionStops: async (_p: any, args: any, _ctx: any) => {
+            const { transport_id, order } = args as {
+                order: string;
+                transport_id: string;
+            };
+
+            // const directions = await prisma.trips.findMany({
+            //     where: {
+            //         route_id: transport_id,
+            //     },
+            //     distinct: ["shape_id"],
+            //     include: { route: true },
+            // });
+            //
+            // console.log(directions)
+            //
+            const raw2 = await prisma.trips.findFirst({
+                where: {
+                    route_id: transport_id,
+                    direction_id: order,
+                },
+                distinct: ["trip_id"],
+            });
+
+            const raw3 = await prisma.stop_times.findMany({
+                where: {
+                    trip_id: raw2?.trip_id,
+                },
+                orderBy: { stop_sequence: "asc" },
+                include: { stops: true },
+            });
+
+            raw3.sort((a, b) => {
+                const aa = Number(a.stop_sequence);
+                const bb = Number(b.stop_sequence);
+                if (aa < bb) {
+                    return -1;
+                } else if (aa > bb) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            return raw3;
+        },
+        getTransportSchedule: async (_p: any, args: any, _ctx: any) => {
+            const { stop_id, transport_id } = args as {
+                stop_id: string;
+                transport_id: string;
+            };
+
+            return await prisma.stop_times.findMany({
+                where: {
+                    AND: [{ stop_id }, { trips: { route_id: transport_id } }],
+                },
+                include: { trips: { include: { Calendar: true } } },
+                orderBy: [
+                    { trips: { service_id: "asc" } },
+                    { arrival_time: "asc" },
+                ],
+            });
         },
         stopsSearch: async (_p: any, args: any, _ctx: any) => {
             const { stop_name } = args as { stop_name: string };
