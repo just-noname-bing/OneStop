@@ -1,4 +1,4 @@
-import { useApolloClient, useMutation } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
 import { useEffect, useMemo, useState } from "react";
 import { FlatList, RefreshControl, Text, View } from "react-native";
@@ -33,24 +33,26 @@ import {
 // test data riga_bus_41
 // test data 1086
 
-export function SmallSchedule({ route, navigation }: any): JSX.Element {
+export function SmallSchedule({ route, navigation }: any) {
     const stop = route.params.stop as Stop;
 
-    const [getInformation, { data, loading }] = useMutation<getRoutesForStop>(
-        GET_ROUTES_FOR_STOP,
-        {
-            variables: {
-                stopId: stop.stop_id,
-            },
-        }
-    );
+    const { data, loading } = useQuery<getRoutesForStop>(GET_ROUTES_FOR_STOP, {
+        variables: {
+            stopId: stop.stop_id,
+        },
+    });
 
+    const client = useApolloClient();
     const [isRefreshing, setIsRefreshing] = useState(false);
     const handleRefresh = () => {
         setIsRefreshing(true);
-        getInformation({ variables: { stopId: stop.stop_id } }).then(() => {
-            setIsRefreshing(false);
-        });
+        client
+            .refetchQueries({
+                include: [GET_ROUTES_FOR_STOP],
+            })
+            .then(() => {
+                setIsRefreshing(false);
+            });
     };
 
     const rightTimeTableFormat = useMemo(() => {
@@ -79,10 +81,6 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
             return cool;
         }
     }, [data, loading]);
-
-    useEffect(() => {
-        getInformation().catch(console.log);
-    }, []);
 
     if (!data || loading) return <LoadingIndicator />;
 
@@ -169,7 +167,6 @@ export function SmallSchedule({ route, navigation }: any): JSX.Element {
                         <TimeTableTitle>Timetable</TimeTableTitle>
                         <View style={{ gap: 15 / 1.5 }}>
                             <FlatList
-                                style={{}}
                                 ListEmptyComponent={() => (
                                     <Center
                                         style={{

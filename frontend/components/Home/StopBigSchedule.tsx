@@ -1,7 +1,9 @@
 import { useMutation } from "@apollo/client";
 import styled from "@emotion/native";
+import { useNavigation } from "@react-navigation/native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import { LoadingIndicator } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
 import {
@@ -10,6 +12,7 @@ import {
     Route,
     Stop,
 } from "../../utils/graphql";
+import { Center } from "../styled/Center";
 import { Wrapper } from "../styled/Wrapper";
 import {
     isWorkingDay,
@@ -22,15 +25,12 @@ import {
     transportTypes,
 } from "./SharedComponents";
 
-type Times = {
-    hour: string;
-    minutes: string[];
-};
-
-export function BigSchedule({ route, navigation }: any) {
+export function BigSchedule({ route }: any) {
     const stop = route.params.stop as Stop;
     const transport = route.params.transport as Route;
     const scheduleType = route.params?.scheduleType ?? Number(isWorkingDay());
+
+    const navigation = useNavigation() as any;
 
     const [fetchData, { data, loading }] = useMutation<{
         getTransportSchedule: getTransportSchedule[];
@@ -41,50 +41,35 @@ export function BigSchedule({ route, navigation }: any) {
         },
     });
 
-    const schedule = useMemo(() => {
-        const newSchedule: getTransportSchedule[] = [];
-        if (data?.getTransportSchedule) {
-            data.getTransportSchedule.forEach((sched) => {
-                console.log(sched.trips.Calendar.friday, scheduleType);
-                const IS_CORRECT_SCHEDULE =
-                    sched.trips.Calendar.friday == scheduleType;
-                if (IS_CORRECT_SCHEDULE) {
-                    newSchedule.push(sched);
-                }
-            });
-        }
+    const orderedVersion = useMemo(() => {
+        if (!data?.getTransportSchedule) return [];
+        const ord = data.getTransportSchedule.filter(
+            (x) => x.trips.Calendar.friday == scheduleType
+        );
 
-        return newSchedule;
-    }, [data, route, scheduleType]);
+        let h: string = "";
+        const grouped = ord.reduce((acc, value) => {
+            const s = value.arrival_time.slice(0, 2);
+
+            if (!h || s !== h) {
+                acc.push([value]);
+            } else {
+                acc[acc.length - 1].push(value);
+            }
+
+            h = s;
+            return acc;
+        }, [] as getTransportSchedule[][]);
+        return grouped;
+    }, [scheduleType, data]);
+
+    console.log(orderedVersion);
 
     const transportColor = useMemo(() => {
-        return transportTypes.filter((x) => transport.route_type === x.id)[0]
+        console.log("bomb");
+        return transportTypes.filter((x) => x.id === transport.route_type)[0]
             .color;
-    }, [transport, route]);
-
-    const times = useMemo<Times[]>(
-        () =>
-            schedule.reduce((acc: any, value) => {
-                const splitted = value.arrival_time.split(":");
-                const hour = splitted[0];
-                const minutes = splitted[1];
-
-                if (acc.hasOwnProperty(hour)) {
-                    if (!acc[hour].includes(minutes)) {
-                        acc[hour].push(minutes);
-                    }
-                } else {
-                    acc[hour] = [minutes];
-                }
-
-                return acc;
-            }, {}),
-        [schedule]
-    );
-
-    console.log(stop, transport);
-    console.log(schedule);
-
+    }, [transport]);
 
     useEffect(() => {
         fetchData().catch(console.log);
@@ -109,7 +94,7 @@ export function BigSchedule({ route, navigation }: any) {
                         isPrimary={scheduleType}
                         onPress={() => {
                             if (scheduleType === 1) return;
-                            navigation.navigate("BigSchedule", {
+                            navigation.setParams({
                                 stop,
                                 transport,
                                 scheduleType: 1,
@@ -138,32 +123,42 @@ export function BigSchedule({ route, navigation }: any) {
                 </View>
                 <View style={{ gap: 23 / 1.5 }}>
                     <TimeTableTitle>Timetable</TimeTableTitle>
-                    {!data || loading ? (
-                        <LoadingIndicator />
-                    ) : (
-                        <View>
-                            {Object.entries(times)
-                                .sort()
-                                .map(([hour, minutes]: any, i) => (
-                                    <TableRow key={i}>
-                                        <TableHourRow index={i}>
-                                            <TableHourRowText>
-                                                {hour}
-                                            </TableHourRowText>
-                                        </TableHourRow>
-                                        <TableMinRow index={i}>
-                                            {minutes.map(
-                                                (minute: string, j: number) => (
-                                                    <Text key={`${i}@${j}`}>
-                                                        {minute}
-                                                    </Text>
-                                                )
-                                            )}
-                                        </TableMinRow>
-                                    </TableRow>
-                                ))}
-                        </View>
-                    )}
+                    <View>
+                        <FlatList
+                            ListEmptyComponent={
+                                <Center style={{ minHeight: 200 }}>
+                                    <LoadingIndicator />
+                                </Center>
+                            }
+                            scrollEnabled={false}
+                            data={orderedVersion}
+                            renderItem={({ item, index: i }) => (
+                                <TableRow key={i}>
+                                    <TableHourRow index={i}>
+                                        <TableHourRowText>
+                                            {orderedVersion[
+                                                i
+                                            ][0].arrival_time.slice(0, 2)}
+                                        </TableHourRowText>
+                                    </TableHourRow>
+                                    <TableMinRow index={i}>
+                                        {item.map((d, j) => (
+                                            <Text key={`${i}@${j}`}>
+                                                {d.arrival_time.slice(
+                                                    d.arrival_time.indexOf(
+                                                        ":"
+                                                    ) + 1,
+                                                    d.arrival_time.lastIndexOf(
+                                                        ":"
+                                                    )
+                                                )}
+                                            </Text>
+                                        ))}
+                                    </TableMinRow>
+                                </TableRow>
+                            )}
+                        />
+                    </View>
                 </View>
             </Wrapper>
         </ScrollView>

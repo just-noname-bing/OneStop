@@ -101,7 +101,7 @@ export function MainMap({ navigation }: any): JSX.Element {
         error,
         refetch,
     } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {
-        fetchPolicy: "cache-and-network",
+        fetchPolicy: "cache-first",
     });
     const mapRef = useRef<MapView>(null);
 
@@ -537,7 +537,7 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
 function NearStopConstructor(props: { stop: Stop }) {
     const navigation = useNavigation() as any;
     console.log(props.stop);
-    const [fetchRoutes, { loading, data }] = useMutation<getRoutesForStop>(
+    const { loading, data } = useQuery<getRoutesForStop>(
         GET_ROUTES_FOR_STOP,
         {
             variables: {
@@ -548,10 +548,6 @@ function NearStopConstructor(props: { stop: Stop }) {
     );
 
     console.log(data);
-
-    useEffect(() => {
-        fetchRoutes().catch(console.log);
-    }, []);
 
     if (!data || loading) {
         return <LoadingIndicator />;
