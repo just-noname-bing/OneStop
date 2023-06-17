@@ -301,7 +301,7 @@ export default `#graphql
     }
 
     type Mutation {
-        stopsSearch(stop_name:String!): [Stops]
+        stopsSearch(stop_name:String!): [StopSearchResults]
         getTransportSchedule(stop_id:String!, transport_id:String!): [Stop_times]
         getTransportDirectionStops(transport_id:String!, order:String!): [Stop_times]
     }
