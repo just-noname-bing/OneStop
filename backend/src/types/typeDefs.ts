@@ -294,6 +294,12 @@ export default `#graphql
         Stop_times: [Stop_times]!
     }
 
+    type StopSearchResults {
+        route:[Routes]
+        stop_id: String!
+        stop_name: String!
+    }
+
     type Mutation {
         stopsSearch(stop_name:String!): [Stops]
         getTransportSchedule(stop_id:String!, transport_id:String!): [Stop_times]

@@ -195,27 +195,32 @@ export const BusResolver = {
         },
         stopsSearch: async (_p: any, args: any, _ctx: any) => {
             const { stop_name } = args as { stop_name: string };
-            return await prisma.stops.findMany({
+            const stops = await prisma.stops.findMany({
                 where: {
                     stop_name: {
                         contains: stop_name,
                         mode: "insensitive",
                     },
                 },
-                include: {
-                    stop_times: {
-                        include: {
-                            trips: {
-                                include: {
-                                    Shapes: true,
-                                    Calendar: true,
-                                    route: true,
+            });
+
+            const joined = []
+            for (let stop of stops) {
+                const routes = await prisma.routes.findMany({
+                    where: {
+                        trips: {
+                            some: {
+                                stop_times: {
+                                    some: { stop_id: stop.stop_id },
                                 },
                             },
                         },
                     },
-                },
-            });
+                });
+                joined.push({...stop, route: routes})
+            }
+            console.dir(joined, {depth:null});
+            return stops;
         },
     },
 };
