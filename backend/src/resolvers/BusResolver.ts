@@ -219,8 +219,7 @@ export const BusResolver = {
                 });
                 joined.push({...stop, route: routes})
             }
-            console.dir(joined, {depth:null});
-            return stops;
+            return joined;
         },
     },
 };
