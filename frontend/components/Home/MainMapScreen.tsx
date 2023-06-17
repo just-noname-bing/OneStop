@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+    useEffect,
+    useState,
+    useRef,
+    useMemo,
+    useCallback,
+} from "react";
 import {
     Accuracy,
     getCurrentPositionAsync,
@@ -93,7 +99,6 @@ const mapStyle = [
 
 export function MainMap({ navigation }: any): JSX.Element {
     const [location, setLocation] = useState<LocationObject | null>(null);
-    const [closesStops, setClosestStops] = useState<Stop[]>([]);
 
     const {
         data: stops,
@@ -103,6 +108,14 @@ export function MainMap({ navigation }: any): JSX.Element {
     } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {
         fetchPolicy: "cache-first",
     });
+
+    const closestStops = useMemo(() => {
+        if (stops && stops.Stops && location) {
+            return getClosestMarkers(stops.Stops, location);
+        }
+        return []
+    }, [stops]);
+
     const mapRef = useRef<MapView>(null);
 
     const translateY = useSharedValue(0);
@@ -187,14 +200,6 @@ export function MainMap({ navigation }: any): JSX.Element {
         })();
     }, []);
 
-    useEffect(() => {
-        if (stops && stops.Stops && location) {
-            getClosestMarkers(stops.Stops, location).then((closest) =>
-                setClosestStops(closest)
-            );
-        }
-    }, [stops]);
-
     console.log(loading, location, !!stops, error);
 
     if (error) {
@@ -252,8 +257,21 @@ export function MainMap({ navigation }: any): JSX.Element {
             <CreatePostButton style={rBottomSheetStyle}>
                 <Pressable
                     onPress={() =>
-                        navigation.navigate("Posts", {
-                            screen: "CreateNewPost",
+                        navigation.reset({
+                            index: 0,
+                            routes: [
+                                {
+                                    name: "Posts",
+                                    state: {
+                                        routes: [
+                                            { name: "PostsFeed" },
+                                            {
+                                                name: "CreateNewPost",
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
                         })
                     }
                 >
@@ -303,7 +321,7 @@ export function MainMap({ navigation }: any): JSX.Element {
 
                         <ScrollView showsVerticalScrollIndicator={false}>
                             <View style={{ gap: 30, paddingBottom: 250 }}>
-                                {closesStops.map((closestS, i) => (
+                                {closestStops.map((closestS, i) => (
                                     <NearStopConstructor
                                         key={i}
                                         stop={closestS}
@@ -525,7 +543,7 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
                 {routes.Stop_times.splice(0, 2).map((times, i) => (
                     <SoonTransportTime key={i}>
                         <SoonTransportTimeTitle>
-                        {convertTimeToString(times.arrival_time)}
+                            {convertTimeToString(times.arrival_time)}
                         </SoonTransportTimeTitle>
                     </SoonTransportTime>
                 ))}
@@ -537,15 +555,12 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
 function NearStopConstructor(props: { stop: Stop }) {
     const navigation = useNavigation() as any;
     console.log(props.stop);
-    const { loading, data } = useQuery<getRoutesForStop>(
-        GET_ROUTES_FOR_STOP,
-        {
-            variables: {
-                stopId: props.stop.stop_id,
-            },
-            fetchPolicy: "network-only",
-        }
-    );
+    const { loading, data } = useQuery<getRoutesForStop>(GET_ROUTES_FOR_STOP, {
+        variables: {
+            stopId: props.stop.stop_id,
+        },
+        fetchPolicy: "network-only",
+    });
 
     console.log(data);
 
@@ -623,7 +638,7 @@ function calculateDistance(
     return R * c;
 }
 
-async function getClosestMarkers(
+function getClosestMarkers(
     markers: Stop[],
     userLocation: LocationObject
 ) {

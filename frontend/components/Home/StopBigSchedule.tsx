@@ -143,7 +143,7 @@ export function BigSchedule({ route }: any) {
                                     </TableHourRow>
                                     <TableMinRow index={i}>
                                         {item.map((d, j) => (
-                                            <Text key={`${i}@${j}`}>
+                                            <Minute key={`${i}@${j}`}>
                                                 {d.arrival_time.slice(
                                                     d.arrival_time.indexOf(
                                                         ":"
@@ -152,7 +152,7 @@ export function BigSchedule({ route }: any) {
                                                         ":"
                                                     )
                                                 )}
-                                            </Text>
+                                            </Minute>
                                         ))}
                                     </TableMinRow>
                                 </TableRow>
@@ -211,3 +211,18 @@ const TableMinRow = styled.View(({ index }: { index: number }) => ({
 
     backgroundColor: (index + 1) % 2 === 0 ? "#FBFBFB" : "white",
 }));
+
+
+const Minute = styled.Text(({ Selected }: { Selected?: boolean }) => ({
+    // style={{borderColor:COLOR_PALETE.tram, borderWidth:1, padding:2, borderRadius:5}} key={`${i}@${j}`}
+    borderColor: COLOR_PALETE.tram,
+    borderWidth: Selected ? 1 : 0,
+    paddingVertical: 5,
+    borderRadius: 5,
+
+    fontSize: 15,
+}));
+
+function isNextToCurrentTime(arrival_time: string) {
+    return true;
+}

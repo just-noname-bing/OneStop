@@ -68,7 +68,7 @@ export async function fetchNewTokens() {
     }
 }
 
-type payload = { exp: number, role: "ADMIN" | "MODERATOR" | "DEFAULT" }
+type payload = { exp: number, role: "ADMIN" | "MODERATOR" | "DEFAULT", userId:string }
 export function useAuth() {
     const [auth, setAuth] = useState(false);
     const [loading, setLoading] = useState(true);

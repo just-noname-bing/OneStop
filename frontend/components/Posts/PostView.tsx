@@ -7,6 +7,7 @@ import {
 } from "@apollo/client";
 import styled from "@emotion/native";
 import { CommonActions } from "@react-navigation/native";
+import { Platform } from "expo-modules-core";
 import { ErrorMessage, Formik, FormikHelpers, FormikValues } from "formik";
 import React, {
     useCallback,
@@ -24,13 +25,15 @@ import {
     ActivityIndicator,
     Alert,
     RefreshControl,
+    KeyboardAvoidingView,
+    Pressable,
 } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import { LoadingIndicator, Lupa } from "../../assets/icons";
 import { COLOR_PALETE } from "../../utils/colors";
 import { formatRelativeTime } from "../../utils/formatTime";
-import { GET_POST_BY_ID, POST_BY_ID } from "../../utils/graphql";
-import { getAccessToken } from "../../utils/tokens";
+import { GET_POST_BY_ID, POSTS_QUERY, POST_BY_ID } from "../../utils/graphql";
+import { getAccessToken, useAuth } from "../../utils/tokens";
 import { COMMENT_INPUT_SCHEMA, FieldError } from "../../utils/validationSchema";
 import { transportTypes } from "../Home/SharedComponents";
 import { Center } from "../styled/Center";
@@ -84,11 +87,23 @@ type createCommentMutation = {
     errors: FieldError[];
 };
 
+const DELETE_COMMENT_MUTATION = gql`
+    mutation DeleteComment($deleteCommentId: String!) {
+        deleteComment(id: $deleteCommentId)
+    }
+`;
+
+const DELETE_POST_MUTATION = gql`
+    mutation DeletePost($deletePostId: String!) {
+        deletePost(id: $deletePostId)
+    }
+`;
+
 export default function ({ navigation, route }: any) {
-    const [isAuth, setIsAuth] = useState<boolean | null>(null);
     // const [, setToken] = useContext(TokenContext);
 
     const postId = route.params.postId as string;
+    const { payload, auth: isAuth } = useAuth();
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const client = useApolloClient();
@@ -104,6 +119,14 @@ export default function ({ navigation, route }: any) {
         createComment: createCommentMutation;
     }>(CREATE_COMMENT_MUTATION);
 
+    const [deleteComment] = useMutation<{ deleteComment: boolean }>(
+        DELETE_COMMENT_MUTATION
+    );
+
+    const [deletePost] = useMutation<{ deletePost: boolean }>(
+        DELETE_POST_MUTATION
+    );
+
     const { data, loading } = useQuery<{ getPost: POST_BY_ID }>(
         GET_POST_BY_ID,
         {
@@ -111,263 +134,450 @@ export default function ({ navigation, route }: any) {
         }
     );
 
-    const orderedComments = useMemo(() => {
-        return data?.getPost.Comment.slice().sort(
-            (a, b) =>
-                new Date(b.created_at).getTime() -
-                new Date(a.created_at).getTime()
-        );
-    }, [data, loading, route]);
+    const [searchInput, setSearchInput] = useState("");
+    const handleCommentSearch = useCallback(() => {
+        if (!data?.getPost) {
+            return [];
+        }
 
-    useEffect(() => {
-        getAccessToken().then((token) => {
-            setIsAuth(!!token);
+        return data.getPost.Comment.filter((x) => {
+            const searchinputLower = searchInput.toLowerCase();
+            return (
+                x.text.toLowerCase().includes(searchinputLower) ||
+                x.author.name.toLowerCase().includes(searchinputLower)
+            );
         });
-    }, []);
+    }, [data, searchInput]);
 
-    if (isAuth === null) return <></>;
+    const orderedComments = useMemo(() => {
+        return handleCommentSearch()
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+            );
+    }, [data, searchInput]);
+
+    // if (isAuth) return <></>;
 
     return (
         <TouchableWithoutFeedback
             onPress={Keyboard.dismiss}
             style={{ flexGrow: 1 }}
         >
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                style={{ minHeight: "100%" }}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isRefreshing}
-                        onRefresh={handleRefresh}
-                    />
-                }
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
             >
-                <Wrapper style={{ gap: 10 }}>
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                        }}
-                    >
-                        <View>
-                            <Title>Last updates</Title>
-                        </View>
-                        <NewPostBtn
-                            onPress={() => navigation.navigate("CreateNewPost")}
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    style={{ minHeight: "100%" }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isRefreshing}
+                            onRefresh={handleRefresh}
+                        />
+                    }
+                >
+                    <Wrapper style={{ gap: 10 }}>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
                         >
-                            <NewPostText>New post</NewPostText>
-                        </NewPostBtn>
-                    </View>
+                            <View>
+                                <Title>Last updates</Title>
+                            </View>
+                            <NewPostBtn
+                                onPress={() =>
+                                    navigation.navigate("CreateNewPost")
+                                }
+                            >
+                                <NewPostText>New post</NewPostText>
+                            </NewPostBtn>
+                        </View>
 
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            gap: 16,
-                        }}
-                    >
-                        <SearchWrapper>
-                            <Lupa />
-                            <SearchInput />
-                        </SearchWrapper>
-                    </View>
+                        <View
+                            style={{
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                                gap: 16,
+                            }}
+                        >
+                            <SearchWrapper>
+                                <Pressable onPress={handleCommentSearch}>
+                                    <Lupa />
+                                </Pressable>
+                                <SearchInput
+                                    value={searchInput}
+                                    onChangeText={(e) => setSearchInput(e)}
+                                />
+                            </SearchWrapper>
+                        </View>
 
-                    {!data || !data.getPost || loading ? (
-                        <LoadingIndicator />
-                    ) : (
-                        <>
-                            <ProblemWrapper activeOpacity={1}>
-                                <InfoWrapper>
-                                    <TransportIcon
-                                        bg={
-                                            transportTypes.filter(
-                                                (x) =>
-                                                    x.id ===
-                                                    data.getPost.route
-                                                        .route_type
-                                            )[0].color
-                                        }
-                                    >
-                                        <TransportIconText>
-                                            {
-                                                data.getPost.route
-                                                    .route_short_name
-                                            }
-                                        </TransportIconText>
-                                    </TransportIcon>
-                                    <View
-                                        style={{
-                                            flex: 1,
-                                            justifyContent: "space-between",
-                                        }}
-                                    >
-                                        <ProblemTitle>
-                                            {data.getPost.title}
-                                        </ProblemTitle>
-                                        <TransportDirection>
-                                            {data.getPost.route.route_long_name}
-                                        </TransportDirection>
-                                    </View>
-                                    <View>
-                                        <TimeStamp>
-                                            {formatRelativeTime(
-                                                data.getPost.created_at
-                                            )}
-                                        </TimeStamp>
-                                    </View>
-                                </InfoWrapper>
-                                <ProblemDescription>
-                                    {data.getPost.text}
-                                </ProblemDescription>
-                            </ProblemWrapper>
-
-                            {isAuth && (
-                                <Formik
-                                    initialValues={{ ...defaultFields, postId }}
-                                    validationSchema={COMMENT_INPUT_SCHEMA}
-                                    validateOnChange={true}
-                                    validateOnMount={false}
-                                    validateOnBlur={false}
-                                    onSubmit={async (values, actions) => {
-                                        let response = null;
-                                        try {
-                                            response = await createComment({
-                                                variables: { options: values },
-                                            });
-                                        } catch {
-                                            console.log("something went wrong");
-                                            // navigation.dispatch(
-                                            //     CommonActions.reset({
-                                            //         index: 0,
-                                            //         routes: [
-                                            //             { name: "Account" },
-                                            //         ],
-                                            //     })
-                                            // );
-                                            return;
-                                        }
-
-                                        if (
-                                            response.errors?.length ||
-                                            !response.data
-                                        ) {
-                                            return Alert.alert(
-                                                "something went wrong"
-                                            );
-                                        }
-
-                                        const { errors } =
-                                            response.data.createComment;
-
-                                        if (errors?.length) {
-                                            return errors.forEach((error) => {
-                                                actions.setErrors({
-                                                    [error["field"]]:
-                                                        error.message,
-                                                });
-                                            });
-                                        }
-
-                                        actions.setValues(
-                                            { ...values, text: "" },
-                                            true
-                                        );
-
-                                        actions.resetForm();
-                                        await client.refetchQueries({
-                                            include: [GET_POST_BY_ID],
-                                        });
+                        {!data || loading ? (
+                            <LoadingIndicator />
+                        ) : !data.getPost ? (
+                            <Center style={{minHeight:"50%"}}>
+                                <Text
+                                    style={{
+                                        color: COLOR_PALETE.additionalText,
                                     }}
                                 >
-                                    {({
-                                        isSubmitting,
-                                        handleChange,
-                                        handleSubmit,
-                                        values,
-                                        errors,
-                                    }) => (
-                                        <View style={{ gap: 25 / 1.5 }}>
-                                            <CommentInput
-                                                onChangeText={handleChange(
-                                                    "text"
-                                                )}
-                                                value={values.text}
-                                                multiline={true}
-                                                placeholder="Write your comment"
-                                                style={
-                                                    !!errors.text
-                                                        ? {
-                                                              borderColor:
-                                                                  COLOR_PALETE.tram,
-                                                          }
-                                                        : {}
+                                    404 post deleted
+                                </Text>
+                            </Center>
+                        ) : (
+                            <>
+                                <ProblemWrapper activeOpacity={1}>
+                                    <InfoWrapper>
+                                        <TransportIcon
+                                            bg={
+                                                transportTypes.filter(
+                                                    (x) =>
+                                                        x.id ===
+                                                        data.getPost.route
+                                                            .route_type
+                                                )[0].color
+                                            }
+                                        >
+                                            <TransportIconText>
+                                                {
+                                                    data.getPost.route
+                                                        .route_short_name
                                                 }
-                                            />
-                                            <ErrorMessage name="text">
-                                                {(msg) => (
-                                                    <Text
-                                                        style={{
-                                                            color: COLOR_PALETE.tram,
-                                                        }}
-                                                    >
-                                                        {msg}
-                                                    </Text>
-                                                )}
-                                            </ErrorMessage>
-                                            <CreateCommentBtn
-                                                disabled={isSubmitting}
-                                                onPress={handleSubmit as any}
-                                            >
-                                                {isSubmitting ? (
-                                                    <ActivityIndicator
-                                                        color={"white"}
-                                                    />
-                                                ) : (
-                                                    <CreateCommentText>
-                                                        Send
-                                                    </CreateCommentText>
-                                                )}
-                                            </CreateCommentBtn>
+                                            </TransportIconText>
+                                        </TransportIcon>
+                                        <View
+                                            style={{
+                                                flex: 1,
+                                                justifyContent: "space-between",
+                                            }}
+                                        >
+                                            <ProblemTitle>
+                                                {data.getPost.title}
+                                            </ProblemTitle>
+                                            <TransportDirection>
+                                                {
+                                                    data.getPost.route
+                                                        .route_long_name
+                                                }
+                                            </TransportDirection>
                                         </View>
-                                    )}
-                                </Formik>
-                            )}
-
-                            {orderedComments?.length ? (
-                                orderedComments?.map((item) => (
-                                    <ProblemWrapper
-                                        key={item.id}
-                                        activeOpacity={1}
-                                    >
-                                        <CommentAuthorWrapper>
-                                            <CommentAuthor>
-                                                {item.author.name}:
-                                            </CommentAuthor>
+                                        <View>
                                             <TimeStamp>
                                                 {formatRelativeTime(
-                                                    item.created_at
+                                                    data.getPost.created_at
                                                 )}
                                             </TimeStamp>
-                                        </CommentAuthorWrapper>
-                                        <ProblemDescription>
-                                            {item.text}
-                                        </ProblemDescription>
-                                    </ProblemWrapper>
-                                ))
-                            ) : (
-                                <Center style={{ paddingVertical: 100 }}>
-                                    <Text
-                                        style={{ color: COLOR_PALETE.stroke }}
+                                        </View>
+                                    </InfoWrapper>
+                                    <ProblemDescription>
+                                        {data.getPost.text}
+                                    </ProblemDescription>
+                                    <View
+                                        style={{
+                                            flexDirection: "row",
+                                            gap: 20,
+                                            alignSelf: "flex-end",
+                                        }}
                                     >
-                                        No comments
-                                    </Text>
-                                </Center>
-                            )}
-                        </>
-                    )}
-                </Wrapper>
-            </ScrollView>
+                                        <Text>
+                                            {data.getPost.stop.stop_name}
+                                        </Text>
+                                        <Text>
+                                            {data.getPost.stop_time.arrival_time.slice(
+                                                0,
+                                                data.getPost.stop_time.arrival_time.lastIndexOf(
+                                                    ":"
+                                                )
+                                            )}
+                                        </Text>
+                                    </View>
+                                    {payload?.userId ===
+                                        data.getPost.author.id && (
+                                        <View
+                                            style={{
+                                                flexDirection: "row",
+                                                gap: 20,
+                                                alignSelf: "flex-end",
+                                            }}
+                                        >
+                                            <Pressable
+                                                onPress={async () => {
+                                                    const response =
+                                                        await deletePost({
+                                                            variables: {
+                                                                deletePostId:
+                                                                    data.getPost
+                                                                        .id,
+                                                            },
+                                                        });
+
+                                                    if (
+                                                        !response.data ||
+                                                        response.errors
+                                                            ?.length ||
+                                                        !response.data
+                                                            .deletePost
+                                                    ) {
+                                                        return Alert.alert(
+                                                            "Something went wrong"
+                                                        );
+                                                    }
+
+                                                    await client.refetchQueries(
+                                                        {
+                                                            include: [
+                                                                POSTS_QUERY,
+                                                            ],
+                                                        }
+                                                    );
+                                                    navigation.goBack();
+                                                }}
+                                            >
+                                                <Text
+                                                    style={{
+                                                        fontSize: 15 / 1.2,
+                                                        color: COLOR_PALETE.tram,
+                                                    }}
+                                                >
+                                                    delete post
+                                                </Text>
+                                            </Pressable>
+                                        </View>
+                                    )}
+                                </ProblemWrapper>
+
+                                {isAuth && (
+                                    <Formik
+                                        initialValues={{
+                                            ...defaultFields,
+                                            postId,
+                                        }}
+                                        validationSchema={COMMENT_INPUT_SCHEMA}
+                                        validateOnChange={true}
+                                        validateOnMount={false}
+                                        validateOnBlur={false}
+                                        onSubmit={async (values, actions) => {
+                                            let response = null;
+                                            try {
+                                                response = await createComment({
+                                                    variables: {
+                                                        options: values,
+                                                    },
+                                                });
+                                            } catch {
+                                                console.log(
+                                                    "something went wrong"
+                                                );
+                                                // navigation.dispatch(
+                                                //     CommonActions.reset({
+                                                //         index: 0,
+                                                //         routes: [
+                                                //             { name: "Account" },
+                                                //         ],
+                                                //     })
+                                                // );
+                                                return;
+                                            }
+
+                                            if (
+                                                response.errors?.length ||
+                                                !response.data
+                                            ) {
+                                                return Alert.alert(
+                                                    "something went wrong"
+                                                );
+                                            }
+
+                                            const { errors } =
+                                                response.data.createComment;
+
+                                            if (errors?.length) {
+                                                return errors.forEach(
+                                                    (error) => {
+                                                        actions.setErrors({
+                                                            [error["field"]]:
+                                                                error.message,
+                                                        });
+                                                    }
+                                                );
+                                            }
+
+                                            actions.setValues(
+                                                { ...values, text: "" },
+                                                true
+                                            );
+
+                                            actions.resetForm();
+                                            await client.refetchQueries({
+                                                include: [GET_POST_BY_ID],
+                                            });
+                                        }}
+                                    >
+                                        {({
+                                            isSubmitting,
+                                            handleChange,
+                                            handleSubmit,
+                                            values,
+                                            errors,
+                                        }) => (
+                                            <View style={{ gap: 25 / 1.5 }}>
+                                                <CommentInput
+                                                    onChangeText={handleChange(
+                                                        "text"
+                                                    )}
+                                                    value={values.text}
+                                                    multiline={true}
+                                                    placeholder="Write your comment"
+                                                    style={
+                                                        !!errors.text
+                                                            ? {
+                                                                  borderColor:
+                                                                      COLOR_PALETE.tram,
+                                                              }
+                                                            : {}
+                                                    }
+                                                />
+                                                <ErrorMessage name="text">
+                                                    {(msg) => (
+                                                        <Text
+                                                            style={{
+                                                                color: COLOR_PALETE.tram,
+                                                            }}
+                                                        >
+                                                            {msg}
+                                                        </Text>
+                                                    )}
+                                                </ErrorMessage>
+                                                <CreateCommentBtn
+                                                    disabled={isSubmitting}
+                                                    onPress={
+                                                        handleSubmit as any
+                                                    }
+                                                >
+                                                    {isSubmitting ? (
+                                                        <ActivityIndicator
+                                                            color={"white"}
+                                                        />
+                                                    ) : (
+                                                        <CreateCommentText>
+                                                            Send
+                                                        </CreateCommentText>
+                                                    )}
+                                                </CreateCommentBtn>
+                                            </View>
+                                        )}
+                                    </Formik>
+                                )}
+
+                                <FlatList
+                                    scrollEnabled={false}
+                                    contentContainerStyle={{ gap: 10 }}
+                                    ListEmptyComponent={
+                                        <Center
+                                            style={{ paddingVertical: 100 }}
+                                        >
+                                            <Text
+                                                style={{
+                                                    color: COLOR_PALETE.stroke,
+                                                }}
+                                            >
+                                                No comments
+                                            </Text>
+                                        </Center>
+                                    }
+                                    data={orderedComments}
+                                    renderItem={({ item }) => (
+                                        <ProblemWrapper
+                                            key={item.id}
+                                            activeOpacity={1}
+                                        >
+                                            <CommentAuthorWrapper>
+                                                <CommentAuthor>
+                                                    {payload?.userId ===
+                                                    item.author.id
+                                                        ? "You"
+                                                        : item.author.name}
+                                                    :
+                                                </CommentAuthor>
+                                                <TimeStamp>
+                                                    {formatRelativeTime(
+                                                        item.created_at
+                                                    )}
+                                                </TimeStamp>
+                                            </CommentAuthorWrapper>
+                                            <ProblemDescription>
+                                                {item.text}
+                                            </ProblemDescription>
+
+                                            {payload?.userId ==
+                                                item.author.id && (
+                                                <View
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        gap: 20,
+                                                        alignSelf: "flex-end",
+                                                    }}
+                                                >
+                                                    <Pressable
+                                                        onPress={async () => {
+                                                            const response =
+                                                                await deleteComment(
+                                                                    {
+                                                                        variables:
+                                                                            {
+                                                                                deleteCommentId:
+                                                                                    item.id,
+                                                                            },
+                                                                    }
+                                                                );
+
+                                                            if (
+                                                                !response.data ||
+                                                                response.errors
+                                                                    ?.length ||
+                                                                !response.data
+                                                                    .deleteComment
+                                                            ) {
+                                                                return Alert.alert(
+                                                                    "Something went wrong"
+                                                                );
+                                                            }
+
+                                                            //success
+                                                            await client.refetchQueries(
+                                                                {
+                                                                    include: [
+                                                                        GET_POST_BY_ID,
+                                                                    ],
+                                                                }
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={{
+                                                                fontSize:
+                                                                    15 / 1.2,
+                                                                color: COLOR_PALETE.tram,
+                                                            }}
+                                                        >
+                                                            delete comment
+                                                        </Text>
+                                                    </Pressable>
+                                                </View>
+                                            )}
+                                        </ProblemWrapper>
+                                    )}
+                                />
+                            </>
+                        )}
+                    </Wrapper>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
     );
 }
@@ -396,7 +606,7 @@ const CreateCommentBtn = styled.Pressable({
     alignSelf: "flex-end",
     justifyContent: "center",
 });
-const CreateCommentText = styled.Text({
+export const CreateCommentText = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 24 / 1.5,
@@ -405,12 +615,12 @@ const CreateCommentText = styled.Text({
     color: "#FFFFFF",
 });
 
-const CommentAuthorWrapper = styled.View({
+export const CommentAuthorWrapper = styled.View({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
 });
-const CommentAuthor = styled.Text({
+export const CommentAuthor = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 20 / 1.5,

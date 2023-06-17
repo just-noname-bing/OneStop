@@ -44,11 +44,13 @@ export const GET_POST_BY_ID = gql`
                 id
                 created_at
                 author {
+                    id
                     name
                     surname
                 }
             }
             author {
+                id
                 name
                 surname
             }
@@ -75,16 +77,20 @@ export type POST_BY_ID = {
     transport_id: string;
     created_at: Date;
     updated_at: Date;
-    Comment: [{
-        text: string;
-        id: string;
-        created_at: Date;
-        author: {
-            name: string;
-            surname: string;
-        };
-    }];
+    Comment: [
+        {
+            text: string;
+            id: string;
+            created_at: Date;
+            author: {
+                id:string
+                name: string;
+                surname: string;
+            };
+        }
+    ];
     author: {
+        id:string
         name: string;
         surname: string;
     };
@@ -131,6 +137,7 @@ export type POST = {
 
 export type problemListProps = {
     data: POST[] | undefined;
+    sortOrder: 1 | 0;
 };
 
 export const GET_ROUTES_FOR_STOP = gql`

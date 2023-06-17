@@ -30,6 +30,7 @@ import {
     UPDATE_USER_INPUT_SCHEMA,
 } from "../../utils/validationSchema";
 import { transportTypes } from "../Home/SharedComponents";
+import { CommentAuthor, CommentAuthorWrapper } from "../Posts/PostView";
 import {
     InfoWrapper,
     ProblemDescription,
@@ -138,7 +139,7 @@ type updateUserMutation = {
     errors: FieldError[];
 };
 
-export default function ({}: any) {
+export default function ({ route }: any) {
     const [logout] = useMutation(LOGOUT_MUTATION);
     const [updateUser] = useMutation<{ updateUser: updateUserMutation }>(
         UPDATE_USER_MUTATION
@@ -180,6 +181,13 @@ export default function ({}: any) {
     //             new Date(a.created_at).getTime()
     //     );
     // }, [me?.me]);
+    const orderedComments = useMemo(() => {
+        return me?.me.Comment.slice().sort(
+            (a, b) =>
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime()
+        );
+    }, [me, loading, route]);
 
     const client = useApolloClient();
 
@@ -381,7 +389,18 @@ export default function ({}: any) {
                 {showPosts ? (
                     <FlatList
                         data={orderedPosts}
-                        contentContainerStyle={{ gap: 15 }}
+                        contentContainerStyle={{ gap: 15}}
+                        ListEmptyComponent={
+                            <Center style={{paddingVertical:"20%"}}>
+                                <Text
+                                    style={{
+                                        color: COLOR_PALETE.additionalText,
+                                    }}
+                                >
+                                    No posts
+                                </Text>
+                            </Center>
+                        }
                         scrollEnabled={false}
                         renderItem={({ item }) => (
                             <ProblemWrapper
@@ -413,7 +432,15 @@ export default function ({}: any) {
                                 }}
                             >
                                 <InfoWrapper>
-                                    <TransportIcon bg={transportTypes.filter(x => x.id === item.route.route_type)[0].color}>
+                                    <TransportIcon
+                                        bg={
+                                            transportTypes.filter(
+                                                (x) =>
+                                                    x.id ===
+                                                    item.route.route_type
+                                            )[0].color
+                                        }
+                                    >
                                         <TransportIconText>
                                             {item.route.route_short_name}
                                         </TransportIconText>
@@ -444,9 +471,60 @@ export default function ({}: any) {
                         )}
                     />
                 ) : (
-                    <Center>
-                        <Text>Show comments</Text>
-                    </Center>
+                    <FlatList
+                        scrollEnabled={false}
+                        data={orderedComments}
+                        contentContainerStyle={{ gap: 10 }}
+                        ListEmptyComponent={
+                            <Center>
+                                <Text
+                                    style={{
+                                        color: COLOR_PALETE.additionalText,
+                                    }}
+                                >
+                                    No comments
+                                </Text>
+                            </Center>
+                        }
+                        renderItem={({ item, index }) => (
+                            <ProblemWrapper
+                                key={index}
+                                activeOpacity={1}
+                                onPress={() =>
+                                    navigation.reset({
+                                        index: 0,
+                                        routes: [
+                                            {
+                                                name: "Posts",
+                                                state: {
+                                                    routes: [
+                                                        { name: "PostsFeed" },
+                                                        {
+                                                            name: "PostView",
+                                                            params: {
+                                                                postId: item
+                                                                    .Post.id,
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    })
+                                }
+                            >
+                                <CommentAuthorWrapper>
+                                    <CommentAuthor>You:</CommentAuthor>
+                                    <TimeStamp>
+                                        {formatRelativeTime(item.created_at)}
+                                    </TimeStamp>
+                                </CommentAuthorWrapper>
+                                <ProblemDescription>
+                                    {item.text}
+                                </ProblemDescription>
+                            </ProblemWrapper>
+                        )}
+                    />
                 )}
             </Wrapper>
         </ScrollView>

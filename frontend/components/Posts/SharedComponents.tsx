@@ -120,12 +120,19 @@ export function ProblemList(props: problemListProps) {
     const sortedData = useCallback(
         () =>
             props.data?.slice().sort((a, b) => {
+                if (props.sortOrder === 0) {
+                    return (
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime()
+                    );
+                }
+
                 return (
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
+                    new Date(a.created_at).getTime() -
+                    new Date(b.created_at).getTime()
                 );
             }),
-        [props.data]
+        [props.data, props.sortOrder]
     );
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -202,9 +209,20 @@ export function ProblemList(props: problemListProps) {
                         </View>
                     </InfoWrapper>
                     <ProblemDescription>{item.text}</ProblemDescription>
-                    <View style={{flexDirection:"row", gap:20, alignSelf:"flex-end"}}>
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            gap: 20,
+                            alignSelf: "flex-end",
+                        }}
+                    >
                         <Text>{item.stop.stop_name}</Text>
-                        <Text>{item.stop_time.arrival_time.slice(0, item.stop_time.arrival_time.lastIndexOf(":"))}</Text>
+                        <Text>
+                            {item.stop_time.arrival_time.slice(
+                                0,
+                                item.stop_time.arrival_time.lastIndexOf(":")
+                            )}
+                        </Text>
                     </View>
                 </ProblemWrapper>
             )}
