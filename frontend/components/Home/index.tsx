@@ -19,8 +19,8 @@ export default function Home(_: Props): JSX.Element {
             }}
         >
             <HomeStack.Screen name="MainMap" component={MainMap} />
-            <HomeStack.Screen name="SmallSchedule" component={SmallSchedule} />
             <HomeStack.Screen name="StopSearch" component={StopResults} />
+            <HomeStack.Screen name="SmallSchedule" component={SmallSchedule} />
             <HomeStack.Screen name="ListOfTransport" component={ListOfTransport} />
             <HomeStack.Screen name="BigSchedule" component={BigSchedule} />
             <HomeStack.Screen name="TransportStopsSelect" component={TransportStopsSelect} />

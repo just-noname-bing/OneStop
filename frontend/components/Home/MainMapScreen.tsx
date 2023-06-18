@@ -119,8 +119,6 @@ export function MainMap({ navigation }: any): JSX.Element {
 
     const mapRef = useRef<MapView>(null);
 
-    const [searchInput, setSearchInput] = useState("");
-
     const translateY = useSharedValue(0);
     const context = useSharedValue({ y: 0 });
     const gesture = Gesture.Pan()
@@ -304,18 +302,7 @@ export function MainMap({ navigation }: any): JSX.Element {
                 <BottomMenu style={rBottomSheetStyle}>
                     <MenuLine />
                     <BottomMenuContent>
-                        <SearchWrapper>
-                            <Lupa />
-                            <SearchInput
-                                returnKeyType="done"
-                                onChangeText={e => setSearchInput(e)}
-                                onSubmitEditing={() =>
-                                    navigation.navigate("StopSearch", {
-                                        query: searchInput,
-                                    })
-                                }
-                            />
-                        </SearchWrapper>
+                        <StopSearch />
                         <CategoryBtnWrapper>
                             {transportTypes.map((Type, idx) => (
                                 <CategoryBtn
@@ -691,4 +678,24 @@ export function convertTimeToString(arrival_time: string) {
     } else {
         return h + ":" + m;
     }
+}
+
+export function StopSearch({ value }: { value?: string }) {
+    const [searchInput, setSearchInput] = useState(value ?? "");
+    const navigation = useNavigation() as any;
+    return (
+        <SearchWrapper>
+            <Lupa />
+            <SearchInput
+                returnKeyType="done"
+                value={searchInput}
+                onChangeText={(e) => setSearchInput(e)}
+                onSubmitEditing={() =>
+                    navigation.navigate("StopSearch", {
+                        query: searchInput,
+                    })
+                }
+            />
+        </SearchWrapper>
+    );
 }

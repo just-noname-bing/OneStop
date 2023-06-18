@@ -14,7 +14,7 @@ import {
 import { SearchInput, SearchWrapper } from "../Posts/SharedComponents";
 import { Center } from "../styled/Center";
 import { Wrapper } from "../styled/Wrapper";
-import { convertTimeToString } from "./MainMapScreen";
+import { convertTimeToString, StopSearch } from "./MainMapScreen";
 import {
     CategoryBtn,
     CategoryBtnText,
@@ -98,10 +98,7 @@ export function SmallSchedule({ route, navigation }: any) {
         >
             <Wrapper>
                 <View style={{ gap: 13 }}>
-                    <SearchWrapper>
-                        <Lupa />
-                        <SearchInput />
-                    </SearchWrapper>
+                <StopSearch />
                     <CategoryBtnWrapper>
                         {transportTypes.map((Type, idx) => (
                             <CategoryBtn

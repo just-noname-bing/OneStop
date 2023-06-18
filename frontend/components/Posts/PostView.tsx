@@ -220,7 +220,7 @@ export default function ({ navigation, route }: any) {
                         {!data || loading ? (
                             <LoadingIndicator />
                         ) : !data.getPost ? (
-                            <Center style={{minHeight:"50%"}}>
+                            <Center style={{ minHeight: "50%" }}>
                                 <Text
                                     style={{
                                         color: COLOR_PALETE.additionalText,
@@ -373,14 +373,6 @@ export default function ({ navigation, route }: any) {
                                                 console.log(
                                                     "something went wrong"
                                                 );
-                                                // navigation.dispatch(
-                                                //     CommonActions.reset({
-                                                //         index: 0,
-                                                //         routes: [
-                                                //             { name: "Account" },
-                                                //         ],
-                                                //     })
-                                                // );
                                                 return;
                                             }
 
@@ -424,6 +416,7 @@ export default function ({ navigation, route }: any) {
                                             handleSubmit,
                                             values,
                                             errors,
+                                            touched,
                                         }) => (
                                             <View style={{ gap: 25 / 1.5 }}>
                                                 <CommentInput
@@ -432,9 +425,10 @@ export default function ({ navigation, route }: any) {
                                                     )}
                                                     value={values.text}
                                                     multiline={true}
-                                                    placeholder="Write your comment"
+                                                    placeholder={errors.text}
                                                     style={
-                                                        !!errors.text
+                                                        touched.text &&
+                                                        errors.text
                                                             ? {
                                                                   borderColor:
                                                                       COLOR_PALETE.tram,

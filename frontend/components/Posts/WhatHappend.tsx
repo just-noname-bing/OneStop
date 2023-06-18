@@ -89,7 +89,7 @@ export default function ({ route, navigation }: any) {
                         response = await createPost({
                             variables: { options: values },
                         });
-                    } catch(err) {
+                    } catch (err) {
                         console.log(err);
                         return Alert.alert("something went wrong");
                         // navigation.dispatch(
@@ -134,8 +134,9 @@ export default function ({ route, navigation }: any) {
                     handleSubmit,
                     isSubmitting,
                     errors,
+                    touched,
                 }) => (
-                    <ScrollView style={{minHeight:"100%"}}>
+                    <ScrollView style={{ minHeight: "100%" }}>
                         <Wrapper style={{ gap: 25 }}>
                             <View
                                 style={{
@@ -156,7 +157,9 @@ export default function ({ route, navigation }: any) {
                                 </TransportBtn>
                                 <View style={{ flex: 1, gap: 12 / 1.5 }}>
                                     <TitleInput
-                                        isErrors={!!errors.title}
+                                        isErrors={Boolean(
+                                            errors.title && touched.title
+                                        )}
                                         multiline={false}
                                         placeholder="Traffic jam..."
                                         value={values.title}
@@ -172,7 +175,9 @@ export default function ({ route, navigation }: any) {
                             </View>
                             <View style={{ gap: 12 / 1.5 }}>
                                 <TextBox
-                                    isErrors={!!errors.text}
+                                        isErrors={Boolean(
+                                            errors.text && touched.text
+                                        )}
                                     multiline={true}
                                     value={values.text}
                                     onChangeText={handleChange("text")}
