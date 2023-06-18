@@ -56,22 +56,68 @@ export const BusResolver = {
                 },
             }),
 
+        getRoutesForMultipleStops: async (_p: any, args: any, _ctx: any) => {
+            const { stop_ids } = args as { stop_ids: string[] };
+
+            console.log(stop_ids);
+            const stops = await prisma.stops.findMany({
+                where: {
+                    stop_id: { in: stop_ids },
+                },
+            });
+
+            // const newDataset = await prisma.routes
+
+            const joined = [];
+
+            const currentDate = new Date();
+            const isWorkking = isWorkingDay(currentDate);
+            for (let stop of stops) {
+                const routes = await prisma.routes.findMany({
+                    where: {
+                        trips: {
+                            some: {
+                                stop_times: {
+                                    some: { stop_id: stop.stop_id },
+                                },
+                            },
+                        },
+                    },
+                });
+
+                const includeStopTimes = [];
+                for (let r of routes) {
+                    const test = await prisma.stop_times.findMany({
+                        where: {
+                            AND: [
+                                { stop_id: stop.stop_id },
+                                { trips: { route_id: r.route_id } },
+                                {
+                                    trips: {
+                                        Calendar: {
+                                            friday: {
+                                                equals: isWorkking ? "1" : "0",
+                                            },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    });
+
+                    includeStopTimes.push({ ...r, stop_times: test });
+                }
+
+                joined.push({ ...stop, routes: includeStopTimes });
+            }
+
+            console.dir(joined, { depth: null });
+
+            return joined
+        },
+
         getRoutesForStop: async (_p: any, args: any, _ctx: any) => {
             const { stop_id } = args as { stop_id: string };
-
-            // const test = await prisma.stop_times.findMany({
-            //     where: {
-            //         AND: [{ stop_id }, { trips: { route_id: "riga_bus_41" } }],
-            //     },
-            //     orderBy: [
-            //         { trips: { service_id: "asc" } },
-            //         { arrival_time: "asc" },
-            //     ],
-            // });
-
-            // stop
-            // route
-            // shclue
 
             const SpecificRoutes = await prisma.routes.findMany({
                 where: {
@@ -179,8 +225,7 @@ export const BusResolver = {
                         },
                     },
                 },
-            })
-
+            });
         },
     },
 

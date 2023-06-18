@@ -287,8 +287,26 @@ export default `#graphql
         Calendar_dates:[Calendar_dates]!
 
         getRoutesForStop(stop_id:String!): [CustomRoutesForStop]
+        getRoutesForMultipleStops(stop_ids:[String!]!): [CustomRoutesForMultipleStops]
         getTransportDirectionStops(transport_id:String!): Routes
         stopsSearch(stop_name:String!): [StopSearchResults]
+    }
+
+    type CustomStopRoute {
+        route_id:String,
+        route_short_name:String,
+        route_long_name:String,
+        route_type:String,
+        route_sort_order:String,
+        stop_times: [Stop_times]
+    }
+
+    type CustomRoutesForMultipleStops {
+        stop_id:String,
+        stop_name:String,
+        stop_lat:String,
+        stop_lon:String,
+        routes: [CustomStopRoute]
     }
 
     type CustomRoutesForStop {
