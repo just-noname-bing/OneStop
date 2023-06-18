@@ -66,6 +66,12 @@ const GET_ME_QUERY = gql`
                     route_desc
                     route_type
                 }
+                stop {
+                    stop_name
+                }
+                stop_time {
+                    arrival_time
+                }
             }
             Comment {
                 Post {
@@ -101,6 +107,12 @@ type getMeQuery = {
                 route_id: string;
                 route_desc: string;
                 route_type: string;
+            };
+            stop: {
+                stop_name: string;
+            };
+            stop_time: {
+                arrival_time: string;
             };
         }
     ];
@@ -160,7 +172,7 @@ export default function ({ route }: any) {
     }, [auth, authLoading]);
 
     const { data: me, loading } = useQuery<{ me: getMeQuery }>(GET_ME_QUERY, {
-        fetchPolicy: "cache-and-network",
+        fetchPolicy: "network-only",
     });
 
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -389,9 +401,9 @@ export default function ({ route }: any) {
                 {showPosts ? (
                     <FlatList
                         data={orderedPosts}
-                        contentContainerStyle={{ gap: 15}}
+                        contentContainerStyle={{ gap: 15 }}
                         ListEmptyComponent={
-                            <Center style={{paddingVertical:"20%"}}>
+                            <Center style={{ paddingVertical: "20%" }}>
                                 <Text
                                     style={{
                                         color: COLOR_PALETE.additionalText,
@@ -467,6 +479,23 @@ export default function ({ route }: any) {
                                 <ProblemDescription>
                                     {item.text}
                                 </ProblemDescription>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        gap: 20,
+                                        alignSelf: "flex-end",
+                                    }}
+                                >
+                                    <Text>{item.stop.stop_name}</Text>
+                                    <Text>
+                                        {item.stop_time.arrival_time.slice(
+                                            0,
+                                            item.stop_time.arrival_time.lastIndexOf(
+                                                ":"
+                                            )
+                                        )}
+                                    </Text>
+                                </View>
                             </ProblemWrapper>
                         )}
                     />
@@ -476,7 +505,7 @@ export default function ({ route }: any) {
                         data={orderedComments}
                         contentContainerStyle={{ gap: 10 }}
                         ListEmptyComponent={
-                            <Center>
+                            <Center style={{paddingVertical:"20%"}}>
                                 <Text
                                     style={{
                                         color: COLOR_PALETE.additionalText,

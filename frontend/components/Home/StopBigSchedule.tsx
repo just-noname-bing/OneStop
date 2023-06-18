@@ -41,11 +41,24 @@ export function BigSchedule({ route }: any) {
         },
     });
 
+    const [markClosestTime, setMarkClosestTime] = useState<string | null>(null);
+
     const orderedVersion = useMemo(() => {
         if (!data?.getTransportSchedule) return [];
-        const ord = data.getTransportSchedule.filter(
-            (x) => x.trips.Calendar.friday == scheduleType
-        );
+        const temp: string[] = [];
+        let closestTime: string | null = null;
+        const ord = data.getTransportSchedule.filter((x, i) => {
+            temp.push(x.arrival_time);
+            console.log(x.arrival_time, isNextToCurrentTime(x.arrival_time));
+            if (closestTime === null && isNextToCurrentTime(x.arrival_time)) {
+                closestTime = x.trips.trip_id;
+            }
+
+            return (
+                x.trips.Calendar.friday == scheduleType &&
+                temp.indexOf(x.arrival_time) === i
+            );
+        });
 
         let h: string = "";
         const grouped = ord.reduce((acc, value) => {
@@ -60,13 +73,14 @@ export function BigSchedule({ route }: any) {
             h = s;
             return acc;
         }, [] as getTransportSchedule[][]);
+
+        setMarkClosestTime(closestTime);
         return grouped;
     }, [scheduleType, data]);
 
     console.log(orderedVersion);
 
     const transportColor = useMemo(() => {
-        console.log("bomb");
         return transportTypes.filter((x) => x.id === transport.route_type)[0]
             .color;
     }, [transport]);
@@ -138,17 +152,23 @@ export function BigSchedule({ route }: any) {
                                         <TableHourRowText>
                                             {orderedVersion[
                                                 i
-                                            ][0].arrival_time.slice(0, 2)}
+                                            ][0].departure_time.slice(0, 2)}
                                         </TableHourRowText>
                                     </TableHourRow>
                                     <TableMinRow index={i}>
                                         {item.map((d, j) => (
-                                            <Minute key={`${i}@${j}`}>
-                                                {d.arrival_time.slice(
-                                                    d.arrival_time.indexOf(
+                                            <Minute
+                                                Selected={
+                                                    d.trips.trip_id ===
+                                                    markClosestTime
+                                                }
+                                                key={`${i}@${j}`}
+                                            >
+                                                {d.departure_time.slice(
+                                                    d.departure_time.indexOf(
                                                         ":"
                                                     ) + 1,
-                                                    d.arrival_time.lastIndexOf(
+                                                    d.departure_time.lastIndexOf(
                                                         ":"
                                                     )
                                                 )}
@@ -212,17 +232,25 @@ const TableMinRow = styled.View(({ index }: { index: number }) => ({
     backgroundColor: (index + 1) % 2 === 0 ? "#FBFBFB" : "white",
 }));
 
-
 const Minute = styled.Text(({ Selected }: { Selected?: boolean }) => ({
     // style={{borderColor:COLOR_PALETE.tram, borderWidth:1, padding:2, borderRadius:5}} key={`${i}@${j}`}
     borderColor: COLOR_PALETE.tram,
     borderWidth: Selected ? 1 : 0,
-    paddingVertical: 5,
+    padding: 5,
     borderRadius: 5,
+
 
     fontSize: 15,
 }));
 
 function isNextToCurrentTime(arrival_time: string) {
-    return true;
+    const currentDate = new Date();
+    const currentHours = currentDate.getHours();
+    const currentMins = currentDate.getMinutes();
+    const totalCurrentMins = currentHours * 60 + currentMins;
+    const hours = Number(arrival_time.slice(0, 2));
+    const mins = Number(arrival_time.slice(3, 5));
+    const totalMins = hours * 60 + mins;
+
+    return totalCurrentMins < totalMins;
 }

@@ -4,8 +4,8 @@ import { MainMap } from "./MainMapScreen";
 import { SmallSchedule } from "./StopSmallSchedule";
 import { ListOfTransport } from "./ListOfTransport";
 import { BigSchedule } from "./StopBigSchedule";
-import { TransportStopsSelect } from "./TransportStopsSelect";
 import { StopResults } from "./StopSearchResults";
+import { TransportStopsSelect } from "./TransportStopsSelect";
 
 interface Props {}
 

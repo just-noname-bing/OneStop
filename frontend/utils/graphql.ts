@@ -243,7 +243,7 @@ export const GET_TRANSPORT_SCHEDULE = gql`
 
 export type getTransportSchedule = {
     arrival_time: string;
-    departure_tim: string;
+    departure_time: string;
     drop_off_type: string;
     pickup_type: string;
     stop_id: string;

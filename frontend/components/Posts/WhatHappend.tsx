@@ -157,6 +157,7 @@ export default function ({ route, navigation }: any) {
                                 </TransportBtn>
                                 <View style={{ flex: 1, gap: 12 / 1.5 }}>
                                     <TitleInput
+                                    placeholderTextColor={COLOR_PALETE.stroke}
                                         isErrors={Boolean(
                                             errors.title && touched.title
                                         )}
@@ -219,6 +220,7 @@ const TitleInput = styled.TextInput(({ isErrors }: { isErrors: boolean }) => ({
     fontSize: 24 / 1.5,
     lineHeight: 31 / 1.5,
     color: "#29221E",
+
 
     paddingHorizontal: 10,
 }));

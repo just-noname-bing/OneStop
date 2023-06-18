@@ -87,9 +87,9 @@ export default function ({ navigation }: any) {
                     </View>
                     <ScrollView
                         showsVerticalScrollIndicator={false}
-                        style={{ minHeight: "100%" }}
+                        style={{ minHeight: "100%"}}
                     >
-                        <TransportWrapper>
+                        <TransportWrapper style={{paddingBottom:200}}>
                             {filtered?.map((r, idx) => (
                                 <TransportBtn
                                     key={idx}

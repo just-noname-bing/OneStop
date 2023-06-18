@@ -425,7 +425,7 @@ export default function ({ navigation, route }: any) {
                                                     )}
                                                     value={values.text}
                                                     multiline={true}
-                                                    placeholder={errors.text}
+                                                    placeholder="Write your comment"
                                                     style={
                                                         touched.text &&
                                                         errors.text
