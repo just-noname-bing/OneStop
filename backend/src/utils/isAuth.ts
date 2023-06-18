@@ -29,8 +29,8 @@ const IsAuth = (r: any, roles: Roles[]) => {
                 role: tokenPayload.role,
             },
             include: {
-                Comment: { include: {Post:true} },
-                Post: { include: { route: true } },
+                Comment: { include: { Post: true } },
+                Post: { include: { route: true, stop: true, stop_time: true } },
             },
         });
 
