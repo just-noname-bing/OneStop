@@ -49,15 +49,14 @@ export function BigSchedule({ route }: any) {
         let closestTime: string | null = null;
         const ord = data.getTransportSchedule.filter((x, i) => {
             temp.push(x.arrival_time);
+            const notDuplicate = temp.indexOf(x.arrival_time) === i
+            const isWorkingD = x.trips.Calendar.friday == scheduleType && notDuplicate
             console.log(x.arrival_time, isNextToCurrentTime(x.arrival_time));
-            if (closestTime === null && isNextToCurrentTime(x.arrival_time)) {
+            if (closestTime === null && isWorkingD  && isNextToCurrentTime(x.arrival_time)) {
                 closestTime = x.trips.trip_id;
             }
 
-            return (
-                x.trips.Calendar.friday == scheduleType &&
-                temp.indexOf(x.arrival_time) === i
-            );
+            return (isWorkingD && notDuplicate);
         });
 
         let h: string = "";
