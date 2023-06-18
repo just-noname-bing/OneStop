@@ -287,6 +287,7 @@ export default `#graphql
         Calendar_dates:[Calendar_dates]!
 
         getRoutesForStop(stop_id:String!): [CustomRoutesForStop]
+        getTransportDirectionStops2(transport_id:String!): Routes
         stopsSearch(stop_name:String!): [StopSearchResults]
     }
 

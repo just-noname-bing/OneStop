@@ -160,6 +160,28 @@ export const BusResolver = {
 
             return joined;
         },
+
+        getTransportDirectionStops2: async (_p: any, args: any, _ctx: any) => {
+            const { transport_id } = args as {
+                transport_id: string;
+            };
+
+            return await prisma.routes.findFirst({
+                where: { route_id: transport_id },
+                include: {
+                    trips: {
+                        distinct: "shape_id",
+                        include: {
+                            stop_times: {
+                                distinct: ["stop_id", "trip_id"],
+                                include: { stops: true },
+                            },
+                        },
+                    },
+                },
+            })
+
+        },
     },
 
     Mutation: {
@@ -178,7 +200,24 @@ export const BusResolver = {
             // });
             //
             // console.log(directions)
-            //
+            console.dir(
+                await prisma.routes.findFirst({
+                    where: { route_id: transport_id },
+                    include: {
+                        trips: {
+                            distinct: "shape_id",
+                            include: {
+                                stop_times: {
+                                    distinct: ["stop_id", "trip_id"],
+                                    include: { stops: true },
+                                },
+                            },
+                        },
+                    },
+                }),
+                { depth: null }
+            );
+
             const raw2 = await prisma.trips.findFirst({
                 where: {
                     route_id: transport_id,
