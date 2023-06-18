@@ -51,6 +51,7 @@ import {
     STOPS_QUERY,
 } from "../../utils/graphql";
 import { Route, useNavigation } from "@react-navigation/native";
+import { transformOperation } from "@apollo/client/link/utils";
 
 export const DELTA = {
     lat: 0.0922,
@@ -113,10 +114,12 @@ export function MainMap({ navigation }: any): JSX.Element {
         if (stops && stops.Stops && location) {
             return getClosestMarkers(stops.Stops, location);
         }
-        return []
+        return [];
     }, [stops]);
 
     const mapRef = useRef<MapView>(null);
+
+    const [searchInput, setSearchInput] = useState("");
 
     const translateY = useSharedValue(0);
     const context = useSharedValue({ y: 0 });
@@ -174,6 +177,10 @@ export function MainMap({ navigation }: any): JSX.Element {
         transform: [{ translateY: translateY.value }],
     }));
 
+    const animateSwipePadding = useAnimatedStyle(() => ({
+        paddingBottom: WINDOW_HEIGHT - Math.abs(translateY.value) + 109,
+    }));
+
     useEffect(() => {
         (async () => {
             const { status } = await requestForegroundPermissionsAsync();
@@ -201,6 +208,7 @@ export function MainMap({ navigation }: any): JSX.Element {
     }, []);
 
     console.log(loading, location, !!stops, error);
+    console.log("_______GHHDDHSGSKDHGHG ", translateY.value, WINDOW_HEIGHT);
 
     if (error) {
         refetch();
@@ -298,7 +306,15 @@ export function MainMap({ navigation }: any): JSX.Element {
                     <BottomMenuContent>
                         <SearchWrapper>
                             <Lupa />
-                            <SearchInput />
+                            <SearchInput
+                                returnKeyType="done"
+                                onChangeText={e => setSearchInput(e)}
+                                onSubmitEditing={() =>
+                                    navigation.navigate("StopSearch", {
+                                        query: searchInput,
+                                    })
+                                }
+                            />
                         </SearchWrapper>
                         <CategoryBtnWrapper>
                             {transportTypes.map((Type, idx) => (
@@ -320,14 +336,16 @@ export function MainMap({ navigation }: any): JSX.Element {
                         </CategoryBtnWrapper>
 
                         <ScrollView showsVerticalScrollIndicator={false}>
-                            <View style={{ gap: 30, paddingBottom: 250 }}>
+                            <Animated.View
+                                style={[{ gap: 15 }, animateSwipePadding]}
+                            >
                                 {closestStops.map((closestS, i) => (
                                     <NearStopConstructor
                                         key={i}
                                         stop={closestS}
                                     />
                                 ))}
-                            </View>
+                            </Animated.View>
                         </ScrollView>
                     </BottomMenuContent>
                 </BottomMenu>
@@ -638,10 +656,7 @@ function calculateDistance(
     return R * c;
 }
 
-function getClosestMarkers(
-    markers: Stop[],
-    userLocation: LocationObject
-) {
+function getClosestMarkers(markers: Stop[], userLocation: LocationObject) {
     const temp = [...markers];
     const sortedMarkers = temp.sort(
         (a, b) =>

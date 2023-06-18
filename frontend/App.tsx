@@ -56,16 +56,16 @@ const errorLink = onError(
                         } else {
                             // new token received
                             operation.setContext({
-                                Headers: {
+                                headers: {
                                     ...operation.getContext().headers,
                                     authorization: newA,
                                 },
                             });
-                        }
 
-                        return forward(operation);
+                            return forward(operation);
+                        }
                     } else if (message.toLowerCase() === "not authorized") {
-                        await TokensLogout()
+                        await TokensLogout();
                         // gg
                     }
                 }
