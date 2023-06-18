@@ -287,6 +287,7 @@ export default `#graphql
         Calendar_dates:[Calendar_dates]!
 
         getRoutesForStop(stop_id:String!): [CustomRoutesForStop]
+        stopsSearch(stop_name:String!): [StopSearchResults]
     }
 
     type CustomRoutesForStop {
@@ -301,7 +302,6 @@ export default `#graphql
     }
 
     type Mutation {
-        stopsSearch(stop_name:String!): [StopSearchResults]
         getTransportSchedule(stop_id:String!, transport_id:String!): [Stop_times]
         getTransportDirectionStops(transport_id:String!, order:String!): [Stop_times]
     }

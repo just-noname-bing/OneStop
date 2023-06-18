@@ -130,6 +130,36 @@ export const BusResolver = {
 
             return newDataset;
         },
+
+        stopsSearch: async (_p: any, args: any, _ctx: any) => {
+            const { stop_name } = args as { stop_name: string };
+            const stops = await prisma.stops.findMany({
+                where: {
+                    stop_name: {
+                        contains: stop_name,
+                        mode: "insensitive",
+                    },
+                },
+            });
+
+            const joined = [];
+            for (let stop of stops) {
+                const routes = await prisma.routes.findMany({
+                    where: {
+                        trips: {
+                            some: {
+                                stop_times: {
+                                    some: { stop_id: stop.stop_id },
+                                },
+                            },
+                        },
+                    },
+                });
+                joined.push({ ...stop, route: routes });
+            }
+
+            return joined;
+        },
     },
 
     Mutation: {
@@ -192,34 +222,6 @@ export const BusResolver = {
                 orderBy: [{ arrival_time: "asc" }],
             });
             return x;
-        },
-        stopsSearch: async (_p: any, args: any, _ctx: any) => {
-            const { stop_name } = args as { stop_name: string };
-            const stops = await prisma.stops.findMany({
-                where: {
-                    stop_name: {
-                        contains: stop_name,
-                        mode: "insensitive",
-                    },
-                },
-            });
-
-            const joined = []
-            for (let stop of stops) {
-                const routes = await prisma.routes.findMany({
-                    where: {
-                        trips: {
-                            some: {
-                                stop_times: {
-                                    some: { stop_id: stop.stop_id },
-                                },
-                            },
-                        },
-                    },
-                });
-                joined.push({...stop, route: routes})
-            }
-            return joined;
         },
     },
 };
