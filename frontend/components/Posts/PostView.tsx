@@ -296,8 +296,11 @@ export default function ({ navigation, route }: any) {
                                             )}
                                         </Text>
                                     </View>
-                                    {payload?.userId ===
-                                        data.getPost.author.id && (
+                                    {(payload?.userId ===
+                                        data.getPost.author.id ||
+                                        ["ADMIN", "MODERATOR"].includes(
+                                            payload?.role ?? ""
+                                        )) && (
                                         <View
                                             style={{
                                                 flexDirection: "row",
@@ -508,8 +511,11 @@ export default function ({ navigation, route }: any) {
                                                 {item.text}
                                             </ProblemDescription>
 
-                                            {payload?.userId ==
-                                                item.author.id && (
+                                            {(payload?.userId ===
+                                                data.getPost.author.id ||
+                                                ["ADMIN", "MODERATOR"].includes(
+                                                    payload?.role ?? ""
+                                                )) && (
                                                 <View
                                                     style={{
                                                         flexDirection: "row",
