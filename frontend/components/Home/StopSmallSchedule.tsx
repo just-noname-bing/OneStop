@@ -40,7 +40,7 @@ export function SmallSchedule({ route, navigation }: any) {
         variables: {
             stopId: stop.stop_id,
         },
-        fetchPolicy:"network-only"
+        fetchPolicy: "network-only",
     });
 
     const client = useApolloClient();
@@ -99,7 +99,7 @@ export function SmallSchedule({ route, navigation }: any) {
         >
             <Wrapper>
                 <View style={{ gap: 13 }}>
-                <StopSearch />
+                    <StopSearch />
                     <CategoryBtnWrapper>
                         {transportTypes.map((Type, idx) => (
                             <CategoryBtn
