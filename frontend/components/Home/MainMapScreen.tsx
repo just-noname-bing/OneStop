@@ -11,8 +11,15 @@ import {
     requestForegroundPermissionsAsync,
 } from "expo-location";
 import { LocationObject, watchPositionAsync } from "expo-location";
-import { Dimensions, Pressable, Keyboard, View } from "react-native";
-import { useMutation, useQuery } from "@apollo/client";
+import {
+    Dimensions,
+    Pressable,
+    Keyboard,
+    View,
+    RefreshControl,
+    FlatList,
+} from "react-native";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import styled from "@emotion/native";
 import { MapMarker } from "react-native-maps";
 import { COLOR_PALETE } from "../../utils/colors";
@@ -52,6 +59,9 @@ import {
 } from "../../utils/graphql";
 import { Route, useNavigation } from "@react-navigation/native";
 import { transformOperation } from "@apollo/client/link/utils";
+import { Center } from "../styled/Center";
+import { Text } from "react-native";
+import { isNextToCurrentTime } from "./StopBigSchedule";
 
 export const DELTA = {
     lat: 0.0922,
@@ -109,13 +119,6 @@ export function MainMap({ navigation }: any): JSX.Element {
     } = useQuery<{ Stops: Stop[] }>(STOPS_QUERY, {
         fetchPolicy: "cache-first",
     });
-
-    const closestStops = useMemo(() => {
-        if (stops && stops.Stops && location) {
-            return getClosestMarkers(stops.Stops, location);
-        }
-        return [];
-    }, [stops]);
 
     const mapRef = useRef<MapView>(null);
 
@@ -322,18 +325,11 @@ export function MainMap({ navigation }: any): JSX.Element {
                             ))}
                         </CategoryBtnWrapper>
 
-                        <ScrollView showsVerticalScrollIndicator={false}>
-                            <Animated.View
-                                style={[{ gap: 15 }, animateSwipePadding]}
-                            >
-                                {closestStops.map((closestS, i) => (
-                                    <NearStopConstructor
-                                        key={i}
-                                        stop={closestS}
-                                    />
-                                ))}
-                            </Animated.View>
-                        </ScrollView>
+                        <NearStopsWrapper
+                            animatedPadd={animateSwipePadding}
+                            l={location}
+                            stops={stops.Stops}
+                        />
                     </BottomMenuContent>
                 </BottomMenu>
             </GestureDetector>
@@ -495,8 +491,8 @@ const SoonTransportTime = styled.View({
 const SoonTransportTimeTitle = styled.Text({
     fontStyle: "normal",
     fontWeight: "400",
-    fontSize: 24 / 1.5,
-    lineHeight: 31 / 1.5,
+    fontSize: 24 / 2,
+    lineHeight: 31 / 2,
 
     color: "#000000",
 });
@@ -514,8 +510,12 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
     const [head, end] = routes.Routes.route_long_name.split(" - ");
 
     const firstTwo = routes.Stop_times.splice(0, 2);
+    useEffect(() => {
+        console.log("SOON TRANSPORT CONSTRUCTOR");
+        console.log(routes.Routes.route_short_name, firstTwo);
+        console.log("SOON TRANSPORT CONSTRUCTOR");
+    }, [routes]);
 
-    console.log(firstTwo);
     return (
         <SoonTransport>
             <SoonTransportCodeWrapper
@@ -545,7 +545,7 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
                 </SoonTransportDesc>
             </View>
             <SoonTransportTimeWrapper>
-                {routes.Stop_times.splice(0, 2).map((times, i) => (
+                {firstTwo.map((times, i) => (
                     <SoonTransportTime key={i}>
                         <SoonTransportTimeTitle>
                             {convertTimeToString(times.arrival_time)}
@@ -554,73 +554,6 @@ function SoonTransportCostructor(routes: CustomRouteForStop) {
                 ))}
             </SoonTransportTimeWrapper>
         </SoonTransport>
-    );
-}
-
-function NearStopConstructor(props: { stop: Stop }) {
-    const navigation = useNavigation() as any;
-    console.log(props.stop);
-    const { loading, data } = useQuery<getRoutesForStop>(GET_ROUTES_FOR_STOP, {
-        variables: {
-            stopId: props.stop.stop_id,
-        },
-        fetchPolicy: "network-only",
-    });
-
-    console.log(data);
-
-    if (!data || loading) {
-        return <LoadingIndicator />;
-    }
-
-    return (
-        <NearTransportStopWrapper
-            onPress={() =>
-                navigation.navigate("SmallSchedule", { stop: props.stop })
-            }
-        >
-            <View>
-                <NearTransportTitle>{props.stop.stop_name}</NearTransportTitle>
-                <NearTransportDescWrapper>
-                    <NearTransportDescription>
-                        to Kleistu iela
-                    </NearTransportDescription>
-                    <View>
-                        <NearTransportDescription>
-                            5min
-                        </NearTransportDescription>
-                    </View>
-                </NearTransportDescWrapper>
-            </View>
-            <View
-                style={{
-                    flexDirection: "row",
-                    gap: 5,
-                    flexWrap: "wrap",
-                }}
-            >
-                {data.getRoutesForStop.map(({ Routes }, i) => (
-                    <NearTransportCodeWrapper
-                        bg={
-                            transportTypes.filter(
-                                (x) => Routes.route_type === x.id
-                            )[0].color
-                        }
-                        key={i}
-                    >
-                        <NearTransportCode>
-                            {Routes.route_short_name}
-                        </NearTransportCode>
-                    </NearTransportCodeWrapper>
-                ))}
-            </View>
-
-            <View>
-                {data.getRoutesForStop.map((route, i) => (
-                    <SoonTransportCostructor key={i} {...route} />
-                ))}
-            </View>
-        </NearTransportStopWrapper>
     );
 }
 
@@ -660,7 +593,7 @@ function getClosestMarkers(markers: Stop[], userLocation: LocationObject) {
                 userLocation.coords.longitude
             )
     );
-    return sortedMarkers.slice(0, 3);
+    return sortedMarkers.slice(0, 6);
 }
 
 export function convertTimeToString(arrival_time: string) {
@@ -698,4 +631,294 @@ export function StopSearch({ value }: { value?: string }) {
             />
         </SearchWrapper>
     );
+}
+
+const GET_ROUTES_FOR_MULTIPLE_STOPS = gql`
+    query GetRoutesForMultipleStops($stopIds: [String!]!) {
+        getRoutesForMultipleStops(stop_ids: $stopIds) {
+            stop_id
+            stop_name
+            stop_lat
+            stop_lon
+            routes {
+                route_id
+                route_short_name
+                route_long_name
+                route_type
+                route_sort_order
+                stop_times {
+                    trip_id
+                    arrival_time
+                    departure_time
+                    stop_id
+                    stop_sequence
+                    pickup_type
+                    drop_off_type
+                    trips {
+                        route_id
+                        service_id
+                        trip_id
+                        trip_headsign
+                        direction_id
+                        block_id
+                        shape_id
+                        wheelchair_accessible
+                    }
+                }
+                stop_order {
+                    stops {
+                        stop_name
+                        stop_id
+                    }
+                }
+            }
+        }
+    }
+`;
+
+type getRoutesForMultipleStops = {
+    stop_id: string;
+    stop_name: string;
+    stop_lat: string;
+    stop_lon: string;
+    routes: {
+        route_id: string;
+        route_short_name: string;
+        route_long_name: string;
+        route_type: string;
+        route_sort_order: string;
+        stop_times: {
+            trip_id: string;
+            arrival_time: string;
+            departure_time: string;
+            stop_id: string;
+            stop_sequence: string;
+            pickup_type: string;
+            drop_off_type: string;
+            trips: {
+                route_id: string;
+                service_id: string;
+                trip_id: string;
+                trip_headsign: string;
+                direction_id: string;
+                block_id: string;
+                shape_id: string;
+                wheelchair_accessible: string;
+            };
+        }[];
+        stop_order: {
+            stops: {
+                stop_name: string;
+                stop_id: string;
+            };
+        }[];
+    }[];
+};
+
+function NearStopsWrapper(props: {
+    animatedPadd: any;
+    stops: Stop[];
+    l: LocationObject;
+}) {
+    const { stops, animatedPadd, l } = props;
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const closestStops = useCallback(() => {
+        console.log("closest stops recalc");
+        return getClosestMarkers(stops, l).slice(0, 5);
+    }, [stops]);
+
+    const { data, loading, refetch } = useQuery<{
+        getRoutesForMultipleStops: getRoutesForMultipleStops[];
+    }>(GET_ROUTES_FOR_MULTIPLE_STOPS, {
+        variables: { stopIds: closestStops().flatMap((x) => x.stop_id) },
+        skip: !stops || !l,
+    });
+
+    const getCodeColor = useCallback(
+        (type: string) => {
+            return transportTypes.filter((x) => x.id === type)[0].color;
+        },
+        [stops]
+    );
+
+    const navigation = useNavigation() as any;
+
+    return (
+        <ScrollView
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={async () => {
+                        setIsRefreshing(true);
+                        closestStops();
+                        await refetch();
+                        setIsRefreshing(false);
+                    }}
+                />
+            }
+        >
+            <Animated.View style={[{ gap: 15 }, animatedPadd]}>
+                {!data || loading ? (
+                    <LoadingIndicator />
+                ) : (
+                    <FlatList
+                        scrollEnabled={false}
+                        data={data.getRoutesForMultipleStops}
+                        contentContainerStyle={{ gap: 20 }}
+                        renderItem={({ item, index: i }) => (
+                            <NearTransportStopWrapper
+                                onPress={() => {
+                                    navigation.navigate("SmallSchedule", {
+                                        stop: item,
+                                    });
+                                }}
+                                key={i}
+                            >
+                                <View>
+                                    <NearTransportTitle>
+                                        {item.stop_name}
+                                    </NearTransportTitle>
+                                    <NearTransportDescWrapper>
+                                        <NearTransportDescription>
+                                            {
+                                                item.routes[0].stop_order[
+                                                    item.routes[0].stop_order
+                                                        .length - 1
+                                                ].stops.stop_name
+                                            }
+                                        </NearTransportDescription>
+                                        <View>
+                                            <NearTransportDescription>
+                                                ~5min
+                                            </NearTransportDescription>
+                                        </View>
+                                    </NearTransportDescWrapper>
+                                </View>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        gap: 5,
+                                        flexWrap: "wrap",
+                                    }}
+                                >
+                                    {item.routes.flatMap((route, j) => (
+                                        <NearTransportCodeWrapper
+                                            bg={getCodeColor(route.route_type)}
+                                            key={`${i}@${j}`}
+                                        >
+                                            <NearTransportCode>
+                                                {route.route_short_name}
+                                            </NearTransportCode>
+                                        </NearTransportCodeWrapper>
+                                    ))}
+                                </View>
+
+                                <View>
+                                    <FlatList
+                                        scrollEnabled={false}
+                                        data={item.routes}
+                                        renderItem={({ item: routes }) => (
+                                            <SoonTransport>
+                                                <SoonTransportCodeWrapper
+                                                    style={{
+                                                        backgroundColor:
+                                                            getCodeColor(
+                                                                routes.route_type
+                                                            ),
+                                                    }}
+                                                >
+                                                    <SoonTransportCode>
+                                                        {
+                                                            routes.route_short_name
+                                                        }
+                                                    </SoonTransportCode>
+                                                </SoonTransportCodeWrapper>
+                                                <View
+                                                    style={{
+                                                        justifyContent:
+                                                            "space-between",
+                                                        flexGrow: 1,
+                                                    }}
+                                                >
+                                                    <SoonTransportDesc>
+                                                        {
+                                                            routes.stop_order[0]
+                                                                .stops.stop_name
+                                                        }
+                                                    </SoonTransportDesc>
+                                                    <SoonTransportDesc
+                                                        style={{
+                                                            color: COLOR_PALETE.additionalText,
+                                                        }}
+                                                    >
+                                                        {
+                                                            routes.stop_order[
+                                                                routes
+                                                                    .stop_order
+                                                                    .length - 1
+                                                            ].stops.stop_name
+                                                        }
+                                                    </SoonTransportDesc>
+                                                </View>
+                                                <FlatList
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        gap: 30,
+                                                        alignItems: "center",
+                                                    }}
+                                                    data={getNextTimesSlice(
+                                                        routes.stop_times
+                                                    )}
+                                                    renderItem={({
+                                                        item: stop_time,
+                                                        index: k,
+                                                    }) => (
+                                                        <SoonTransportTime
+                                                            key={k}
+                                                        >
+                                                            <SoonTransportTimeTitle>
+                                                                {convertTimeToString(
+                                                                    stop_time.arrival_time
+                                                                )}
+                                                            </SoonTransportTimeTitle>
+                                                        </SoonTransportTime>
+                                                    )}
+                                                />
+                                            </SoonTransport>
+                                        )}
+                                    />
+                                </View>
+                            </NearTransportStopWrapper>
+                        )}
+                    />
+                )}
+            </Animated.View>
+        </ScrollView>
+    );
+}
+
+function splitStopName(stopName: string) {
+    const splited = stopName.split(" - ");
+    return splited[splited.length - 1];
+}
+
+function getNextTimesSlice(data: any) {
+    const x = data.filter((x: any) => isNextToCurrentTime(x.arrival_time));
+    x.sort((a: any, b: any) => {
+        const [aHour, aMinute, aSecond] = a.arrival_time.split(":").map(Number);
+        const [bHour, bMinute, bSecond] = b.arrival_time.split(":").map(Number);
+
+        if (aHour !== bHour) {
+            return aHour - bHour;
+        }
+
+        if (aMinute !== bMinute) {
+            return aMinute - bMinute;
+        }
+
+        return aSecond - bSecond;
+    });
+    console.log("SORTED_IN_TIME");
+    return x.slice(0, 2);
 }

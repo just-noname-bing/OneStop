@@ -242,7 +242,7 @@ const Minute = styled.Text(({ Selected }: { Selected?: boolean }) => ({
     fontSize: 15,
 }));
 
-function isNextToCurrentTime(arrival_time: string) {
+export function isNextToCurrentTime(arrival_time: string) {
     const currentDate = new Date();
     const currentHours = currentDate.getHours();
     const currentMins = currentDate.getMinutes();
@@ -251,5 +251,6 @@ function isNextToCurrentTime(arrival_time: string) {
     const mins = Number(arrival_time.slice(3, 5));
     const totalMins = hours * 60 + mins;
 
-    return totalCurrentMins < totalMins;
+    const isMore = totalCurrentMins < totalMins
+    return isMore;
 }

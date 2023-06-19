@@ -13,8 +13,8 @@ import { Routes } from "../../utils/graphql";
 import { TransportRowBtn, TransportRowText, transportTypes } from "../Home/SharedComponents";
 
 const GET_TRANSPORT_DIRECTION_STOPS = gql`
-    query GetTransportDirectionStops2($transportId: String!) {
-        getTransportDirectionStops2(transport_id: $transportId) {
+    query GetTransportDirectionStops($transportId: String!) {
+        getTransportDirectionStops(transport_id: $transportId) {
             route_short_name
             route_long_name
             route_id
@@ -63,14 +63,14 @@ export function TransportSelectorForPost({ route }: any) {
     const navigation = useNavigation() as any;
 
     const { data, loading } = useQuery<{
-        getTransportDirectionStops2: getTransportDirectionStops;
+        getTransportDirectionStops: getTransportDirectionStops;
     }>(GET_TRANSPORT_DIRECTION_STOPS, {
         variables: { transportId: transport.route_id },
     });
 
     const directions = useMemo(() => {
-        if (data?.getTransportDirectionStops2) {
-            const d = data.getTransportDirectionStops2.trips.map((x, i) => {
+        if (data?.getTransportDirectionStops) {
+            const d = data.getTransportDirectionStops.trips.map((x, i) => {
                 const y =
                     x.stop_times[0].stops.stop_name +
                     " - " +
@@ -105,8 +105,8 @@ export function TransportSelectorForPost({ route }: any) {
     }, [route]);
 
     const orderedTrips = useMemo(() => {
-        if (data?.getTransportDirectionStops2 && items) {
-            return data.getTransportDirectionStops2.trips.filter(
+        if (data?.getTransportDirectionStops && items) {
+            return data.getTransportDirectionStops.trips.filter(
                 (x) => x.shape_id === items[value].id
             );
         }

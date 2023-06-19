@@ -40,6 +40,7 @@ export function SmallSchedule({ route, navigation }: any) {
         variables: {
             stopId: stop.stop_id,
         },
+        fetchPolicy:"network-only"
     });
 
     const client = useApolloClient();
