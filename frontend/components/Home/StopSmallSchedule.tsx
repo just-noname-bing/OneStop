@@ -29,6 +29,7 @@ import {
     TimeTableTitle,
     isWorkingDay,
 } from "./SharedComponents";
+import { isNextToCurrentTime } from "./StopBigSchedule";
 
 // test data riga_bus_41
 // test data 1086
@@ -76,7 +77,10 @@ export function SmallSchedule({ route, navigation }: any) {
                 if (Number(f[0].split(":")[0]) > currD.getHours() + 1) {
                     break;
                 }
-                cool.push(f);
+
+                if (isNextToCurrentTime(f[0])) {
+                    cool.push(f);
+                }
             }
 
             return cool;
