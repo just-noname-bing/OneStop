@@ -475,6 +475,8 @@ const SoonTransportDesc = styled.Text({
     fontWeight: "400",
     fontSize: 18 / 1.5,
     lineHeight: 23 / 1.5,
+    flexWrap:"wrap",
+    maxWidth:100
 });
 
 const SoonTransportTimeWrapper = styled.View({
