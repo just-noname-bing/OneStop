@@ -106,7 +106,29 @@ export const BusResolver = {
                         include: { trips: true },
                     });
 
-                    includeStopTimes.push({ ...r, stop_times: test });
+                    const john = await prisma.routes.findFirst({
+                        where: {
+                            AND: [{ route_id: r.route_id }],
+                        },
+                        include: {
+                            trips: {
+                                distinct: "shape_id",
+                                where: { shape_id: test[0].trips?.shape_id },
+                                include: {
+                                    stop_times: {
+                                        distinct: ["stop_id", "trip_id"],
+                                        include: { stops: true },
+                                    },
+                                },
+                            },
+                        },
+                    });
+
+                    includeStopTimes.push({
+                        ...r,
+                        stop_times: test,
+                        stop_order: john?.trips[0].stop_times,
+                    });
                 }
 
                 joined.push({ ...stop, routes: includeStopTimes });

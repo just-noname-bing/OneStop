@@ -292,20 +292,32 @@ export default `#graphql
         stopsSearch(stop_name:String!): [StopSearchResults]
     }
 
+    type CustomStopTimes {
+        trip_id:String
+        arrival_time:String
+        departure_time:String
+        stop_id:String
+        stop_sequence:String
+        pickup_type:String
+        drop_off_type:String
+        trips: Trips
+    }
+
     type CustomStopRoute {
-        route_id:String,
-        route_short_name:String,
-        route_long_name:String,
-        route_type:String,
-        route_sort_order:String,
-        stop_times: [Stop_times]
+        route_id:String
+        route_short_name:String
+        route_long_name:String
+        route_type:String
+        route_sort_order:String
+        stop_times: [CustomStopTimes]
+        stop_order: [Stop_times]
     }
 
     type CustomRoutesForMultipleStops {
-        stop_id:String,
-        stop_name:String,
-        stop_lat:String,
-        stop_lon:String,
+        stop_id:String
+        stop_name:String
+        stop_lat:String
+        stop_lon:String
         routes: [CustomStopRoute]
     }
 
