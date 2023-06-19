@@ -103,6 +103,7 @@ export const BusResolver = {
                                 },
                             ],
                         },
+                        include: { trips: true },
                     });
 
                     includeStopTimes.push({ ...r, stop_times: test });
@@ -113,7 +114,7 @@ export const BusResolver = {
 
             console.dir(joined, { depth: null });
 
-            return joined
+            return joined;
         },
 
         getRoutesForStop: async (_p: any, args: any, _ctx: any) => {
