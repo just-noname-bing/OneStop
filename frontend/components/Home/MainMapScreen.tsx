@@ -727,7 +727,7 @@ function NearStopsWrapper(props: {
     const closestStops = useCallback(() => {
         console.log("closest stops recalc");
         return getClosestMarkers(stops, l).slice(0, 5);
-    }, [stops]);
+    }, [stops, l]);
 
     const { data, loading, refetch } = useQuery<{
         getRoutesForMultipleStops: getRoutesForMultipleStops[];
